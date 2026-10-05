@@ -71,3 +71,30 @@ export function useSaveClinicalOrder(visitId:string){
     onSuccess:data=>qc.setQueryData(["clinical-order",visitId],data)
   });
 }
+
+
+export function useAllClinicalOrderDefinitions(){
+  return useQuery({
+    queryKey:["clinical-order-definitions","all"],
+    queryFn:async()=>{
+      const r=await api.get<BaseResponse<ClinicalOrderDefinition[]>>("/clinical-orders/definitions");
+      if(!r.data.status||!r.data.data)throw new Error("Unable to load clinical order definitions.");
+      return [...r.data.data].sort((a,b)=>a.sortOrder-b.sortOrder);
+    }
+  });
+}
+
+export function useSaveClinicalOrderDefinitions(){
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn:async(sections:Array<{code:string;name:string;sectionType:ClinicalOrderSectionType;sortOrder:number;isEnabled:boolean}>)=>{
+      const r=await api.put<BaseResponse<ClinicalOrderDefinition[]>>("/clinical-orders/definitions",{sections});
+      if(!r.data.status||!r.data.data)throw new Error(r.data.message||"Unable to save clinical order definitions.");
+      return r.data.data;
+    },
+    onSuccess:data=>{
+      qc.setQueryData(["clinical-order-definitions","all"],data);
+      qc.invalidateQueries({queryKey:["clinical-order-definitions"]});
+    }
+  });
+}
