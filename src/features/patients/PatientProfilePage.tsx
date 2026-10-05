@@ -1,13 +1,14 @@
 import { FormEvent, useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { useAddProfileItem, usePatientProfile } from "./patientProfile.api";
+import { selectedPatient } from "./selectedPatient";
 
 type Kind = "allergies" | "conditions" | "medications";
 
 export function PatientProfilePage() {
-  const { patientId = "" } = useParams();
+  const patientId = selectedPatient.get() ?? "";
   const { data, isLoading, isError } = usePatientProfile(patientId);
   const [kind, setKind] = useState<Kind | null>(null);
   const [name, setName] = useState("");
@@ -33,6 +34,7 @@ export function PatientProfilePage() {
     setKind(null);
   }
 
+  if (!patientId) return <Navigate to="/patients" replace />;
   if (isLoading) return <div className="state-card">Loading patient profile...</div>;
   if (isError || !data) return <div className="state-card error-box">Unable to load patient profile.</div>;
 
