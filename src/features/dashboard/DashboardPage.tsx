@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { FileClock, Stethoscope, UserRound, Users } from "lucide-react";
 import { useDashboard } from "./dashboard.api";
 
@@ -51,6 +52,6 @@ export function DashboardPage(){
   </section>
 }
 
-function Kpi({icon,label,value,sub}:{icon:React.ReactNode;label:string;value:number;sub:string}){
+function Kpi({icon,label,value,sub}:{icon:ReactNode;label:string;value:number;sub:string}){
   return <article className="card dashboard-kpi"><div className="dashboard-kpi-icon">{icon}</div><div><small>{label}</small><strong>{value}</strong><span>{sub}</span></div></article>
 }
