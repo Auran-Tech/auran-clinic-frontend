@@ -15,7 +15,7 @@ export function App() {
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/patients" replace />} />
         <Route path="/patients" element={<PatientsPage />} />
-        <Route path="/patients/:patientId" element={<PatientProfilePage />} />
+        <Route path="/patients/profile" element={<PatientProfilePage />} />
         <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
         <Route path="/queue" element={<Placeholder title="Live Queue" />} />
         <Route path="/visits" element={<Placeholder title="Visits" />} />
