@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Save, Square } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { selectedVisit } from "./selectedVisit";
+import { useClinicalOrder, useClinicalOrderDefinitions, useSaveClinicalOrder } from "./clinicalOrders.api";
 import {
   useCompleteVisit,
   useEndVisitSession,
@@ -28,6 +29,10 @@ export function VisitWorkspacePage() {
   const endSession = useEndVisitSession(visitId);
   const completeVisit = useCompleteVisit(visitId);
   const finalizeDocumentation = useFinalizeVisitDocumentation(visitId);
+  const orderDefinitions = useClinicalOrderDefinitions();
+  const clinicalOrder = useClinicalOrder(visitId);
+  const saveClinicalOrder = useSaveClinicalOrder(visitId);
+  const [orderValues, setOrderValues] = useState<Record<string, { textValue: string; itemsText: string }>>({});
   const [doctorId, setDoctorId] = useState("");
   const [form, setForm] = useState<DraftForm>({
     chiefComplaint: "",
@@ -51,6 +56,21 @@ export function VisitWorkspacePage() {
     });
     setDoctorId(current => current || details.data.visit.doctorId);
   }, [details.data]);
+
+
+  useEffect(() => {
+    if (!orderDefinitions.data) return;
+
+    const next: Record<string, { textValue: string; itemsText: string }> = {};
+    for (const definition of orderDefinitions.data) {
+      const existing = clinicalOrder.data?.sections.find(section => section.definitionCode === definition.code);
+      next[definition.code] = {
+        textValue: existing?.textValue ?? "",
+        itemsText: existing?.items.map(item => item.name).join("\n") ?? ""
+      };
+    }
+    setOrderValues(next);
+  }, [orderDefinitions.data, clinicalOrder.data]);
 
   const activeSession = useMemo(
     () => details.data?.sessions.find(session => !session.endedAtUtc),
@@ -127,6 +147,90 @@ export function VisitWorkspacePage() {
           {saveDraft.isSuccess && <div className="save-state success">Draft saved.</div>}
           {saveDraft.isError && <div className="save-state error-box">Draft changed or could not be saved. Reload the visit and try again.</div>}
         </form>
+
+
+        <section className="card clinical-order-card">
+          <header className="section-head">
+            <div>
+              <span className="eyebrow">CLINICAL ORDERS</span>
+              <h2>Prescription & orders</h2>
+              <p>Sections are configured by the clinic and saved against this visit.</p>
+            </div>
+            {canEdit && (
+              <button
+                type="button"
+                className="primary-button"
+                disabled={saveClinicalOrder.isPending || orderDefinitions.isLoading}
+                onClick={() => {
+                  const sections = (orderDefinitions.data ?? []).map(definition => {
+                    const value = orderValues[definition.code] ?? { textValue: "", itemsText: "" };
+                    return {
+                      definitionCode: definition.code,
+                      textValue: definition.sectionType === "Text" ? (value.textValue || null) : null,
+                      items: definition.sectionType === "ItemList"
+                        ? value.itemsText
+                            .split("\n")
+                            .map(item => item.trim())
+                            .filter(Boolean)
+                            .map(name => ({ name, detailsJson: null }))
+                        : []
+                    };
+                  });
+                  saveClinicalOrder.mutate({ sections });
+                }}
+              >
+                <Save size={15} />
+                {saveClinicalOrder.isPending ? "Saving..." : "Save orders"}
+              </button>
+            )}
+          </header>
+
+          {orderDefinitions.isLoading && <div className="state-card">Loading clinical order sections...</div>}
+          {orderDefinitions.isError && <div className="error-box">Unable to load clinical order configuration.</div>}
+          {orderDefinitions.data?.length === 0 && (
+            <div className="mini-empty">No clinical order sections are configured yet.</div>
+          )}
+
+          <div className="clinical-order-sections">
+            {orderDefinitions.data?.map(definition => {
+              const value = orderValues[definition.code] ?? { textValue: "", itemsText: "" };
+              return (
+                <label className="field" key={definition.code}>
+                  {definition.name}
+                  {definition.sectionType === "Text" ? (
+                    <textarea
+                      disabled={!canEdit}
+                      value={value.textValue}
+                      onChange={event =>
+                        setOrderValues(current => ({
+                          ...current,
+                          [definition.code]: { ...value, textValue: event.target.value }
+                        }))
+                      }
+                    />
+                  ) : definition.sectionType === "ItemList" ? (
+                    <textarea
+                      disabled={!canEdit}
+                      value={value.itemsText}
+                      placeholder="One item per line"
+                      onChange={event =>
+                        setOrderValues(current => ({
+                          ...current,
+                          [definition.code]: { ...value, itemsText: event.target.value }
+                        }))
+                      }
+                    />
+                  ) : (
+                    <div className="mini-empty">Attachments for this section will use the file workflow.</div>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+
+          {saveClinicalOrder.isSuccess && <div className="save-state success">Clinical orders saved.</div>}
+          {saveClinicalOrder.isError && <div className="error-box">Unable to save clinical orders.</div>}
+        </section>
 
         <aside className="workspace-side">
           <section className="card">
