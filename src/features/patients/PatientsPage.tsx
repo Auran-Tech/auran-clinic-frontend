@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { useCreatePatient, usePatients, type PatientDuplicateCandidate } from "./patients.api";
 
