@@ -1,6 +1,8 @@
+import type { ReactElement } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { LoginPage } from "../features/auth/LoginPage";
+import { authSession } from "../features/auth/authSession";
 import { PatientsPage } from "../features/patients/PatientsPage";
 import { PatientProfilePage } from "../features/patients/PatientProfilePage";
 import { QueuePage } from "../features/queue/QueuePage";
@@ -14,30 +16,37 @@ import { ReportsPage } from "../features/reports/ReportsPage";
 import { AuditPage } from "../features/audit/AuditPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 
-function Placeholder({ title }: { title: string }) {
-  return <section className="page"><header className="page-heading"><div><h1>{title}</h1><p>Planned in MVP 1.</p></div></header><div className="card state-card">Implementation follows the approved prototype and backend contract.</div></section>;
+function RequirePermission({ permission, children }: { permission: string; children: ReactElement }) {
+  if (!authSession.hasPermission(permission)) {
+    return <section className="page"><div className="card state-card error-box">You do not have permission to access this page.</div></section>;
+  }
+  return children;
 }
+
+const protect = (permission: string, element: ReactElement) => (
+  <RequirePermission permission={permission}>{element}</RequirePermission>
+);
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<AppShell />}>
-        <Route index element={<Navigate to="/patients" replace />} />
-        <Route path="/patients" element={<PatientsPage />} />
-        <Route path="/patients/profile" element={<PatientProfilePage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/queue" element={<QueuePage />} />
-        <Route path="/visits" element={<VisitsPage />} />
-        <Route path="/visits/workspace" element={<VisitWorkspacePage />} />
-        <Route path="/follow-ups" element={<FollowUpsPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/employees" element={<EmployeesPage />} />
-        <Route path="/roles" element={<RolesPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/audit" element={<AuditPage />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={protect("Dashboard_View", <DashboardPage />)} />
+        <Route path="/patients" element={protect("Patient_View", <PatientsPage />)} />
+        <Route path="/patients/profile" element={protect("MedicalProfile_View", <PatientProfilePage />)} />
+        <Route path="/queue" element={protect("Queue_View", <QueuePage />)} />
+        <Route path="/visits" element={protect("Visit_View", <VisitsPage />)} />
+        <Route path="/visits/workspace" element={protect("Visit_View", <VisitWorkspacePage />)} />
+        <Route path="/follow-ups" element={protect("FollowUp_View", <FollowUpsPage />)} />
+        <Route path="/reports" element={protect("Reports_View", <ReportsPage />)} />
+        <Route path="/employees" element={protect("Users_View", <EmployeesPage />)} />
+        <Route path="/roles" element={protect("RBAC_View", <RolesPage />)} />
+        <Route path="/settings" element={protect("Settings_View", <SettingsPage />)} />
+        <Route path="/audit" element={protect("Audit_View", <AuditPage />)} />
       </Route>
-      <Route path="*" element={<Navigate to="/patients" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
