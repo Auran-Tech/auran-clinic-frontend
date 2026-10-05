@@ -4,6 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { selectedVisit } from "./selectedVisit";
 import { useClinicalOrder, useClinicalOrderDefinitions, useSaveClinicalOrder } from "./clinicalOrders.api";
+import { downloadFile, useClinicalOrderFiles, useUploadClinicalOrderFile } from "../files/files.api";
 import {
   useCompleteVisit,
   useEndVisitSession,
@@ -32,7 +33,10 @@ export function VisitWorkspacePage() {
   const orderDefinitions = useClinicalOrderDefinitions();
   const clinicalOrder = useClinicalOrder(visitId);
   const saveClinicalOrder = useSaveClinicalOrder(visitId);
+  const orderFiles = useClinicalOrderFiles(visitId);
+  const uploadOrderFile = useUploadClinicalOrderFile(visitId);
   const [orderValues, setOrderValues] = useState<Record<string, { textValue: string; itemsText: string }>>({});
+  const [attachmentSection, setAttachmentSection] = useState("");
   const [doctorId, setDoctorId] = useState("");
   const [form, setForm] = useState<DraftForm>({
     chiefComplaint: "",
@@ -228,6 +232,54 @@ export function VisitWorkspacePage() {
             })}
           </div>
 
+
+          <div className="clinical-order-files">
+            <div className="config-head">
+              <h3>Order attachments</h3>
+              {canEdit && (
+                <div className="order-file-upload">
+                  <select value={attachmentSection} onChange={event => setAttachmentSection(event.target.value)}>
+                    <option value="">Whole order</option>
+                    {(orderDefinitions.data ?? [])
+                      .filter(definition => definition.sectionType === "Image" || definition.sectionType === "File")
+                      .map(definition => <option key={definition.code} value={definition.code}>{definition.name}</option>)}
+                  </select>
+                  <label className="secondary-button file-picker">
+                    <Plus size={14} />Upload
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx"
+                      onChange={async event => {
+                        const selected = event.target.files?.[0];
+                        if (!selected) return;
+                        await uploadOrderFile.mutateAsync({
+                          file: selected,
+                          definitionCode: attachmentSection || null
+                        });
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {orderFiles.isLoading && <div className="state-card">Loading order files...</div>}
+            {orderFiles.data?.length === 0 && <div className="mini-empty">No order attachments yet.</div>}
+            <div className="attachment-list">
+              {orderFiles.data?.map(file => (
+                <button key={file.fileId} className="attachment-row" onClick={() => downloadFile(file)}>
+                  <div>
+                    <strong>{file.originalName}</strong>
+                    <small>{file.category || "Whole order"} · {formatBytes(file.size)}</small>
+                  </div>
+                  <span dir="ltr">{new Date(file.uploadedAtUtc).toLocaleString()}</span>
+                </button>
+              ))}
+            </div>
+            {uploadOrderFile.isError && <div className="error-box">Upload rejected. Save the order first and check file type/size.</div>}
+          </div>
+
           {saveClinicalOrder.isSuccess && <div className="save-state success">Clinical orders saved.</div>}
           {saveClinicalOrder.isError && <div className="error-box">Unable to save clinical orders.</div>}
         </section>
@@ -324,4 +376,11 @@ export function VisitWorkspacePage() {
       </div>
     </section>
   );
+}
+
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
