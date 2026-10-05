@@ -100,3 +100,7 @@
 
 .clinical-order-card{margin-top:14px}.clinical-order-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.clinical-order-sections .field textarea{min-height:130px}
 @media(max-width:760px){.clinical-order-sections{grid-template-columns:1fr}}
+
+
+.file-picker{position:relative;overflow:hidden}.file-picker input{position:absolute;inset:0;opacity:0;cursor:pointer}.attachment-meta-form{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px}.attachment-list{display:grid;gap:7px}.attachment-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:start;border:1px solid var(--border);border-radius:11px;background:#fff;color:var(--text);padding:10px}.attachment-row>div{display:grid;gap:3px;min-width:0}.attachment-row strong{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.attachment-row small,.attachment-row>span{font-size:8px;color:var(--muted)}.clinical-order-files{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}.order-file-upload{display:flex;align-items:center;gap:6px}.order-file-upload select{height:36px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);padding:0 8px;font-size:9px}
+@media(max-width:760px){.attachment-meta-form{grid-template-columns:1fr}.attachment-row{align-items:flex-start;flex-direction:column}.order-file-upload{align-items:stretch;flex-direction:column}}
