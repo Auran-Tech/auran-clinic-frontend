@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Plus, Search, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { selectedPatient } from "./selectedPatient";
 import { authSession } from "../auth/authSession";
 import { useCreatePatient, usePatients, type PatientDuplicateCandidate } from "./patients.api";
 
@@ -14,6 +15,7 @@ type PatientForm = {
 const emptyForm: PatientForm = { fullName: "", phone: "", gender: "", dateOfBirth: "" };
 
 export function PatientsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<PatientForm>(emptyForm);
@@ -72,7 +74,7 @@ export function PatientsPage() {
                 {data.data.map(patient => (
                   <tr key={patient.id}>
                     <td><code dir="ltr">{patient.patientNumber}</code></td>
-                    <td><Link className="patient-link" to={`/patients/${patient.id}`}><strong>{patient.fullName}</strong></Link></td>
+                    <td><button className="patient-link-button" onClick={() => { selectedPatient.set(patient.id); navigate("/patients/profile"); }}><strong>{patient.fullName}</strong></button></td>
                     <td><span dir="ltr">{patient.phone}</span></td>
                     <td>{patient.gender ?? "—"}</td>
                     <td><span dir="ltr">{patient.dateOfBirth ?? "—"}</span></td>
