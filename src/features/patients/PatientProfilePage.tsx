@@ -20,7 +20,7 @@ export function PatientProfilePage() {
     event.preventDefault();
     if (!kind) return;
 
-    const payload =
+    const payload: Record<string, string | null> =
       kind === "allergies"
         ? { name, reaction: detail || null, notes: null }
         : kind === "medications"
