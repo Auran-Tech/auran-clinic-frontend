@@ -71,7 +71,7 @@ export function PatientsPage() {
                 {data.data.map(patient => (
                   <tr key={patient.id}>
                     <td><code dir="ltr">{patient.patientNumber}</code></td>
-                    <td><strong>{patient.fullName}</strong></td>
+                    <td><Link className="patient-link" to={`/patients/${patient.id}`}><strong>{patient.fullName}</strong></Link></td>
                     <td><span dir="ltr">{patient.phone}</span></td>
                     <td>{patient.gender ?? "—"}</td>
                     <td><span dir="ltr">{patient.dateOfBirth ?? "—"}</span></td>
