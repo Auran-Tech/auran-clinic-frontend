@@ -108,3 +108,35 @@ export function useSaveVisitDraft(visitId: string) {
     }
   });
 }
+
+
+export function useCompleteVisit(visitId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rowVersion: string) => {
+      const response = await api.put<BaseResponse<VisitDetails>>("/visits/complete", { visitId, rowVersion });
+      if (!response.data.status || !response.data.data) throw new Error("Unable to complete visit.");
+      return response.data.data;
+    },
+    onSuccess: data => {
+      queryClient.setQueryData(["visit-details", visitId], data);
+      queryClient.invalidateQueries({ queryKey: ["visits"] });
+      queryClient.invalidateQueries({ queryKey: ["queue-board"] });
+    }
+  });
+}
+
+export function useFinalizeVisitDocumentation(visitId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rowVersion: string) => {
+      const response = await api.put<BaseResponse<VisitDetails>>("/visits/documentation/finalize", { visitId, rowVersion });
+      if (!response.data.status || !response.data.data) throw new Error("Unable to finalize documentation.");
+      return response.data.data;
+    },
+    onSuccess: data => {
+      queryClient.setQueryData(["visit-details", visitId], data);
+      queryClient.invalidateQueries({ queryKey: ["visits"] });
+    }
+  });
+}
