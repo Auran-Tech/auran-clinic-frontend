@@ -4,7 +4,9 @@ import { Link, Navigate } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { selectedVisit } from "./selectedVisit";
 import {
+  useCompleteVisit,
   useEndVisitSession,
+  useFinalizeVisitDocumentation,
   useSaveVisitDraft,
   useStartVisitSession,
   useVisitDetails
@@ -24,6 +26,8 @@ export function VisitWorkspacePage() {
   const saveDraft = useSaveVisitDraft(visitId);
   const startSession = useStartVisitSession(visitId);
   const endSession = useEndVisitSession(visitId);
+  const completeVisit = useCompleteVisit(visitId);
+  const finalizeDocumentation = useFinalizeVisitDocumentation(visitId);
   const [doctorId, setDoctorId] = useState("");
   const [form, setForm] = useState<DraftForm>({
     chiefComplaint: "",
@@ -156,6 +160,45 @@ export function VisitWorkspacePage() {
             )}
 
             {(startSession.isError || endSession.isError) && <div className="error-box">Unable to change the active session.</div>}
+          </section>
+
+          <section className="card">
+            <header className="section-head">
+              <div><h2>Visit lifecycle</h2><p>Visit completion and documentation are separate states.</p></div>
+            </header>
+
+            <div className="visit-lifecycle">
+              <div><span>Visit</span><strong>{details.data.visit.status}</strong></div>
+              <div><span>Documentation</span><strong>{details.data.visit.documentationStatus}</strong></div>
+            </div>
+
+            {canEdit && details.data.visit.status === "Open" && (
+              <button
+                className="primary-button"
+                disabled={Boolean(activeSession) || completeVisit.isPending}
+                onClick={() => completeVisit.mutate(details.data!.visit.rowVersion)}
+              >
+                {completeVisit.isPending ? "Completing..." : "Complete visit"}
+              </button>
+            )}
+
+            {canEdit && details.data.visit.documentationStatus !== "Completed" && (
+              <button
+                className="secondary-button"
+                disabled={finalizeDocumentation.isPending}
+                onClick={() => finalizeDocumentation.mutate(details.data!.visit.rowVersion)}
+              >
+                {finalizeDocumentation.isPending ? "Finalizing..." : "Finalize documentation"}
+              </button>
+            )}
+
+            {activeSession && details.data.visit.status === "Open" && (
+              <div className="lifecycle-note">End the active doctor session before completing the visit.</div>
+            )}
+
+            {(completeVisit.isError || finalizeDocumentation.isError) && (
+              <div className="error-box">Visit state changed or workflow configuration is incomplete. Reload and try again.</div>
+            )}
           </section>
 
           <section className="card">
