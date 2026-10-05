@@ -42,8 +42,8 @@ export function usePatientProfile(patientId: string) {
     queryKey: ["patient-profile", patientId],
     enabled: Boolean(patientId),
     queryFn: async () => {
-      const response = await api.get<BaseResponse<PatientClinicalProfile>>("/patient-profile", {
-        params: { patientId }
+      const response = await api.post<BaseResponse<PatientClinicalProfile>>("/patient-profile/details", {
+        patientId
       });
       if (!response.data.status || !response.data.data) {
         throw new Error(response.data.message || "Unable to load patient profile.");
