@@ -167,7 +167,7 @@ export function VisitWorkspacePage() {
                     return {
                       definitionCode: definition.code,
                       textValue: definition.sectionType === "Text" ? (value.textValue || null) : null,
-                      items: definition.sectionType === "ItemList"
+                      items: definition.sectionType === "Structured"
                         ? value.itemsText
                             .split("\n")
                             .map(item => item.trim())
@@ -208,7 +208,7 @@ export function VisitWorkspacePage() {
                         }))
                       }
                     />
-                  ) : definition.sectionType === "ItemList" ? (
+                  ) : definition.sectionType === "Structured" ? (
                     <textarea
                       disabled={!canEdit}
                       value={value.itemsText}
