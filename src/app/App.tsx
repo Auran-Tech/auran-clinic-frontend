@@ -10,6 +10,8 @@ import { FollowUpsPage } from "../features/followups/FollowUpsPage";
 import { EmployeesPage } from "../features/admin/EmployeesPage";
 import { RolesPage } from "../features/admin/RolesPage";
 import { SettingsPage } from "../features/settings/SettingsPage";
+import { ReportsPage } from "../features/reports/ReportsPage";
+import { AuditPage } from "../features/audit/AuditPage";
 
 function Placeholder({ title }: { title: string }) {
   return <section className="page"><header className="page-heading"><div><h1>{title}</h1><p>Planned in MVP 1.</p></div></header><div className="card state-card">Implementation follows the approved prototype and backend contract.</div></section>;
@@ -28,11 +30,11 @@ export function App() {
         <Route path="/visits" element={<VisitsPage />} />
         <Route path="/visits/workspace" element={<VisitWorkspacePage />} />
         <Route path="/follow-ups" element={<FollowUpsPage />} />
-        <Route path="/reports" element={<Placeholder title="Reports" />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/roles" element={<RolesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/audit" element={<Placeholder title="Audit Log" />} />
+        <Route path="/audit" element={<AuditPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/patients" replace />} />
     </Routes>
