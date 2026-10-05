@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Play, Save, Square } from "lucide-react";
+import { ArrowLeft, Play, Plus, Save, Square } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
 import { authSession } from "../auth/authSession";
 import { selectedVisit } from "./selectedVisit";
