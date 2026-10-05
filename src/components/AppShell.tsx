@@ -4,16 +4,16 @@ import { useState } from "react";
 import { authSession } from "../features/auth/authSession";
 
 const nav = [
-  ["Dashboard", "/dashboard"],
-  ["Patients", "/patients"],
-  ["Live Queue", "/queue"],
-  ["Visits", "/visits"],
-  ["Follow-ups", "/follow-ups"],
-  ["Reports", "/reports"],
-  ["Employees", "/employees"],
-  ["Roles & Permissions", "/roles"],
-  ["Settings", "/settings"],
-  ["Audit Log", "/audit"]
+  ["Dashboard", "/dashboard", "Dashboard_View"],
+  ["Patients", "/patients", "Patient_View"],
+  ["Live Queue", "/queue", "Queue_View"],
+  ["Visits", "/visits", "Visit_View"],
+  ["Follow-ups", "/follow-ups", "FollowUp_View"],
+  ["Reports", "/reports", "Reports_View"],
+  ["Employees", "/employees", "Users_View"],
+  ["Roles & Permissions", "/roles", "RBAC_View"],
+  ["Settings", "/settings", "Settings_View"],
+  ["Audit Log", "/audit", "Audit_View"]
 ] as const;
 
 export function AppShell() {
@@ -21,6 +21,8 @@ export function AppShell() {
   const [drawer, setDrawer] = useState(false);
 
   if (!session) return <Navigate to="/login" replace />;
+
+  const allowedNav = nav.filter(([, , permission]) => authSession.hasPermission(permission));
 
   return (
     <div className={`app-layout ${drawer ? "drawer-open" : ""}`}>
@@ -32,7 +34,7 @@ export function AppShell() {
           <div><strong>AURAN</strong><small>Clinic Management</small></div>
         </div>
         <nav>
-          {nav.map(([label, path]) => (
+          {allowedNav.map(([label, path]) => (
             <NavLink key={path} to={path} onClick={() => setDrawer(false)}>{label}</NavLink>
           ))}
         </nav>
