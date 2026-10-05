@@ -4,6 +4,7 @@ import { authSession } from "../auth/authSession";
 import { useClinicSettings,useSaveClinicSettings,useSaveWorkflowSettings,useWorkflowSettings,type ClinicSettings,type WorkflowSettings } from "./settings.api";
 
 type Tab="clinic"|"workflow";
+type ClinicSettingsForm=Omit<ClinicSettings,"clinicCode">;
 
 export function SettingsPage(){
   const[tab,setTab]=useState<Tab>("clinic");
@@ -17,12 +18,12 @@ export function SettingsPage(){
 
 function ClinicSettingsPanel({canManage}:{canManage:boolean}){
   const query=useClinicSettings();const save=useSaveClinicSettings();
-  const[form,setForm]=useState<Omit<ClinicSettings,"clinicCode">|null>(null);
+  const[form,setForm]=useState<ClinicSettingsForm|null>(null);
   useEffect(()=>{if(query.data){const{clinicCode:_code,...rest}=query.data;setForm(rest)}},[query.data]);
   if(query.isLoading||!form)return <div className="state-card">Loading clinic settings...</div>;
   if(query.isError)return <div className="state-card error-box">Unable to load clinic settings.</div>;
   async function submit(e:FormEvent){e.preventDefault();await save.mutateAsync(form!)}
-  const set=(key:keyof typeof form,value:string|number)=>setForm(current=>current?{...current,[key]:value}:current);
+  const set=(key:keyof ClinicSettingsForm,value:string|number)=>setForm(current=>current?{...current,[key]:value}:current);
   return <form className="card settings-form" onSubmit={submit}>
     <header className="section-head"><div><span className="eyebrow">GENERAL</span><h2>Clinic identity</h2><p>Branding, localization and operational defaults.</p></div>{canManage&&<button className="primary-button" disabled={save.isPending}><Save size={15}/>{save.isPending?"Saving...":"Save settings"}</button>}</header>
     <div className="settings-grid">
