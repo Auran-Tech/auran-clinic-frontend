@@ -2,8 +2,9 @@ import { FormEvent,useEffect,useMemo,useState } from "react";
 import { Plus,Save,Trash2 } from "lucide-react";
 import { authSession } from "../auth/authSession";
 import { useClinicSettings,useSaveClinicSettings,useSaveWorkflowSettings,useWorkflowSettings,type ClinicSettings,type WorkflowSettings } from "./settings.api";
+import { useAllClinicalOrderDefinitions,useSaveClinicalOrderDefinitions,type ClinicalOrderDefinition,type ClinicalOrderSectionType } from "../visits/clinicalOrders.api";
 
-type Tab="clinic"|"workflow";
+type Tab="clinic"|"workflow"|"orders";
 type ClinicSettingsForm=Omit<ClinicSettings,"clinicCode">;
 
 export function SettingsPage(){
@@ -11,8 +12,8 @@ export function SettingsPage(){
   const canManage=authSession.hasPermission("Settings_Manage");
   return <section className="page">
     <header className="page-heading"><div><span className="eyebrow">SYSTEM / SETTINGS</span><h1>Settings & Configuration</h1><p>Clinic identity, localization and configurable patient workflow.</p></div></header>
-    <div className="settings-tabs"><button className={tab==="clinic"?"active":""} onClick={()=>setTab("clinic")}>Clinic settings</button><button className={tab==="workflow"?"active":""} onClick={()=>setTab("workflow")}>Workflow</button></div>
-    {tab==="clinic"?<ClinicSettingsPanel canManage={canManage}/>:<WorkflowPanel canManage={canManage}/>}
+    <div className="settings-tabs"><button className={tab==="clinic"?"active":""} onClick={()=>setTab("clinic")}>Clinic settings</button><button className={tab==="workflow"?"active":""} onClick={()=>setTab("workflow")}>Workflow</button><button className={tab==="orders"?"active":""} onClick={()=>setTab("orders")}>Clinical orders</button></div>
+    {tab==="clinic"?<ClinicSettingsPanel canManage={canManage}/>:tab==="workflow"?<WorkflowPanel canManage={canManage}/>:<ClinicalOrderSettingsPanel canManage={canManage}/>}
   </section>
 }
 
@@ -72,5 +73,51 @@ function WorkflowPanel({canManage}:{canManage:boolean}){
       </div>)}</div></section>
     </div>
     {save.isSuccess&&<div className="save-state success">Workflow saved. Live Queue refreshed.</div>}{save.isError&&<div className="error-box">Unable to save workflow. A status may already be used by queue history or configuration may be invalid.</div>}
+  </div>
+}
+
+
+function ClinicalOrderSettingsPanel({canManage}:{canManage:boolean}){
+  const query=useAllClinicalOrderDefinitions();
+  const save=useSaveClinicalOrderDefinitions();
+  const[data,setData]=useState<ClinicalOrderDefinition[]|null>(null);
+
+  useEffect(()=>{if(query.data)setData(query.data.map(item=>({...item})))},[query.data]);
+
+  if(query.isLoading||!data)return <div className="state-card">Loading clinical order sections...</div>;
+  if(query.isError)return <div className="state-card error-box">Unable to load clinical order configuration.</div>;
+
+  const patch=(index:number,key:keyof ClinicalOrderDefinition,value:string|number|boolean)=>
+    setData(current=>current?current.map((item,i)=>i===index?{...item,[key]:value}:item):current);
+
+  return <div className="card">
+    <header className="section-head">
+      <div><span className="eyebrow">CLINICAL WORKSPACE</span><h2>Clinical order sections</h2><p>Configure prescription, structured order and attachment sections used by the Doctor Workspace.</p></div>
+      {canManage&&<button className="primary-button" disabled={save.isPending} onClick={()=>save.mutate(data)}><Save size={15}/>{save.isPending?"Saving...":"Save sections"}</button>}
+    </header>
+
+    <div className="config-head">
+      <h3>Sections</h3>
+      {canManage&&<button className="secondary-button" onClick={()=>setData([...data,{code:"NEW_SECTION",name:"New section",sectionType:"Text",sortOrder:(data.length+1)*10,isEnabled:true}])}><Plus size={14}/>Add section</button>}
+    </div>
+
+    <div className="config-list">
+      {data.map((item,index)=><div className="order-definition-row" key={index}>
+        <input disabled={!canManage} value={item.code} onChange={e=>patch(index,"code",e.target.value.toUpperCase())} placeholder="CODE"/>
+        <input disabled={!canManage} value={item.name} onChange={e=>patch(index,"name",e.target.value)} placeholder="Name"/>
+        <select disabled={!canManage} value={item.sectionType} onChange={e=>patch(index,"sectionType",e.target.value as ClinicalOrderSectionType)}>
+          <option value="Structured">Structured items</option>
+          <option value="Text">Text</option>
+          <option value="Image">Image attachment</option>
+          <option value="File">File attachment</option>
+        </select>
+        <input disabled={!canManage} type="number" value={item.sortOrder} onChange={e=>patch(index,"sortOrder",Number(e.target.value))}/>
+        <label className="final-check"><input disabled={!canManage} type="checkbox" checked={item.isEnabled} onChange={e=>patch(index,"isEnabled",e.target.checked)}/><span>Enabled</span></label>
+        {canManage&&<button className="danger-icon" onClick={()=>setData(data.filter((_,i)=>i!==index))}><Trash2 size={14}/></button>}
+      </div>)}
+    </div>
+
+    {save.isSuccess&&<div className="save-state success">Clinical order configuration saved.</div>}
+    {save.isError&&<div className="error-box">Unable to save clinical order configuration.</div>}
   </div>
 }
