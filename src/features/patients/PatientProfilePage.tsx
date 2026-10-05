@@ -12,6 +12,7 @@ import {
   type PatientDynamicField
 } from "./patientClinicalData.api";
 import { selectedPatient } from "./selectedPatient";
+import { downloadFile, usePatientFiles, useUploadPatientFile } from "../files/files.api";
 
 type Kind = "allergies" | "conditions" | "medications";
 
@@ -20,6 +21,10 @@ export function PatientProfilePage() {
   const { data, isLoading, isError } = usePatientProfile(patientId);
   const dynamicProfile = usePatientDynamicProfile(patientId);
   const measurements = usePatientMeasurements(patientId);
+  const files = usePatientFiles(patientId);
+  const uploadFile = useUploadPatientFile(patientId);
+  const [fileCategory, setFileCategory] = useState("");
+  const [fileNotes, setFileNotes] = useState("");
   const [kind, setKind] = useState<Kind | null>(null);
   const [name, setName] = useState("");
   const [detail, setDetail] = useState("");
@@ -136,6 +141,65 @@ export function PatientProfilePage() {
             </div>
           ))}
         </div>
+      </section>
+
+
+      <section className="card clinical-block">
+        <header className="section-head">
+          <div>
+            <span className="eyebrow">PATIENT FILES</span>
+            <h2>Attachments</h2>
+            <p>PDF, images, text and DOCX files linked to this patient.</p>
+          </div>
+          {canEdit && (
+            <label className="secondary-button file-picker">
+              <Plus size={15} />Upload file
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx"
+                onChange={async event => {
+                  const selected = event.target.files?.[0];
+                  if (!selected) return;
+                  await uploadFile.mutateAsync({
+                    file: selected,
+                    category: fileCategory || undefined,
+                    notes: fileNotes || undefined
+                  });
+                  event.target.value = "";
+                }}
+              />
+            </label>
+          )}
+        </header>
+
+        {canEdit && (
+          <div className="attachment-meta-form">
+            <label className="field">Category
+              <input value={fileCategory} onChange={event => setFileCategory(event.target.value)} placeholder="Lab, Scan, Referral..." />
+            </label>
+            <label className="field">Notes
+              <input value={fileNotes} onChange={event => setFileNotes(event.target.value)} placeholder="Optional note" />
+            </label>
+          </div>
+        )}
+
+        {files.isLoading && <div className="state-card">Loading files...</div>}
+        {files.isError && <div className="error-box">Unable to load patient files.</div>}
+        {files.data?.length === 0 && <div className="mini-empty">No files uploaded yet.</div>}
+
+        <div className="attachment-list">
+          {files.data?.map(file => (
+            <button key={file.fileId} className="attachment-row" onClick={() => downloadFile(file)}>
+              <div>
+                <strong>{file.originalName}</strong>
+                <small>{file.category || "Attachment"} · {formatBytes(file.size)}</small>
+              </div>
+              <span dir="ltr">{new Date(file.uploadedAtUtc).toLocaleString()}</span>
+            </button>
+          ))}
+        </div>
+
+        {uploadFile.isError && <div className="error-box">Upload rejected. Check file type and size.</div>}
       </section>
 
       {kind && (
@@ -338,4 +402,11 @@ function ProfileSection({
       )}
     </article>
   );
+}
+
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
