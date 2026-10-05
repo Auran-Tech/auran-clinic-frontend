@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api/client";
 import type { BaseResponse } from "../../lib/api/contracts";
 
-export type ClinicalOrderSectionType="Text"|"ItemList"|"AttachmentOnly";
+export type ClinicalOrderSectionType="Structured"|"Text"|"Image"|"File";
 
 export type ClinicalOrderDefinition={
   code:string;
