@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { ClinicalOrderEditor } from '../clinicalOrders/ClinicalOrderEditor'
 import {
   endClinicalSession,
   getActiveClinicalSession,
@@ -73,6 +74,7 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
   }
 
   return (
+    <>
     <section className="panel">
       <div className="panel-heading">
         <div>
@@ -164,5 +166,7 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
         </>
       )}
     </section>
+    <ClinicalOrderEditor visitId={visitId} />
+    </>
   )
 }
