@@ -47,4 +47,16 @@ describe("authSession permissions",()=>{
   it("denies permissions when there is no session",()=>{
     expect(authSession.hasPermission("Visit_View")).toBe(false);
   });
+
+  it("notifies subscribers when the session changes",()=>{
+    let notifications=0;
+    const unsubscribe=authSession.subscribe(()=>notifications++);
+
+    authSession.set(baseSession);
+    authSession.set(null);
+    unsubscribe();
+    authSession.set(baseSession);
+
+    expect(notifications).toBe(2);
+  });
 });
