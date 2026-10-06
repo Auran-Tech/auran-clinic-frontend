@@ -47,3 +47,115 @@ export function useSaveWorkflowSettings(){
     qc.invalidateQueries({queryKey:["queue-board"]});
   }});
 }
+
+
+export type DynamicFieldType =
+  | "Text" | "LongText" | "Number" | "Boolean" | "Date"
+  | "Image" | "File" | "SingleSelect" | "MultiSelect";
+
+export type FieldOptionSetting={
+  id:string;
+  label:string;
+  value:string;
+  sortOrder:number;
+};
+
+export type PatientProfileFieldSetting={
+  id:string;
+  label:string;
+  fieldType:DynamicFieldType;
+  isRequired:boolean;
+  isEnabled:boolean;
+  sortOrder:number;
+  options:FieldOptionSetting[];
+};
+
+export type PatientProfileSectionSetting={
+  id:string;
+  name:string;
+  sortOrder:number;
+  isSystem:boolean;
+  isEnabled:boolean;
+  fields:PatientProfileFieldSetting[];
+};
+
+export type ClinicalFieldSetting={
+  id:string;
+  name:string;
+  fieldType:DynamicFieldType;
+  unit?:string|null;
+  isEnabled:boolean;
+  sortOrder:number;
+  options:FieldOptionSetting[];
+};
+
+export type FieldSettings={
+  profileSections:PatientProfileSectionSetting[];
+  clinicalFields:ClinicalFieldSetting[];
+};
+
+export type SaveFieldOptionSetting={
+  label:string;
+  value:string;
+  sortOrder:number;
+};
+
+export type SavePatientProfileFieldSetting={
+  id?:string;
+  label:string;
+  fieldType:DynamicFieldType;
+  isRequired:boolean;
+  isEnabled:boolean;
+  sortOrder:number;
+  options:SaveFieldOptionSetting[];
+};
+
+export type SavePatientProfileSectionSetting={
+  id?:string;
+  name:string;
+  sortOrder:number;
+  isEnabled:boolean;
+  fields:SavePatientProfileFieldSetting[];
+};
+
+export type SaveClinicalFieldSetting={
+  id?:string;
+  name:string;
+  fieldType:DynamicFieldType;
+  unit?:string|null;
+  isEnabled:boolean;
+  sortOrder:number;
+  options:SaveFieldOptionSetting[];
+};
+
+export type SaveFieldSettings={
+  profileSections:SavePatientProfileSectionSetting[];
+  clinicalFields:SaveClinicalFieldSetting[];
+};
+
+export function useFieldSettings(){
+  return useQuery({
+    queryKey:["field-settings"],
+    queryFn:async()=>{
+      const r=await api.get<BaseResponse<FieldSettings>>("/settings/fields");
+      if(!r.data.status||!r.data.data)throw new Error("Unable to load field settings.");
+      return r.data.data;
+    }
+  });
+}
+
+export function useSaveFieldSettings(){
+  const qc=useQueryClient();
+  return useMutation({
+    mutationFn:async(payload:SaveFieldSettings)=>{
+      const r=await api.put<BaseResponse<FieldSettings>>("/settings/fields",payload);
+      if(!r.data.status||!r.data.data)throw new Error(r.data.message||"Unable to save field settings.");
+      return r.data.data;
+    },
+    onSuccess:data=>{
+      qc.setQueryData(["field-settings"],data);
+      qc.invalidateQueries({queryKey:["patient-dynamic-profile"]});
+      qc.invalidateQueries({queryKey:["patient-measurements"]});
+    }
+  });
+}
