@@ -1,8 +1,9 @@
 import { Languages, LogOut, Menu, Search, UserRound } from "lucide-react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { api } from "../lib/api/client";
 import { authSession, useAuthSession } from "../features/auth/authSession";
+import { useCurrentUserState } from "../features/auth/currentUser.api";
 import { useI18n } from "../lib/i18n/i18n";
 
 const nav = [
@@ -28,6 +29,20 @@ export function AppShell() {
   const [quickSearch, setQuickSearch] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
   const { locale, toggleLocale, t } = useI18n();
+  const currentUser = useCurrentUserState(Boolean(session));
+
+  useEffect(() => {
+    if (!session || !currentUser.data) return;
+
+    const currentSnapshot = JSON.stringify(session.user);
+    const nextSnapshot = JSON.stringify(currentUser.data);
+    if (currentSnapshot === nextSnapshot) return;
+
+    authSession.set({
+      ...session,
+      user: currentUser.data
+    });
+  }, [currentUser.data, session]);
 
   if (!session) return <Navigate to="/login" replace />;
   const activeSession = session;
