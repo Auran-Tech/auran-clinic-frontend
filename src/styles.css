@@ -304,3 +304,21 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
     grid-template-columns: 1fr;
   }
 }
+
+.clinical-order-sections {
+  display: grid;
+  gap: 20px;
+}
+
+.clinical-order-section {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #edf0f2;
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.clinical-order-section h3 {
+  margin: 4px 0 0;
+}
