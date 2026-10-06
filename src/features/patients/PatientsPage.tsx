@@ -68,6 +68,7 @@ export function PatientsPage() {
     () => patientsQuery.data?.setting.totalPage ?? 1,
     [patientsQuery.data],
   )
+  const hasExactPhoneDuplicate = duplicates.some((patient) => patient.matchReason === 'phone')
 
   return (
     <main className="page-shell">
@@ -132,7 +133,11 @@ export function PatientsPage() {
             {duplicates.length > 0 && (
               <div className="duplicate-warning full-width" role="alert">
                 <strong>Possible duplicate patient</strong>
-                <p>Review these records before creating a new patient.</p>
+                <p>
+                  {hasExactPhoneDuplicate
+                    ? 'A patient already uses this phone number. Edit the details or open the existing patient.'
+                    : 'Review these records before creating a new patient.'}
+                </p>
                 <ul>
                   {duplicates.map((patient) => (
                     <li key={patient.id}>
@@ -150,18 +155,20 @@ export function PatientsPage() {
                   >
                     Edit details
                   </button>
-                  <button
-                    type="button"
-                    className="button danger"
-                    onClick={() => createMutation.mutate({
-                      ...form.getValues(),
-                      gender: form.getValues('gender') || undefined,
-                      dateOfBirth: form.getValues('dateOfBirth') || undefined,
-                      notes: form.getValues('notes') || undefined,
-                    })}
-                  >
-                    Create anyway
-                  </button>
+                  {!hasExactPhoneDuplicate && (
+                    <button
+                      type="button"
+                      className="button danger"
+                      onClick={() => createMutation.mutate({
+                        ...form.getValues(),
+                        gender: form.getValues('gender') || undefined,
+                        dateOfBirth: form.getValues('dateOfBirth') || undefined,
+                        notes: form.getValues('notes') || undefined,
+                      })}
+                    >
+                      Create anyway
+                    </button>
+                  )}
                 </div>
               </div>
             )}
