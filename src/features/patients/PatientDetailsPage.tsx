@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { getPatient, updatePatient } from './api'
+import { getDoctors } from '../users/api'
+import { getActiveVisit, startVisit } from '../visits/api'
 import { patientSchema, type PatientFormValues } from './schema'
 
 export function PatientDetailsPage() {
@@ -12,11 +14,24 @@ export function PatientDetailsPage() {
   const queryClient = useQueryClient()
   const auth = useAuth()
   const [editing, setEditing] = useState(false)
+  const [selectedDoctorId, setSelectedDoctorId] = useState('')
 
   const patientQuery = useQuery({
     queryKey: ['patient', patientId],
     queryFn: () => getPatient(patientId!),
     enabled: Boolean(patientId),
+  })
+
+  const activeVisitQuery = useQuery({
+    queryKey: ['active-visit', patientId],
+    queryFn: () => getActiveVisit(patientId!),
+    enabled: Boolean(patientId),
+  })
+
+  const doctorsQuery = useQuery({
+    queryKey: ['doctors'],
+    queryFn: getDoctors,
+    enabled: auth.hasPermission('Visit_Start'),
   })
 
   const form = useForm<PatientFormValues>({
@@ -33,6 +48,14 @@ export function PatientDetailsPage() {
       notes: patientQuery.data.notes ?? '',
     })
   }, [form, patientQuery.data])
+
+  const startVisitMutation = useMutation({
+    mutationFn: startVisit,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['active-visit', patientId] })
+      setSelectedDoctorId('')
+    },
+  })
 
   const updateMutation = useMutation({
     mutationFn: updatePatient,
@@ -58,6 +81,7 @@ export function PatientDetailsPage() {
 
   const patient = patientQuery.data
   const canEdit = auth.hasPermission('Patient_Edit_Basic')
+  const canStartVisit = auth.hasPermission('Visit_Start')
 
   return (
     <main className="page-shell">
@@ -73,6 +97,74 @@ export function PatientDetailsPage() {
           <button className="button secondary" onClick={() => setEditing((value) => !value)}>
             {editing ? 'Cancel edit' : 'Edit patient'}
           </button>
+        )}
+      </section>
+
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <h2>Clinic visit</h2>
+            <p className="muted">Check the patient in and place them into the configured clinic workflow.</p>
+          </div>
+        </div>
+
+        {activeVisitQuery.isLoading && <p className="state">Checking active visit…</p>}
+
+        {activeVisitQuery.data ? (
+          <div className="visit-status-card">
+            <div>
+              <span className="profile-label">Active visit</span>
+              <strong>{activeVisitQuery.data.status}</strong>
+            </div>
+            <div>
+              <span className="profile-label">Current stage</span>
+              <strong>{activeVisitQuery.data.workflowStatusName}</strong>
+            </div>
+            <div>
+              <span className="profile-label">Checked in</span>
+              <strong>{new Date(activeVisitQuery.data.entryAtUtc).toLocaleString()}</strong>
+            </div>
+          </div>
+        ) : canStartVisit ? (
+          <div className="checkin-form">
+            <label>
+              <span>Doctor</span>
+              <select
+                value={selectedDoctorId}
+                onChange={(event) => setSelectedDoctorId(event.target.value)}
+              >
+                <option value="">Select doctor</option>
+                {(doctorsQuery.data ?? []).map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>
+                ))}
+              </select>
+            </label>
+
+            {doctorsQuery.isError && (
+              <p className="field-error">Unable to load doctors.</p>
+            )}
+
+            {startVisitMutation.isError && (
+              <p className="field-error">
+                Unable to check in this patient. They may already have an active visit or clinic workflow is not configured.
+              </p>
+            )}
+
+            <div className="actions">
+              <button
+                className="button primary"
+                disabled={!selectedDoctorId || startVisitMutation.isPending}
+                onClick={() => startVisitMutation.mutate({
+                  patientId: patient.id,
+                  doctorId: selectedDoctorId,
+                })}
+              >
+                {startVisitMutation.isPending ? 'Checking in…' : 'Check in patient'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="muted">You do not have permission to start clinic visits.</p>
         )}
       </section>
 
