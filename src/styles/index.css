@@ -125,3 +125,6 @@
 [dir=rtl] [dir=ltr],[dir=rtl] code{direction:ltr;text-align:left}
 [dir=rtl] .drawer-overlay{inset:0}
 [dir=rtl] .queue-actions svg,[dir=rtl] .back-link svg{transform:scaleX(-1)}
+
+
+.topbar-spacer{flex:1}.avatar-button{border:0;cursor:pointer}.user-menu-wrap{position:relative}.user-menu{position:absolute;z-index:90;top:calc(100% + 9px);inset-inline-end:0;width:220px;padding:8px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 18px 45px rgba(15,23,42,.16)}.user-menu-head{display:flex;align-items:center;gap:8px;padding:7px 6px 10px;border-bottom:1px solid var(--border)}.user-menu-head>div{display:grid;gap:2px;min-width:0}.user-menu-head strong{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-menu-head small{font-size:8px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-menu>button{width:100%;display:flex;align-items:center;gap:7px;margin-top:6px;padding:8px;border:0;border-radius:8px;background:transparent;color:var(--text);font-size:9px;font-weight:700;text-align:start}.user-menu>button:hover{background:#f8fafc}.user-menu>button:disabled{opacity:.6}
