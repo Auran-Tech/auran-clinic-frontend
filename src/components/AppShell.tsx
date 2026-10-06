@@ -2,7 +2,7 @@ import { Languages, LogOut, Menu, Search, UserRound } from "lucide-react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { FormEvent, useState } from "react";
 import { api } from "../lib/api/client";
-import { authSession } from "../features/auth/authSession";
+import { authSession, useAuthSession } from "../features/auth/authSession";
 import { useI18n } from "../lib/i18n/i18n";
 
 const nav = [
@@ -21,7 +21,7 @@ const nav = [
 const patientSearchKey = "auran.clinic.patient-search";
 
 export function AppShell() {
-  const session = authSession.get();
+  const session = useAuthSession();
   const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
