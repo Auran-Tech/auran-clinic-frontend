@@ -1,15 +1,18 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import type { BaseResponse } from "./contracts";
 import { authSession } from "../../features/auth/authSession";
+import { apiBaseUrl, currentLocale } from "./config";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api",
+  baseURL: apiBaseUrl,
+  timeout: 30_000,
   headers: { "Content-Type": "application/json" }
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = authSession.get()?.accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  config.headers["Accept-Language"] = currentLocale();
   return config;
 });
 
