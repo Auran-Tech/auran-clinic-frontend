@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
@@ -231,7 +232,7 @@ export function PatientsPage() {
                   {patientsQuery.data.data.map((patient) => (
                     <tr key={patient.id}>
                       <td className="mono">{patient.patientNumber}</td>
-                      <td><strong>{patient.fullName}</strong></td>
+                      <td><Link className="patient-link" to={`/patients/${patient.id}`}><strong>{patient.fullName}</strong></Link></td>
                       <td className="mono">{patient.phone}</td>
                       <td>{patient.dateOfBirth ?? '—'}</td>
                       <td>{patient.gender ?? '—'}</td>
