@@ -116,3 +116,12 @@
 @media(max-width:1100px){.field-config-head{grid-template-columns:1fr 90px auto auto}.field-config-head>.danger-icon{grid-column:auto}.field-editor-row,.clinical-field-editor-row{grid-template-columns:1fr 1fr 90px auto}}
 @media(max-width:760px){.field-config-head,.field-editor-row,.clinical-field-editor-row{grid-template-columns:1fr 1fr}.field-option-row{grid-template-columns:1fr 1fr}.field-option-row>.danger-icon{justify-self:start}}
 @media(max-width:480px){.field-config-head,.field-editor-row,.clinical-field-editor-row,.field-option-row{grid-template-columns:1fr}}
+
+
+.auth-card{position:relative}.auth-language{position:absolute;top:14px;inset-inline-end:14px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--muted);padding:6px 9px;font-size:9px;font-weight:700}
+[dir=rtl] body{font-family:Tahoma,Arial,sans-serif}
+[dir=rtl] .sidebar,[dir=rtl] .content,[dir=rtl] .card,[dir=rtl] .modal,[dir=rtl] .page-heading{text-align:right}
+[dir=rtl] .global-search input,[dir=rtl] input,[dir=rtl] textarea,[dir=rtl] select{text-align:right}
+[dir=rtl] [dir=ltr],[dir=rtl] code{direction:ltr;text-align:left}
+[dir=rtl] .drawer-overlay{inset:0}
+[dir=rtl] .queue-actions svg,[dir=rtl] .back-link svg{transform:scaleX(-1)}
