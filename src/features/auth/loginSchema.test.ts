@@ -1,21 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { z } from 'zod'
+import { loginSchema } from './schema'
 
-const schema = z.object({
-  email: z.string().trim().email(),
-  password: z.string().min(1),
-})
-
-describe('login validation', () => {
+describe('loginSchema', () => {
   it('accepts valid credentials', () => {
-    expect(schema.safeParse({
+    expect(loginSchema.safeParse({
       email: 'user@example.com',
       password: 'Password1',
     }).success).toBe(true)
   })
 
   it('rejects malformed credentials', () => {
-    expect(schema.safeParse({
+    expect(loginSchema.safeParse({
       email: 'not-an-email',
       password: '',
     }).success).toBe(false)
