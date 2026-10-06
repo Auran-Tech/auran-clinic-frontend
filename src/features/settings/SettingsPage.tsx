@@ -163,7 +163,7 @@ function WorkflowPanel({ canManage }: { canManage: boolean }) {
         <section>
           <div className="config-head">
             <h3>{t("Statuses","الحالات")}</h3>
-            {canManage && <button className="secondary-button" onClick={() => setData({ ...data, statuses: [...data.statuses, { code: "NEW_STATUS", name: "New status", color: "#64748B", sortOrder: (data.statuses.length + 1) * 10, isFinal: false }] })}><Plus size={14} />{t("Add status","إضافة حالة")}</button>}
+            {canManage && <button className="secondary-button" onClick={() => setData({ ...data, statuses: [...data.statuses, { code: "NEW_STATUS", name: t("New status","حالة جديدة"), color: "#64748B", sortOrder: (data.statuses.length + 1) * 10, isFinal: false }] })}><Plus size={14} />{t("Add status","إضافة حالة")}</button>}
           </div>
           <div className="config-list">
             {data.statuses.map((status, index) => (
@@ -232,7 +232,7 @@ function ClinicalOrderSettingsPanel({ canManage }: { canManage: boolean }) {
 
       <div className="config-head">
         <h3>{t("Sections","الأقسام")}</h3>
-        {canManage && <button className="secondary-button" onClick={() => setData([...data, { code: "NEW_SECTION", name: "New section", sectionType: "Text", sortOrder: (data.length + 1) * 10, isEnabled: true }])}><Plus size={14} />{t("Add section","إضافة قسم")}</button>}
+        {canManage && <button className="secondary-button" onClick={() => setData([...data, { code: "NEW_SECTION", name: t("New section","قسم جديد"), sectionType: "Text", sortOrder: (data.length + 1) * 10, isEnabled: true }])}><Plus size={14} />{t("Add section","إضافة قسم")}</button>}
       </div>
 
       <div className="config-list">
@@ -321,7 +321,7 @@ function DynamicFieldsPanel({ canManage }: { canManage: boolean }) {
 
         <div className="config-head">
           <h3>{t("Sections","الأقسام")}</h3>
-          {canManage && <button className="secondary-button" onClick={() => setProfileSections([...profileSections, { name: "New section", sortOrder: (profileSections.length + 1) * 10, isEnabled: true, fields: [] }])}><Plus size={14} />{t("Add section","إضافة قسم")}</button>}
+          {canManage && <button className="secondary-button" onClick={() => setProfileSections([...profileSections, { name: t("New section","قسم جديد"), sortOrder: (profileSections.length + 1) * 10, isEnabled: true, fields: [] }])}><Plus size={14} />{t("Add section","إضافة قسم")}</button>}
         </div>
 
         <div className="field-section-list">
@@ -331,7 +331,7 @@ function DynamicFieldsPanel({ canManage }: { canManage: boolean }) {
                 <input disabled={!canManage} value={section.name} onChange={event => setProfileSections(profileSections.map((item, index) => index === sectionIndex ? { ...item, name: event.target.value } : item))} />
                 <input disabled={!canManage} type="number" value={section.sortOrder} onChange={event => setProfileSections(profileSections.map((item, index) => index === sectionIndex ? { ...item, sortOrder: Number(event.target.value) } : item))} />
                 <label className="final-check"><input disabled={!canManage} type="checkbox" checked={section.isEnabled} onChange={event => setProfileSections(profileSections.map((item, index) => index === sectionIndex ? { ...item, isEnabled: event.target.checked } : item))} /><span>{t("Enabled","مفعل")}</span></label>
-                {canManage && <button className="secondary-button" onClick={() => setProfileSections(profileSections.map((item, index) => index === sectionIndex ? { ...item, fields: [...item.fields, newProfileField(item.fields.length)] } : item))}><Plus size={13} />{t("Field","حقل")}</button>}
+                {canManage && <button className="secondary-button" onClick={() => setProfileSections(profileSections.map((item, index) => index === sectionIndex ? { ...item, fields: [...item.fields, newProfileField(item.fields.length,t)] } : item))}><Plus size={13} />{t("Field","حقل")}</button>}
                 {canManage && <button className="danger-icon" onClick={() => setProfileSections(profileSections.filter((_, index) => index !== sectionIndex))}><Trash2 size={14} /></button>}
               </div>
 
@@ -362,7 +362,7 @@ function DynamicFieldsPanel({ canManage }: { canManage: boolean }) {
 
         <div className="config-head">
           <h3>{t("Fields","الحقول")}</h3>
-          {canManage && <button className="secondary-button" onClick={() => setClinicalFields([...clinicalFields, newClinicalField(clinicalFields.length)])}><Plus size={14} />{t("Add measurement","إضافة قياس")}</button>}
+          {canManage && <button className="secondary-button" onClick={() => setClinicalFields([...clinicalFields, newClinicalField(clinicalFields.length,t)])}><Plus size={14} />{t("Add measurement","إضافة قياس")}</button>}
         </div>
 
         <div className="field-config-list">
@@ -452,7 +452,7 @@ function OptionsEditor({
     <div className="field-options">
       <div className="config-head">
         <h4>{t("Options","الخيارات")}</h4>
-        {canManage && <button className="secondary-button" onClick={() => onChange([...options, { label: "New option", value: `option_${options.length + 1}`, sortOrder: (options.length + 1) * 10 }])}><Plus size={12} />{t("Option","خيار")}</button>}
+        {canManage && <button className="secondary-button" onClick={() => onChange([...options, { label: t("New option","خيار جديد"), value: `option_${options.length + 1}`, sortOrder: (options.length + 1) * 10 }])}><Plus size={12} />{t("Option","خيار")}</button>}
       </div>
       {options.map((option, index) => (
         <div className="field-option-row" key={index}>
@@ -487,9 +487,9 @@ function supportsOptions(type: DynamicFieldType) {
   return type === "SingleSelect" || type === "MultiSelect";
 }
 
-function newProfileField(index: number): SavePatientProfileFieldSetting {
+function newProfileField(index: number, t:(english:string,arabic:string)=>string): SavePatientProfileFieldSetting {
   return {
-    label: "New field",
+    label: t("New field","حقل جديد"),
     fieldType: "Text",
     isRequired: false,
     isEnabled: true,
@@ -498,9 +498,9 @@ function newProfileField(index: number): SavePatientProfileFieldSetting {
   };
 }
 
-function newClinicalField(index: number): SaveClinicalFieldSetting {
+function newClinicalField(index: number, t:(english:string,arabic:string)=>string): SaveClinicalFieldSetting {
   return {
-    name: "New measurement",
+    name: t("New measurement","قياس جديد"),
     fieldType: "Number",
     unit: null,
     isEnabled: true,
