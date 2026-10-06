@@ -395,6 +395,7 @@ function FieldEditor({
   onChange: (field: SavePatientProfileFieldSetting) => void;
   onRemove: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="field-editor">
       <div className="field-editor-row">
@@ -421,6 +422,7 @@ function ClinicalFieldEditor({
   onChange: (field: SaveClinicalFieldSetting) => void;
   onRemove: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="field-editor">
       <div className="clinical-field-editor-row">
@@ -445,6 +447,7 @@ function OptionsEditor({
   canManage: boolean;
   onChange: (options: SaveFieldOptionSetting[]) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="field-options">
       <div className="config-head">
@@ -472,6 +475,7 @@ function FieldTypeSelect({
   disabled: boolean;
   onChange: (value: DynamicFieldType) => void;
 }) {
+  const { t } = useI18n();
   return (
     <select disabled={disabled} value={value} onChange={event => onChange(event.target.value as DynamicFieldType)}>
       {fieldTypes.map(type => <option key={type} value={type}>{fieldTypeLabel(type,t)}</option>)}
