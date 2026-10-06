@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import axios from "axios";
 import type { BaseResponse } from "../../lib/api/contracts";
+import { apiBaseUrl, currentLocale } from "../../lib/api/config";
 
 export type CurrentUser = {
   userId: string;
@@ -61,8 +62,9 @@ export const authSession = {
 
     try {
       const response = await axios.post<BaseResponse<AuthResponse>>(
-        `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000/api"}/auth/refresh`,
-        { refreshToken: current.refreshToken }
+        `${apiBaseUrl}/auth/refresh`,
+        { refreshToken: current.refreshToken },
+        { headers: { "Accept-Language": currentLocale() }, timeout: 30_000 }
       );
       if (!response.data.status || !response.data.data) {
         authSession.set(null);
