@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useAuth } from '../auth/AuthContext'
 import { useForm } from 'react-hook-form'
 import {
   createPatient,
@@ -13,6 +14,7 @@ import type { PatientDuplicateCandidate } from './types'
 
 export function PatientsPage() {
   const queryClient = useQueryClient()
+  const auth = useAuth()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [duplicates, setDuplicates] = useState<PatientDuplicateCandidate[]>([])
@@ -81,9 +83,16 @@ export function PatientsPage() {
             Search, review, and register clinic patients.
           </p>
         </div>
-        <button className="button primary" onClick={() => setShowForm((value) => !value)}>
-          {showForm ? 'Close' : 'Add patient'}
-        </button>
+        <div className="actions">
+          {auth.hasPermission('Patient_Create') && (
+            <button className="button primary" onClick={() => setShowForm((value) => !value)}>
+              {showForm ? 'Close' : 'Add patient'}
+            </button>
+          )}
+          <button className="button secondary" onClick={() => void auth.signOut()}>
+            Sign out
+          </button>
+        </div>
       </section>
 
       {showForm && (
