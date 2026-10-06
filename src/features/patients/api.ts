@@ -5,6 +5,7 @@ import type {
   Patient,
   PatientDuplicateCandidate,
   PatientQuery,
+  UpdatePatientInput,
 } from './types'
 
 export async function getPatients(query: PatientQuery) {
@@ -39,6 +40,14 @@ export async function createPatient(input: CreatePatientInput) {
   const response = await api.post<BaseResponse<Patient>>('/patients', input)
   if (!response.data.data) {
     throw new Error(response.data.message ?? 'Unable to create patient.')
+  }
+  return response.data.data
+}
+
+export async function updatePatient(input: UpdatePatientInput) {
+  const response = await api.put<BaseResponse<Patient>>('/patients', input)
+  if (!response.data.data) {
+    throw new Error(response.data.message ?? 'Unable to update patient.')
   }
   return response.data.data
 }
