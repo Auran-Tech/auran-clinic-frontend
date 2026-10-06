@@ -30,6 +30,7 @@ export function AppShell() {
   const { locale, toggleLocale, t } = useI18n();
 
   if (!session) return <Navigate to="/login" replace />;
+  const activeSession = session;
 
   const allowedNav = nav.filter(([, , , permission]) => authSession.hasPermission(permission));
 
@@ -46,7 +47,7 @@ export function AppShell() {
     if (loggingOut) return;
     setLoggingOut(true);
     try {
-      await api.post("/auth/logout", { refreshToken: session.refreshToken });
+      await api.post("/auth/logout", { refreshToken: activeSession.refreshToken });
     } catch {
       // Local sign-out still proceeds if the network/API is unavailable.
     } finally {
@@ -92,13 +93,13 @@ export function AppShell() {
             <button className="icon-button" onClick={toggleLocale} aria-label={t("Switch language", "تغيير اللغة")} title={locale === "ar" ? "English" : "العربية"}><Languages size={18} /></button>
             <div className="user-menu-wrap">
               <button className="avatar avatar-button" onClick={() => setUserMenu(value => !value)} aria-label={t("Open user menu", "فتح قائمة المستخدم")}>
-                {session.user.fullName.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase()}
+                {activeSession.user.fullName.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase()}
               </button>
               {userMenu && (
                 <div className="user-menu">
                   <div className="user-menu-head">
                     <UserRound size={17} />
-                    <div><strong>{session.user.fullName}</strong><small>{session.user.email ?? ""}</small></div>
+                    <div><strong>{activeSession.user.fullName}</strong><small>{activeSession.user.email ?? ""}</small></div>
                   </div>
                   <button onClick={logout} disabled={loggingOut}><LogOut size={15} />{loggingOut ? t("Signing out...", "جارٍ تسجيل الخروج...") : t("Sign out", "تسجيل الخروج")}</button>
                 </div>
