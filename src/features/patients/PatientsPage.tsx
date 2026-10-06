@@ -18,7 +18,11 @@ const emptyForm: PatientForm = { fullName: "", phone: "", gender: "", dateOfBirt
 export function PatientsPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => {
+    const value = sessionStorage.getItem("auran.clinic.patient-search") ?? "";
+    sessionStorage.removeItem("auran.clinic.patient-search");
+    return value;
+  });
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<PatientForm>(emptyForm);
   const [duplicates, setDuplicates] = useState<PatientDuplicateCandidate[]>([]);
