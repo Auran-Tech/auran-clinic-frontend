@@ -32,3 +32,7 @@ export interface PatientQuery {
   page?: number
   pageSize?: number
 }
+
+export interface UpdatePatientInput extends CreatePatientInput {
+  patientId: string
+}
