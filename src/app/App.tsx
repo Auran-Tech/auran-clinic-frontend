@@ -16,6 +16,7 @@ import { SettingsPage } from "../features/settings/SettingsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { AuditPage } from "../features/audit/AuditPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
+import { NotFoundPage } from "./NotFoundPage";
 
 function RequirePermission({ permission, children }: { permission: string; children: ReactElement }) {
   const { t } = useI18n();
@@ -50,7 +51,7 @@ export function App() {
         <Route path="/settings" element={protect("Settings_View", <SettingsPage />)} />
         <Route path="/audit" element={protect("Audit_View", <AuditPage />)} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
