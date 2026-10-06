@@ -1,0 +1,30 @@
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { LoginPage } from '../features/auth/LoginPage'
+import { ProtectedRoute } from '../features/auth/ProtectedRoute'
+import { PatientDetailsPage } from '../features/patients/PatientDetailsPage'
+import { PatientsPage } from '../features/patients/PatientsPage'
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/patients"
+        element={
+          <ProtectedRoute>
+            <PatientsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patients/:patientId"
+        element={
+          <ProtectedRoute>
+            <PatientDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/patients" replace />} />
+    </Routes>
+  )
+}
