@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { LoginPage } from "../features/auth/LoginPage";
 import { authSession } from "../features/auth/authSession";
+import { useI18n } from "../lib/i18n/i18n";
 import { PatientsPage } from "../features/patients/PatientsPage";
 import { PatientProfilePage } from "../features/patients/PatientProfilePage";
 import { QueuePage } from "../features/queue/QueuePage";
@@ -17,8 +18,9 @@ import { AuditPage } from "../features/audit/AuditPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 
 function RequirePermission({ permission, children }: { permission: string; children: ReactElement }) {
+  const { t } = useI18n();
   if (!authSession.hasPermission(permission)) {
-    return <section className="page"><div className="card state-card error-box">You do not have permission to access this page.</div></section>;
+    return <section className="page"><div className="card state-card error-box">{t("You do not have permission to access this page.", "ليس لديك صلاحية للوصول إلى هذه الصفحة.")}</div></section>;
   }
   return children;
 }
