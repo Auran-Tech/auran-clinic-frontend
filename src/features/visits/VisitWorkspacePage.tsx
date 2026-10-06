@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Play, Plus, Save, Square } from "lucide-react";
 import { Link, Navigate } from "react-router-dom";
+import { useI18n } from "../../lib/i18n/i18n";
 import { authSession } from "../auth/authSession";
 import { selectedVisit } from "./selectedVisit";
 import { useClinicalOrder, useClinicalOrderDefinitions, useSaveClinicalOrder } from "./clinicalOrders.api";
@@ -23,6 +24,7 @@ type DraftForm = {
 };
 
 export function VisitWorkspacePage() {
+  const { t } = useI18n();
   const visitId = selectedVisit.get() ?? "";
   const details = useVisitDetails(visitId);
   const saveDraft = useSaveVisitDraft(visitId);
@@ -82,8 +84,8 @@ export function VisitWorkspacePage() {
   );
 
   if (!visitId) return <Navigate to="/visits" replace />;
-  if (details.isLoading) return <div className="state-card">Loading visit workspace...</div>;
-  if (details.isError || !details.data) return <div className="state-card error-box">Unable to load visit workspace.</div>;
+  if (details.isLoading) return <div className="state-card">{t("Loading visit workspace...","جارٍ تحميل مساحة عمل الزيارة...")}</div>;
+  if (details.isError || !details.data) return <div className="state-card error-box">{t("Unable to load visit workspace.","تعذر تحميل مساحة عمل الزيارة.")}</div>;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -101,15 +103,15 @@ export function VisitWorkspacePage() {
     <section className="page">
       <header className="page-heading">
         <div>
-          <Link className="back-link" to="/visits"><ArrowLeft size={14} />Visits</Link>
-          <span className="eyebrow">DOCTOR WORKSPACE</span>
+          <Link className="back-link" to="/visits"><ArrowLeft size={14} />{t("Visits","الزيارات")}</Link>
+          <span className="eyebrow">{t("DOCTOR WORKSPACE","مساحة عمل الطبيب")}</span>
           <h1>{details.data.visit.patientName}</h1>
           <p>
             <span dir="ltr">{details.data.visit.patientNumber}</span>
             {" · "}
-            {details.data.visit.status}
+            {visitStatusLabel(details.data.visit.status,t)}
             {" · "}
-            {details.data.visit.documentationStatus}
+            {documentationLabel(details.data.visit.documentationStatus,t)}
           </p>
         </div>
       </header>
@@ -118,47 +120,47 @@ export function VisitWorkspacePage() {
         <form className="card clinical-editor" onSubmit={submit}>
           <header className="section-head">
             <div>
-              <span className="eyebrow">CLINICAL DOCUMENTATION</span>
-              <h2>Visit notes</h2>
-              <p>Draft saves use concurrency protection to avoid overwriting newer changes.</p>
+              <span className="eyebrow">{t("CLINICAL DOCUMENTATION","التوثيق الطبي")}</span>
+              <h2>{t("Visit notes","ملاحظات الزيارة")}</h2>
+              <p>{t("Draft saves use concurrency protection to avoid overwriting newer changes.","يتم حفظ المسودة مع حماية من الكتابة فوق تعديلات أحدث.")}</p>
             </div>
             {canEdit && (
               <button className="primary-button" disabled={saveDraft.isPending}>
                 <Save size={15} />
-                {saveDraft.isPending ? "Saving..." : "Save draft"}
+                {saveDraft.isPending ? t("Saving...","جارٍ الحفظ...") : t("Save draft","حفظ المسودة")}
               </button>
             )}
           </header>
 
           <div className="clinical-form">
-            <label className="field">Chief complaint
+            <label className="field">{t("Chief complaint","الشكوى الرئيسية")}
               <textarea disabled={!canEdit} value={form.chiefComplaint} onChange={event => setForm({ ...form, chiefComplaint: event.target.value })} />
             </label>
-            <label className="field">Examination
+            <label className="field">{t("Examination","الفحص")}
               <textarea disabled={!canEdit} value={form.examination} onChange={event => setForm({ ...form, examination: event.target.value })} />
             </label>
-            <label className="field">Diagnosis
+            <label className="field">{t("Diagnosis","التشخيص")}
               <textarea disabled={!canEdit} value={form.diagnosis} onChange={event => setForm({ ...form, diagnosis: event.target.value })} />
             </label>
-            <label className="field">Treatment plan
+            <label className="field">{t("Treatment plan","خطة العلاج")}
               <textarea disabled={!canEdit} value={form.treatmentPlan} onChange={event => setForm({ ...form, treatmentPlan: event.target.value })} />
             </label>
-            <label className="field full-span">Notes
+            <label className="field full-span">{t("Notes","ملاحظات")}
               <textarea disabled={!canEdit} value={form.notes} onChange={event => setForm({ ...form, notes: event.target.value })} />
             </label>
           </div>
 
-          {saveDraft.isSuccess && <div className="save-state success">Draft saved.</div>}
-          {saveDraft.isError && <div className="save-state error-box">Draft changed or could not be saved. Reload the visit and try again.</div>}
+          {saveDraft.isSuccess && <div className="save-state success">{t("Draft saved.","تم حفظ المسودة.")}</div>}
+          {saveDraft.isError && <div className="save-state error-box">{t("Draft changed or could not be saved. Reload the visit and try again.","تعذر حفظ المسودة أو تم تعديلها من مستخدم آخر. أعد تحميل الزيارة وحاول مرة أخرى.")}</div>}
         </form>
 
 
         <section className="card clinical-order-card">
           <header className="section-head">
             <div>
-              <span className="eyebrow">CLINICAL ORDERS</span>
-              <h2>Prescription & orders</h2>
-              <p>Sections are configured by the clinic and saved against this visit.</p>
+              <span className="eyebrow">{t("CLINICAL ORDERS","الطلبات الطبية")}</span>
+              <h2>{t("Prescription & orders","الروشتة والطلبات")}</h2>
+              <p>{t("Sections are configured by the clinic and saved against this visit.","يتم إعداد الأقسام من العيادة وحفظها على هذه الزيارة.")}</p>
             </div>
             {canEdit && (
               <button
@@ -184,15 +186,15 @@ export function VisitWorkspacePage() {
                 }}
               >
                 <Save size={15} />
-                {saveClinicalOrder.isPending ? "Saving..." : "Save orders"}
+                {saveClinicalOrder.isPending ? t("Saving...","جارٍ الحفظ...") : t("Save orders","حفظ الطلبات")}
               </button>
             )}
           </header>
 
-          {orderDefinitions.isLoading && <div className="state-card">Loading clinical order sections...</div>}
-          {orderDefinitions.isError && <div className="error-box">Unable to load clinical order configuration.</div>}
+          {orderDefinitions.isLoading && <div className="state-card">{t("Loading clinical order sections...","جارٍ تحميل أقسام الطلبات الطبية...")}</div>}
+          {orderDefinitions.isError && <div className="error-box">{t("Unable to load clinical order configuration.","تعذر تحميل إعدادات الطلبات الطبية.")}</div>}
           {orderDefinitions.data?.length === 0 && (
-            <div className="mini-empty">No clinical order sections are configured yet.</div>
+            <div className="mini-empty">{t("No clinical order sections are configured yet.","لا توجد أقسام للطلبات الطبية مُعدة بعد.")}</div>
           )}
 
           <div className="clinical-order-sections">
@@ -216,7 +218,7 @@ export function VisitWorkspacePage() {
                     <textarea
                       disabled={!canEdit}
                       value={value.itemsText}
-                      placeholder="One item per line"
+                      placeholder={t("One item per line","عنصر واحد في كل سطر")}
                       onChange={event =>
                         setOrderValues(current => ({
                           ...current,
@@ -225,7 +227,7 @@ export function VisitWorkspacePage() {
                       }
                     />
                   ) : (
-                    <div className="mini-empty">Attachments for this section will use the file workflow.</div>
+                    <div className="mini-empty">{t("Attachments for this section will use the file workflow.","تُضاف مرفقات هذا القسم من خلال نظام الملفات.")}</div>
                   )}
                 </label>
               );
@@ -235,17 +237,17 @@ export function VisitWorkspacePage() {
 
           <div className="clinical-order-files">
             <div className="config-head">
-              <h3>Order attachments</h3>
+              <h3>{t("Order attachments","مرفقات الطلبات")}</h3>
               {canEdit && (
                 <div className="order-file-upload">
                   <select value={attachmentSection} onChange={event => setAttachmentSection(event.target.value)}>
-                    <option value="">Whole order</option>
+                    <option value="">{t("Whole order","الطلب بالكامل")}</option>
                     {(orderDefinitions.data ?? [])
                       .filter(definition => definition.sectionType === "Image" || definition.sectionType === "File")
                       .map(definition => <option key={definition.code} value={definition.code}>{definition.name}</option>)}
                   </select>
                   <label className="secondary-button file-picker">
-                    <Plus size={14} />Upload
+                    <Plus size={14} />{t("Upload","رفع")}
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx"
@@ -264,68 +266,68 @@ export function VisitWorkspacePage() {
               )}
             </div>
 
-            {orderFiles.isLoading && <div className="state-card">Loading order files...</div>}
-            {orderFiles.data?.length === 0 && <div className="mini-empty">No order attachments yet.</div>}
+            {orderFiles.isLoading && <div className="state-card">{t("Loading order files...","جارٍ تحميل مرفقات الطلبات...")}</div>}
+            {orderFiles.data?.length === 0 && <div className="mini-empty">{t("No order attachments yet.","لا توجد مرفقات للطلبات بعد.")}</div>}
             <div className="attachment-list">
               {orderFiles.data?.map(file => (
                 <button key={file.fileId} className="attachment-row" onClick={() => downloadFile(file)}>
                   <div>
                     <strong>{file.originalName}</strong>
-                    <small>{file.category || "Whole order"} · {formatBytes(file.size)}</small>
+                    <small>{file.category || t("Whole order","الطلب بالكامل")} · {formatBytes(file.size)}</small>
                   </div>
                   <span dir="ltr">{new Date(file.uploadedAtUtc).toLocaleString()}</span>
                 </button>
               ))}
             </div>
-            {uploadOrderFile.isError && <div className="error-box">Upload rejected. Save the order first and check file type/size.</div>}
+            {uploadOrderFile.isError && <div className="error-box">{t("Upload rejected. Save the order first and check file type/size.","تم رفض الرفع. احفظ الطلب أولًا وتحقق من نوع الملف وحجمه.")}</div>}
           </div>
 
-          {saveClinicalOrder.isSuccess && <div className="save-state success">Clinical orders saved.</div>}
-          {saveClinicalOrder.isError && <div className="error-box">Unable to save clinical orders.</div>}
+          {saveClinicalOrder.isSuccess && <div className="save-state success">{t("Clinical orders saved.","تم حفظ الطلبات الطبية.")}</div>}
+          {saveClinicalOrder.isError && <div className="error-box">{t("Unable to save clinical orders.","تعذر حفظ الطلبات الطبية.")}</div>}
         </section>
 
         <aside className="workspace-side">
           <section className="card">
             <header className="section-head">
-              <div><h2>Doctor session</h2><p>Only one session can be active at a time.</p></div>
+              <div><h2>{t("Doctor session","جلسة الطبيب")}</h2><p>{t("Only one session can be active at a time.","يمكن أن تكون هناك جلسة واحدة نشطة فقط في نفس الوقت.")}</p></div>
             </header>
 
             {activeSession ? (
               <div className="session-card active">
                 <strong>{activeSession.doctorName}</strong>
-                <small>Started {new Date(activeSession.startedAtUtc).toLocaleString()}</small>
+                <small>{t("Started","بدأت")} {new Date(activeSession.startedAtUtc).toLocaleString()}</small>
                 {canStart && (
                   <button className="secondary-button" disabled={endSession.isPending} onClick={() => endSession.mutate(activeSession.id)}>
-                    <Square size={14} />End session
+                    <Square size={14} />{t("End session","إنهاء الجلسة")}
                   </button>
                 )}
               </div>
             ) : (
               <div className="session-start">
-                <label className="field">Doctor
+                <label className="field">{t("Doctor","الطبيب")}
                   <select value={doctorId} onChange={event => setDoctorId(event.target.value)} disabled={!canStart}>
                     {details.data.availableDoctors.map(doctor => <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>)}
                   </select>
                 </label>
                 {canStart && (
                   <button className="primary-button" disabled={!doctorId || startSession.isPending} onClick={() => startSession.mutate(doctorId)}>
-                    <Play size={14} />Start session
+                    <Play size={14} />{t("Start session","بدء الجلسة")}
                   </button>
                 )}
               </div>
             )}
 
-            {(startSession.isError || endSession.isError) && <div className="error-box">Unable to change the active session.</div>}
+            {(startSession.isError || endSession.isError) && <div className="error-box">{t("Unable to change the active session.","تعذر تغيير الجلسة النشطة.")}</div>}
           </section>
 
           <section className="card">
             <header className="section-head">
-              <div><h2>Visit lifecycle</h2><p>Visit completion and documentation are separate states.</p></div>
+              <div><h2>{t("Visit lifecycle","دورة الزيارة")}</h2><p>{t("Visit completion and documentation are separate states.","إكمال الزيارة وإكمال التوثيق حالتان منفصلتان.")}</p></div>
             </header>
 
             <div className="visit-lifecycle">
-              <div><span>Visit</span><strong>{details.data.visit.status}</strong></div>
-              <div><span>Documentation</span><strong>{details.data.visit.documentationStatus}</strong></div>
+              <div><span>{t("Visit","الزيارة")}</span><strong>{visitStatusLabel(details.data.visit.status,t)}</strong></div>
+              <div><span>{t("Documentation","التوثيق")}</span><strong>{documentationLabel(details.data.visit.documentationStatus,t)}</strong></div>
             </div>
 
             {canEdit && details.data.visit.status === "Open" && (
@@ -334,7 +336,7 @@ export function VisitWorkspacePage() {
                 disabled={Boolean(activeSession) || completeVisit.isPending}
                 onClick={() => completeVisit.mutate(details.data!.visit.rowVersion)}
               >
-                {completeVisit.isPending ? "Completing..." : "Complete visit"}
+                {completeVisit.isPending ? t("Completing...","جارٍ الإكمال...") : t("Complete visit","إكمال الزيارة")}
               </button>
             )}
 
@@ -344,29 +346,29 @@ export function VisitWorkspacePage() {
                 disabled={finalizeDocumentation.isPending}
                 onClick={() => finalizeDocumentation.mutate(details.data!.visit.rowVersion)}
               >
-                {finalizeDocumentation.isPending ? "Finalizing..." : "Finalize documentation"}
+                {finalizeDocumentation.isPending ? t("Finalizing...","جارٍ الإنهاء...") : t("Finalize documentation","إنهاء التوثيق")}
               </button>
             )}
 
             {activeSession && details.data.visit.status === "Open" && (
-              <div className="lifecycle-note">End the active doctor session before completing the visit.</div>
+              <div className="lifecycle-note">{t("End the active doctor session before completing the visit.","أنه جلسة الطبيب النشطة قبل إكمال الزيارة.")}</div>
             )}
 
             {(completeVisit.isError || finalizeDocumentation.isError) && (
-              <div className="error-box">Visit state changed or workflow configuration is incomplete. Reload and try again.</div>
+              <div className="error-box">{t("Visit state changed or workflow configuration is incomplete. Reload and try again.","تغيرت حالة الزيارة أو إعدادات المسار غير مكتملة. أعد التحميل وحاول مرة أخرى.")}</div>
             )}
           </section>
 
           <section className="card">
-            <header className="section-head"><div><h2>Session history</h2></div></header>
+            <header className="section-head"><div><h2>{t("Session history","سجل الجلسات")}</h2></div></header>
             <div className="session-history">
-              {details.data.sessions.length === 0 && <div className="mini-empty">No doctor sessions yet.</div>}
+              {details.data.sessions.length === 0 && <div className="mini-empty">{t("No doctor sessions yet.","لا توجد جلسات أطباء بعد.")}</div>}
               {details.data.sessions.map(session => (
                 <div key={session.id}>
                   <strong>{session.doctorName}</strong>
                   <small>
                     {new Date(session.startedAtUtc).toLocaleString()}
-                    {session.endedAtUtc ? " → " + new Date(session.endedAtUtc).toLocaleString() : " · Active"}
+                    {session.endedAtUtc ? " → " + new Date(session.endedAtUtc).toLocaleString() : " · " + t("Active","نشطة")}
                   </small>
                 </div>
               ))}
@@ -383,4 +385,20 @@ function formatBytes(bytes: number) {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+}
+
+
+function visitStatusLabel(value:string,t:(english:string,arabic:string)=>string){
+  if(value==="Open") return t("Open","مفتوحة");
+  if(value==="Completed") return t("Completed","مكتملة");
+  if(value==="Cancelled") return t("Cancelled","ملغاة");
+  return value;
+}
+
+function documentationLabel(value:string,t:(english:string,arabic:string)=>string){
+  if(value==="NotStarted") return t("Not started","لم يبدأ");
+  if(value==="Draft") return t("Draft","مسودة");
+  if(value==="Pending") return t("Pending","معلق");
+  if(value==="Completed") return t("Completed","مكتمل");
+  return value;
 }
