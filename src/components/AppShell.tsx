@@ -1,6 +1,7 @@
-import { Bell, ChevronDown, Languages, Menu, Search } from "lucide-react";
-import { NavLink, Navigate, Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Languages, LogOut, Menu, Search, UserRound } from "lucide-react";
+import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
+import { FormEvent, useState } from "react";
+import { api } from "../lib/api/client";
 import { authSession } from "../features/auth/authSession";
 import { useI18n } from "../lib/i18n/i18n";
 
@@ -17,14 +18,43 @@ const nav = [
   ["Audit Log", "سجل التدقيق", "/audit", "Audit_View"]
 ] as const;
 
+const patientSearchKey = "auran.clinic.patient-search";
+
 export function AppShell() {
   const session = authSession.get();
+  const navigate = useNavigate();
   const [drawer, setDrawer] = useState(false);
+  const [userMenu, setUserMenu] = useState(false);
+  const [quickSearch, setQuickSearch] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const { locale, toggleLocale, t } = useI18n();
 
   if (!session) return <Navigate to="/login" replace />;
 
   const allowedNav = nav.filter(([, , , permission]) => authSession.hasPermission(permission));
+
+  function submitQuickSearch(event: FormEvent) {
+    event.preventDefault();
+    const value = quickSearch.trim();
+    if (!value) return;
+    sessionStorage.setItem(patientSearchKey, value);
+    navigate("/patients");
+    setQuickSearch("");
+  }
+
+  async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await api.post("/auth/logout", { refreshToken: session.refreshToken });
+    } catch {
+      // Local sign-out still proceeds if the network/API is unavailable.
+    } finally {
+      authSession.set(null);
+      setLoggingOut(false);
+      navigate("/login", { replace: true });
+    }
+  }
 
   return (
     <div className={`app-layout ${drawer ? "drawer-open" : ""}`}>
@@ -45,12 +75,35 @@ export function AppShell() {
       <main className="app-main">
         <header className="topbar">
           <button className="icon-button" onClick={() => setDrawer(value => !value)} aria-label={t("Toggle menu", "فتح أو إغلاق القائمة")}><Menu size={19} /></button>
-          <div className="global-search"><Search size={16} /><input placeholder={t("Search patient, visit, or report...", "ابحث عن مريض أو زيارة أو تقرير...")} /></div>
+
+          {authSession.hasPermission("Patient_View") ? (
+            <form className="global-search" onSubmit={submitQuickSearch}>
+              <Search size={16} />
+              <input
+                value={quickSearch}
+                onChange={event => setQuickSearch(event.target.value)}
+                placeholder={t("Quick patient search...", "بحث سريع عن مريض...")}
+                aria-label={t("Quick patient search", "بحث سريع عن مريض")}
+              />
+            </form>
+          ) : <div className="topbar-spacer" />}
+
           <div className="topbar-actions">
-            <button className="branch-button"><span>{t("Main Clinic", "العيادة الرئيسية")}</span><ChevronDown size={15} /></button>
             <button className="icon-button" onClick={toggleLocale} aria-label={t("Switch language", "تغيير اللغة")} title={locale === "ar" ? "English" : "العربية"}><Languages size={18} /></button>
-            <button className="icon-button" aria-label={t("Notifications", "الإشعارات")}><Bell size={18} /></button>
-            <div className="avatar">{session.user.fullName.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase()}</div>
+            <div className="user-menu-wrap">
+              <button className="avatar avatar-button" onClick={() => setUserMenu(value => !value)} aria-label={t("Open user menu", "فتح قائمة المستخدم")}>
+                {session.user.fullName.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase()}
+              </button>
+              {userMenu && (
+                <div className="user-menu">
+                  <div className="user-menu-head">
+                    <UserRound size={17} />
+                    <div><strong>{session.user.fullName}</strong><small>{session.user.email ?? ""}</small></div>
+                  </div>
+                  <button onClick={logout} disabled={loggingOut}><LogOut size={15} />{loggingOut ? t("Signing out...", "جارٍ تسجيل الخروج...") : t("Sign out", "تسجيل الخروج")}</button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         <div className="content"><Outlet /></div>
