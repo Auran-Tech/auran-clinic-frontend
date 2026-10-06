@@ -218,3 +218,25 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
 .auth-form .button {
   margin-top: 4px;
 }
+
+.visit-status-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.visit-status-card > div,
+.checkin-form {
+  display: grid;
+  gap: 8px;
+}
+
+.checkin-form {
+  max-width: 520px;
+}
+
+@media (max-width: 720px) {
+  .visit-status-card {
+    grid-template-columns: 1fr;
+  }
+}
