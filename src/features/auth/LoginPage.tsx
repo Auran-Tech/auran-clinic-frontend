@@ -2,16 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { login } from './api'
 import { useAuth } from './AuthContext'
-
-const loginSchema = z.object({
-  email: z.string().trim().email('Enter a valid email address.'),
-  password: z.string().min(1, 'Password is required.'),
-})
-
-type LoginForm = z.infer<typeof loginSchema>
+import { loginSchema, type LoginForm } from './schema'
 
 export function LoginPage() {
   const navigate = useNavigate()
