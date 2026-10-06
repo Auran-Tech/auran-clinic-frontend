@@ -2,6 +2,7 @@ import {
   createContext,
   type PropsWithChildren,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -37,6 +38,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSessionState(null)
     }
   }
+
+  useEffect(() => {
+    const handleExpired = () => {
+      clearSession()
+      setSessionState(null)
+    }
+    window.addEventListener('auran:session-expired', handleExpired)
+    return () => window.removeEventListener('auran:session-expired', handleExpired)
+  }, [])
 
   const value = useMemo<AuthContextValue>(() => ({
     session: sessionState,
