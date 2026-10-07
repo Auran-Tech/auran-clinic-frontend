@@ -141,6 +141,9 @@ export function PendingDocumentationPage() {
               <span>All doctors</span>
             </label>
           )}
+          {auth.hasPermission('FollowUp_View') && (
+            <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
+          )}
           <Link className="button secondary nav-button" to="/queue">Live queue</Link>
           <Link className="button secondary nav-button" to="/patients">Patients</Link>
         </div>
