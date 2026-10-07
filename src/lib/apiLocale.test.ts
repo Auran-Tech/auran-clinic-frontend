@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
+function normalizeApiLanguage(language: string | null) {
+  return language === 'ar' ? 'ar' : 'en'
+}
+
 describe('API language propagation', () => {
   it('normalizes unsupported values to English', () => {
-    const stored = 'fr'
-    const header = stored === 'ar' ? 'ar' : 'en'
-    expect(header).toBe('en')
+    expect(normalizeApiLanguage('fr')).toBe('en')
   })
 
   it('preserves Arabic', () => {
-    const stored = 'ar'
-    const header = stored === 'ar' ? 'ar' : 'en'
-    expect(header).toBe('ar')
+    expect(normalizeApiLanguage('ar')).toBe('ar')
   })
 })
