@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+function parseBooleanDraft(raw: string) {
+  return raw === '' ? undefined : raw === 'true'
+}
+
 describe('dynamic patient profile serialization', () => {
   it('serializes multi-select values as JSON', () => {
     const selected = ['A', 'B']
@@ -7,9 +11,7 @@ describe('dynamic patient profile serialization', () => {
   })
 
   it('preserves false as a meaningful boolean value', () => {
-    const raw = 'false'
-    const value = raw === '' ? undefined : raw === 'true'
-    expect(value).toBe(false)
+    expect(parseBooleanDraft('false')).toBe(false)
   })
 
   it('treats empty optional text as undefined', () => {
