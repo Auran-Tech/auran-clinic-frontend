@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPanel'
+import { PatientProfileConfigurationPanel } from '../patientProfileAdmin/PatientProfileConfigurationPanel'
 import {
   getClinicSettings,
   getClinicSettingsLookups,
@@ -401,6 +402,8 @@ export function SettingsPage() {
           </section>
 
           <WorkflowConfigurationPanel />
+
+          <PatientProfileConfigurationPanel />
 
           {canManage && (
             <section className="settings-save-bar">
