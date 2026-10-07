@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
+import { NotFoundPage } from './NotFoundPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { ProtectedRoute } from '../features/auth/ProtectedRoute'
 import { PatientDetailsPage } from '../features/patients/PatientDetailsPage'
@@ -96,7 +97,14 @@ export function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/patients" replace />} />
+      <Route
+        path="*"
+        element={
+          <ProtectedRoute>
+            <NotFoundPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }
