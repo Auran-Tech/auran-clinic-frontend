@@ -11,7 +11,6 @@ import {
   setEmployeeStatus,
   updateEmployee,
 } from './api'
-import type { Employee } from './types'
 
 export function EmployeesPage() {
   const auth = useAuth()
