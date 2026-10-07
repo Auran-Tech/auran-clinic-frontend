@@ -7,6 +7,7 @@ import { QueuePage } from '../features/queue/QueuePage'
 import { PendingDocumentationPage } from '../features/pendingDocumentation/PendingDocumentationPage'
 import { FollowUpsPage } from '../features/followUps/FollowUpsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
+import { SettingsPage } from '../features/settings/SettingsPage'
 
 export function App() {
   return (
@@ -57,6 +58,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <EmployeesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
