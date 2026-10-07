@@ -115,6 +115,7 @@ export function SettingsPage() {
           </p>
         </div>
         <div className="actions">
+          <Link className="button secondary nav-button" to="/guide">Guide</Link>
           {auth.hasPermission('Audit_View') && (
             <Link className="button secondary nav-button" to="/audit">Audit</Link>
           )}
