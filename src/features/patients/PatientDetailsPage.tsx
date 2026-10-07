@@ -8,6 +8,7 @@ import { getPatient, updatePatient } from './api'
 import { getDoctors } from '../users/api'
 import { getActiveVisit, startVisit } from '../visits/api'
 import { ClinicalWorkspace } from '../clinicalSessions/ClinicalWorkspace'
+import { PatientAttachmentsPanel } from '../attachments/PatientAttachmentsPanel'
 import { patientSchema, type PatientFormValues } from './schema'
 
 export function PatientDetailsPage() {
@@ -172,6 +173,8 @@ export function PatientDetailsPage() {
       {activeVisitQuery.data && (
         <ClinicalWorkspace visitId={activeVisitQuery.data.id} />
       )}
+
+      <PatientAttachmentsPanel patientId={patient.id} />
 
       {editing ? (
         <section className="panel">
