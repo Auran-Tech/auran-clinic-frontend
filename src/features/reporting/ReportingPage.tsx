@@ -69,6 +69,9 @@ export function ReportingPage() {
           </p>
         </div>
         <div className="actions">
+          {auth.hasPermission('Audit_View') && (
+            <Link className="button secondary nav-button" to="/audit">Audit</Link>
+          )}
           {auth.hasPermission('Settings_View') && (
             <Link className="button secondary nav-button" to="/settings">Settings</Link>
           )}
