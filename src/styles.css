@@ -1160,3 +1160,60 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.order-attachment-link-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.order-attachment-sections,
+.order-attachment-list {
+  display: grid;
+  gap: 14px;
+}
+
+.order-attachment-section {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e2e7eb;
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.order-attachment-section-heading,
+.order-attachment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.order-attachment-section-heading h3 {
+  margin: 4px 0 0;
+}
+
+.order-attachment-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: white;
+}
+
+.order-attachment-card p {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 760px) {
+  .order-attachment-link-form {
+    grid-template-columns: 1fr;
+  }
+
+  .order-attachment-section-heading,
+  .order-attachment-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
