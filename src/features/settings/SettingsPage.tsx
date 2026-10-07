@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPanel'
 import { PatientProfileConfigurationPanel } from '../patientProfileAdmin/PatientProfileConfigurationPanel'
+import { ClinicalFieldConfigurationPanel } from '../clinicalFieldAdmin/ClinicalFieldConfigurationPanel'
 import {
   getClinicSettings,
   getClinicSettingsLookups,
@@ -404,6 +405,8 @@ export function SettingsPage() {
           <WorkflowConfigurationPanel />
 
           <PatientProfileConfigurationPanel />
+
+          <ClinicalFieldConfigurationPanel />
 
           {canManage && (
             <section className="settings-save-bar">
