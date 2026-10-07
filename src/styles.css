@@ -1132,3 +1132,31 @@ select {
     flex-direction: column;
   }
 }
+
+.clinical-measurement-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.clinical-measurement-actions {
+  margin-top: 20px;
+}
+
+.clinical-measurement-history {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #edf0f2;
+}
+
+.clinical-measurement-history h3 {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .clinical-measurement-entry-grid {
+    grid-template-columns: 1fr;
+  }
+}
