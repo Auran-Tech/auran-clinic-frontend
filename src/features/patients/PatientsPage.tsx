@@ -84,6 +84,7 @@ export function PatientsPage() {
           </p>
         </div>
         <div className="actions">
+          <Link className="button secondary nav-button" to="/guide">Guide</Link>
           {auth.hasPermission('Patient_Create') && (
             <button className="button primary" onClick={() => setShowForm((value) => !value)}>
               {showForm ? 'Close' : 'Add patient'}
