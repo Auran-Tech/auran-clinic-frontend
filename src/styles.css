@@ -1028,3 +1028,107 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.profile-config-create-row,
+.profile-config-section-form,
+.profile-config-new-field,
+.profile-config-field-form,
+.profile-config-option-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.profile-config-create-row {
+  margin-bottom: 22px;
+}
+
+.profile-config-sections,
+.profile-config-fields,
+.profile-config-option-list {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-config-section-card,
+.profile-config-field-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #e2e7eb;
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.profile-config-section-header,
+.profile-config-field-heading,
+.profile-config-options-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-config-section-header h3 {
+  margin: 0;
+}
+
+.profile-config-new-field,
+.profile-config-options {
+  padding-top: 16px;
+  border-top: 1px solid #e2e7eb;
+}
+
+.profile-config-options {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-config-option-editor {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) 90px auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-config-option-readonly {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: white;
+}
+
+@media (max-width: 1050px) {
+  .profile-config-create-row,
+  .profile-config-section-form,
+  .profile-config-new-field,
+  .profile-config-field-form,
+  .profile-config-option-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-config-option-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .profile-config-create-row,
+  .profile-config-section-form,
+  .profile-config-new-field,
+  .profile-config-field-form,
+  .profile-config-option-form,
+  .profile-config-option-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-config-options-heading,
+  .profile-config-option-readonly {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
