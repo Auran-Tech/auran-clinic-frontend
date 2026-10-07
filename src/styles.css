@@ -943,3 +943,88 @@ select {
     transition-duration: .01ms !important;
   }
 }
+
+.dynamic-profile-sections {
+  display: grid;
+  gap: 20px;
+}
+
+.dynamic-profile-section {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid #edf0f2;
+}
+
+.dynamic-profile-section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.dynamic-profile-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dynamic-profile-section-heading h3 {
+  margin: 0;
+}
+
+.dynamic-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dynamic-profile-actions {
+  margin-top: 20px;
+}
+
+.dynamic-multi-select {
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #e2e7eb;
+  border-radius: 12px;
+}
+
+.dynamic-multi-select legend {
+  padding-inline: 6px;
+  font-weight: 600;
+}
+
+.dynamic-option-list {
+  display: grid;
+  gap: 8px;
+}
+
+.dynamic-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dynamic-option input {
+  width: auto;
+  min-height: auto;
+}
+
+.dynamic-file-field {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px dashed #d8dee3;
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.dynamic-file-field p {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .dynamic-profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
