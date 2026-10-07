@@ -10,6 +10,7 @@ import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { ReportingPage } from '../features/reporting/ReportingPage'
 import { AuditPage } from '../features/audit/AuditPage'
+import { SystemGuidePage } from '../features/guide/SystemGuidePage'
 
 export function App() {
   return (
@@ -84,6 +85,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <AuditPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/guide"
+        element={
+          <ProtectedRoute>
+            <SystemGuidePage />
           </ProtectedRoute>
         }
       />
