@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPanel'
 import {
   getClinicSettings,
   getClinicSettingsLookups,
@@ -397,6 +398,8 @@ export function SettingsPage() {
               </label>
             </div>
           </section>
+
+          <WorkflowConfigurationPanel />
 
           {canManage && (
             <section className="settings-save-bar">
