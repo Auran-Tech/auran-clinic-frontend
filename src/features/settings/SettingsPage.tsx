@@ -114,6 +114,9 @@ export function SettingsPage() {
           </p>
         </div>
         <div className="actions">
+          {auth.hasPermission('Reports_View') && (
+            <Link className="button secondary nav-button" to="/reports">Dashboard</Link>
+          )}
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
             <Link className="button secondary nav-button" to="/employees">Employees</Link>
           )}
