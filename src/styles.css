@@ -360,3 +360,19 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
     flex-direction: column;
   }
 }
+
+.pending-editor {
+  display: grid;
+  gap: 20px;
+}
+
+.inline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.inline-toggle input {
+  width: auto;
+}
