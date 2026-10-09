@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -10,12 +11,13 @@ import type { PendingDocumentation } from './types'
 
 function PendingDocumentationEditor({
   item,
-  onClose,
+  on{t('pendingDocs.close')},
 }: {
   item: PendingDocumentation
-  onClose: () => void
+  on{t('pendingDocs.close')}: () => void
 }) {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const [chiefComplaint, setChiefComplaint] = useState(item.chiefComplaint ?? '')
   const [examination, setExamination] = useState(item.examination ?? '')
   const [diagnosis, setDiagnosis] = useState(item.diagnosis ?? '')
@@ -34,7 +36,7 @@ function PendingDocumentationEditor({
     mutationFn: completePendingDocumentation,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['pending-documentation'] })
-      onClose()
+      on{t('pendingDocs.close')}()
     },
   })
 
@@ -53,28 +55,28 @@ function PendingDocumentationEditor({
           <h2>{item.patientName}</h2>
           <p className="muted mono">{item.patientNumber}</p>
         </div>
-        <button className="button secondary" onClick={onClose}>Close</button>
+        <button className="button secondary" onClick={on{t('pendingDocs.close')}}>{t('pendingDocs.close')}</button>
       </div>
 
       <div className="clinical-form">
         <label>
-          <span>Chief complaint</span>
+          <span>{t('clinicalWorkspace.chiefComplaint')}</span>
           <textarea rows={3} value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} />
         </label>
         <label>
-          <span>Examination</span>
+          <span>{t('clinicalWorkspace.examination')}</span>
           <textarea rows={4} value={examination} onChange={(e) => setExamination(e.target.value)} />
         </label>
         <label>
-          <span>Diagnosis</span>
+          <span>{t('clinicalWorkspace.diagnosis')}</span>
           <textarea rows={4} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
         </label>
         <label>
-          <span>Treatment plan</span>
+          <span>{t('clinicalWorkspace.treatmentPlan')}</span>
           <textarea rows={4} value={treatmentPlan} onChange={(e) => setTreatmentPlan(e.target.value)} />
         </label>
         <label className="full-width">
-          <span>Clinical notes</span>
+          <span>{t('clinicalWorkspace.notes')}</span>
           <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </label>
       </div>
@@ -92,12 +94,12 @@ function PendingDocumentationEditor({
             treatmentPlan: treatmentPlan || undefined,
           })}
         >
-          {mutation.isPending ? 'Completing…' : 'Complete documentation'}
+          {mutation.isPending ? t('pendingDocs.completing') : t('pendingDocs.complete')}
         </button>
       </div>
 
       {mutation.isError && (
-        <p className="field-error">Unable to complete this documentation.</p>
+        <p className="field-error">{t('pendingDocs.completeError')}</p>
       )}
     </section>
   )
@@ -105,6 +107,7 @@ function PendingDocumentationEditor({
 
 export function PendingDocumentationPage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<PendingDocumentation | null>(null)
   const [mineOnly, setMineOnly] = useState(true)
 
@@ -117,7 +120,7 @@ export function PendingDocumentationPage() {
   if (!auth.hasPermission('Visit_View')) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view pending documentation.</p>
+        <p className="state error">{t('pendingDocs.denied')}</p>
       </main>
     )
   }
@@ -126,9 +129,9 @@ export function PendingDocumentationPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Clinical operations</p>
-          <h1>Pending documentation</h1>
-          <p className="muted">Finish Draft or Pending visit notes after the operational visit ends.</p>
+          <p className="eyebrow">{t('pendingDocs.eyebrow')}</p>
+          <h1>{t('pendingDocs.title')}</h1>
+          <p className="muted">{t('pendingDocs.intro')}</p>
         </div>
         <div className="actions">
           {auth.session?.user.isSuperUser && (
@@ -138,32 +141,32 @@ export function PendingDocumentationPage() {
                 checked={!mineOnly}
                 onChange={(event) => setMineOnly(!event.target.checked)}
               />
-              <span>All doctors</span>
+              <span>{t('pendingDocs.allDoctors')}</span>
             </label>
           )}
           {auth.hasPermission('FollowUp_View') && (
-            <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
+            <Link className="button secondary nav-button" to="/follow-ups">{t('common.followUps')}</Link>
           )}
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/queue">{t('common.queue')}</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
       <section className="panel">
-        {query.isLoading && <p className="state">Loading pending documentation…</p>}
-        {query.isError && <p className="state error">Unable to load pending documentation.</p>}
-        {query.data?.length === 0 && <p className="state">No pending documentation.</p>}
+        {query.isLoading && <p className="state">{t('pendingDocs.loading')}</p>}
+        {query.isError && <p className="state error">{t('pendingDocs.loadError')}</p>}
+        {query.data?.length === 0 && <p className="state">{t('pendingDocs.empty')}</p>}
 
         {query.data && query.data.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Visit</th>
-                  <th>Documentation</th>
-                  <th>Started</th>
+                  <th>{t('pendingDocs.patient')}</th>
+                  <th>{t('pendingDocs.doctor')}</th>
+                  <th>{t('pendingDocs.visit')}</th>
+                  <th>{t('pendingDocs.documentation')}</th>
+                  <th>{t('pendingDocs.started')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -183,7 +186,7 @@ export function PendingDocumentationPage() {
                     <td>
                       {auth.hasPermission('Visit_Edit') && (
                         <button className="button secondary" onClick={() => setSelected(item)}>
-                          Finish note
+                          {t('pendingDocs.finishNote')}
                         </button>
                       )}
                     </td>
@@ -197,7 +200,7 @@ export function PendingDocumentationPage() {
 
       {selected && (
         <section className="panel">
-          <PendingDocumentationEditor item={selected} onClose={() => setSelected(null)} />
+          <PendingDocumentationEditor item={selected} on{t('pendingDocs.close')}={() => setSelected(null)} />
         </section>
       )}
     </main>
