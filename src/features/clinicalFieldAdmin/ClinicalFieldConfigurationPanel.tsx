@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -29,6 +30,7 @@ const fieldTypes = [
 
 export function ClinicalFieldConfigurationPanel() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
@@ -72,24 +74,24 @@ export function ClinicalFieldConfigurationPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical measurement configuration</h2>
+          <h2>{t('adminConfig.clinicalFields.title')}</h2>
           <p className="muted">
-            Configure typed measurement fields used in the doctor clinical workspace.
+            {t('adminConfig.clinicalFields.intro')}
           </p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading clinical field configuration…</p>}
-      {query.isError && <p className="state error">Unable to load clinical field configuration.</p>}
+      {query.isLoading && <p className="state">{t('adminConfig.clinicalFields.loading')}</p>}
+      {query.isError && <p className="state error">{t('adminConfig.clinicalFields.loadError')}</p>}
 
       {canManage && (
         <div className="profile-config-create-row">
           <label>
-            <span>New field name</span>
+            <span>{t('adminConfig.clinicalFields.newField')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('adminConfig.type')}</span>
             <select value={fieldType} onChange={(event) => setFieldType(event.target.value)}>
               {fieldTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
@@ -97,7 +99,7 @@ export function ClinicalFieldConfigurationPanel() {
             </select>
           </label>
           <label>
-            <span>Unit</span>
+            <span>{t('adminConfig.unit')}</span>
             <input
               value={unit}
               onChange={(event) => setUnit(event.target.value)}
@@ -105,7 +107,7 @@ export function ClinicalFieldConfigurationPanel() {
             />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -119,14 +121,14 @@ export function ClinicalFieldConfigurationPanel() {
               disabled={!name.trim() || sortOrder < 0 || createMutation.isPending}
               onClick={() => createMutation.mutate()}
             >
-              {createMutation.isPending ? 'Adding…' : 'Add clinical field'}
+              {createMutation.isPending ? t('adminConfig.adding') : t('adminConfig.clinicalFields.addField')}
             </button>
           </div>
         </div>
       )}
 
       {createMutation.isError && (
-        <p className="field-error">Unable to create clinical field.</p>
+        <p className="field-error">{t('adminConfig.clinicalFields.createError')}</p>
       )}
 
       <div className="profile-config-fields">
@@ -141,7 +143,7 @@ export function ClinicalFieldConfigurationPanel() {
       </div>
 
       {query.data?.fields.length === 0 && (
-        <p className="state">No clinical measurement fields are configured.</p>
+        <p className="state">{t('adminConfig.clinicalFields.empty')}</p>
       )}
     </section>
   )
@@ -156,6 +158,7 @@ function ClinicalFieldEditor({
   canManage: boolean
   onConfiguration: (configuration: ClinicalFieldAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(field.name)
   const [fieldType, setFieldType] = useState(field.fieldType)
   const [unit, setUnit] = useState(field.unit ?? '')
@@ -211,8 +214,8 @@ function ClinicalFieldEditor({
           <div className="role-badges">
             <span className="role-badge">{field.fieldType}</span>
             {field.unit && <span className="role-badge">{field.unit}</span>}
-            {!field.isEnabled && <span className="role-badge">Disabled</span>}
-            {field.hasMeasurements && <span className="role-badge">Has history</span>}
+            {!field.isEnabled && <span className="role-badge">{t('adminConfig.disabled')}</span>}
+            {field.hasMeasurements && <span className="role-badge">{t('adminConfig.hasHistory')}</span>}
           </div>
         </div>
       </div>
@@ -220,11 +223,11 @@ function ClinicalFieldEditor({
       {canManage && (
         <div className="profile-config-field-form">
           <label>
-            <span>Name</span>
+            <span>{t('adminConfig.name')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('adminConfig.type')}</span>
             <select
               value={fieldType}
               disabled={field.hasMeasurements}
@@ -236,11 +239,11 @@ function ClinicalFieldEditor({
             </select>
           </label>
           <label>
-            <span>Unit</span>
+            <span>{t('adminConfig.unit')}</span>
             <input value={unit} onChange={(event) => setUnit(event.target.value)} />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -254,7 +257,7 @@ function ClinicalFieldEditor({
               checked={isEnabled}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('adminConfig.enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -262,7 +265,7 @@ function ClinicalFieldEditor({
               disabled={!name.trim() || sortOrder < 0 || updateMutation.isPending}
               onClick={() => updateMutation.mutate()}
             >
-              {updateMutation.isPending ? 'Saving…' : 'Save field'}
+              {updateMutation.isPending ? t('adminConfig.saving') : t('adminConfig.save')}
             </button>
           </div>
         </div>
@@ -270,21 +273,21 @@ function ClinicalFieldEditor({
 
       {field.hasMeasurements && canManage && (
         <p className="muted">
-          Field type is locked because measurement history already exists. Name, unit, order, and enabled state remain editable.
+          {t('adminConfig.clinicalFields.typeLocked')}
         </p>
       )}
 
       {updateMutation.isError && (
-        <p className="field-error">Unable to update this clinical field.</p>
+        <p className="field-error">{t('adminConfig.clinicalFields.updateError')}</p>
       )}
 
       {isSelect && (
         <div className="profile-config-options">
           <div className="profile-config-options-heading">
-            <strong>Options</strong>
+            <strong>{t('adminConfig.options')}</strong>
             {field.hasMeasurements && (
               <span className="muted">
-                Option values/delete are locked once measurement history exists.
+                {t('adminConfig.clinicalFields.optionLocked')}
               </span>
             )}
           </div>
@@ -292,21 +295,21 @@ function ClinicalFieldEditor({
           {canManage && (
             <div className="profile-config-option-form">
               <label>
-                <span>Label</span>
+                <span>{t('adminConfig.label')}</span>
                 <input
                   value={optionLabel}
                   onChange={(event) => setOptionLabel(event.target.value)}
                 />
               </label>
               <label>
-                <span>Value</span>
+                <span>{t('adminConfig.value')}</span>
                 <input
                   value={optionValue}
                   onChange={(event) => setOptionValue(event.target.value)}
                 />
               </label>
               <label>
-                <span>Order</span>
+                <span>{t('adminConfig.order')}</span>
                 <input
                   type="number"
                   min="0"
@@ -325,14 +328,14 @@ function ClinicalFieldEditor({
                   }
                   onClick={() => createOptionMutation.mutate()}
                 >
-                  {createOptionMutation.isPending ? 'Adding…' : 'Add option'}
+                  {createOptionMutation.isPending ? t('adminConfig.adding') : t('adminConfig.clinicalFields.addOption')}
                 </button>
               </div>
             </div>
           )}
 
           {createOptionMutation.isError && (
-            <p className="field-error">Unable to add option. Values must be unique.</p>
+            <p className="field-error">{t('adminConfig.clinicalFields.addOptionError')}</p>
           )}
 
           <div className="profile-config-option-list">
@@ -363,6 +366,7 @@ function ClinicalFieldOptionEditor({
   canManage: boolean
   onConfiguration: (configuration: ClinicalFieldAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [label, setLabel] = useState(option.label)
   const [value, setValue] = useState(option.value)
   const [sortOrder, setSortOrder] = useState(option.sortOrder)
@@ -400,18 +404,18 @@ function ClinicalFieldOptionEditor({
   return (
     <div className="profile-config-option-editor">
       <input
-        aria-label="Clinical option label"
+        aria-label={t('adminConfig.label')}
         value={label}
         onChange={(event) => setLabel(event.target.value)}
       />
       <input
-        aria-label="Clinical option value"
+        aria-label={t('adminConfig.value')}
         value={value}
         disabled={hasMeasurements}
         onChange={(event) => setValue(event.target.value)}
       />
       <input
-        aria-label="Clinical option sort order"
+        aria-label={t('adminConfig.sortOrder')}
         type="number"
         min="0"
         value={sortOrder}
@@ -423,20 +427,20 @@ function ClinicalFieldOptionEditor({
           disabled={!label.trim() || !value.trim() || sortOrder < 0 || updateMutation.isPending}
           onClick={() => updateMutation.mutate()}
         >
-          Save
+          {t('adminConfig.save')}
         </button>
         <button
           className="button danger"
           disabled={hasMeasurements || deleteMutation.isPending}
           onClick={() => deleteMutation.mutate()}
         >
-          Delete
+          {t('adminConfig.delete')}
         </button>
       </div>
 
       {(updateMutation.isError || deleteMutation.isError) && (
         <p className="field-error full-width">
-          Unable to change this option. Existing measurement history may protect it.
+          {t('adminConfig.clinicalFields.optionChangeError')}
         </p>
       )}
     </div>
