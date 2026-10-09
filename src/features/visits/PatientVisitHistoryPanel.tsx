@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { getPatientVisitHistory } from './api'
 
 export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
+  const { t } = useTranslation()
   const [page, setPage] = useState(1)
   const pageSize = 10
 
@@ -15,18 +17,18 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Visit history</h2>
+          <h2>{t('visitHistory.title')}</h2>
           <p className="muted">
-            Previous and active clinic encounters, newest first.
+            {t('visitHistory.intro')}
           </p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading visit history…</p>}
-      {query.isError && <p className="state error">Unable to load visit history.</p>}
+      {query.isLoading && <p className="state">{t('visitHistory.loading')}</p>}
+      {query.isError && <p className="state error">{t('visitHistory.loadError')}</p>}
 
       {query.data && query.data.visits.data.length === 0 && (
-        <p className="state">No clinic visits recorded for this patient.</p>
+        <p className="state">{t('visitHistory.empty')}</p>
       )}
 
       {query.data && query.data.visits.data.length > 0 && (
@@ -37,7 +39,7 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
                 <div className="visit-history-heading">
                   <div>
                     <strong>{new Date(visit.entryAtUtc).toLocaleString()}</strong>
-                    <p className="muted">Dr. {visit.doctorName}</p>
+                    <p className="muted">{t('visitHistory.doctorPrefix')} {visit.doctorName}</p>
                   </div>
                   <div className="role-badges">
                     <span className="role-badge">{visit.status}</span>
@@ -47,11 +49,11 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
 
                 <div className="visit-history-meta">
                   <div>
-                    <span className="profile-label">Sessions</span>
+                    <span className="profile-label">{t('visitHistory.sessions')}</span>
                     <strong>{visit.sessionCount}</strong>
                   </div>
                   <div>
-                    <span className="profile-label">Completed</span>
+                    <span className="profile-label">{t('visitHistory.completed')}</span>
                     <strong>
                       {visit.completedAtUtc
                         ? new Date(visit.completedAtUtc).toLocaleString()
@@ -59,7 +61,7 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
                     </strong>
                   </div>
                   <div>
-                    <span className="profile-label">Exited</span>
+                    <span className="profile-label">{t('visitHistory.exited')}</span>
                     <strong>
                       {visit.exitAtUtc
                         ? new Date(visit.exitAtUtc).toLocaleString()
@@ -72,13 +74,13 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
                   <div className="visit-history-summary">
                     {visit.chiefComplaint && (
                       <div>
-                        <span className="profile-label">Chief complaint</span>
+                        <span className="profile-label">{t('visitHistory.chiefComplaint')}</span>
                         <p>{visit.chiefComplaint}</p>
                       </div>
                     )}
                     {visit.diagnosis && (
                       <div>
-                        <span className="profile-label">Diagnosis</span>
+                        <span className="profile-label">{t('visitHistory.diagnosis')}</span>
                         <p>{visit.diagnosis}</p>
                       </div>
                     )}
@@ -90,9 +92,7 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
 
           <div className="visit-history-pagination">
             <span className="muted">
-              Page {query.data.visits.setting.currentPage} of{' '}
-              {query.data.visits.setting.totalPage} ·{' '}
-              {query.data.visits.setting.totalCount} visits
+              {t('visitHistory.page', { current: query.data.visits.setting.currentPage, total: query.data.visits.setting.totalPage, count: query.data.visits.setting.totalCount })}
             </span>
             <div className="actions">
               <button
@@ -100,14 +100,14 @@ export function PatientVisitHistoryPanel({ patientId }: { patientId: string }) {
                 disabled={page <= 1}
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
               >
-                Newer
+                {t('visitHistory.newer')}
               </button>
               <button
                 className="button secondary"
                 disabled={page >= query.data.visits.setting.totalPage}
                 onClick={() => setPage((current) => current + 1)}
               >
-                Older
+                {t('visitHistory.older')}
               </button>
             </div>
           </div>
