@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   deletePatientAttachment,
@@ -10,6 +11,7 @@ import {
 
 export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Files_View')
   const canUpload = auth.hasPermission('Files_Upload')
@@ -46,15 +48,15 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Attachments</h2>
-          <p className="muted">Images and PDFs linked to this patient.</p>
+          <h2>{t('attachments.title')}</h2>
+          <p className="muted">{t('attachments.intro')}</p>
         </div>
       </div>
 
       {canUpload && (
         <div className="attachment-upload">
           <label>
-            <span>File</span>
+            <span>{t('attachments.file')}</span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -63,12 +65,12 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
           </label>
 
           <label>
-            <span>Category</span>
-            <input value={category} onChange={(event) => setCategory(event.target.value)} placeholder="e.g. Lab, Scan, Prescription" />
+            <span>{t('attachments.category')}</span>
+            <input value={category} onChange={(event) => setCategory(event.target.value)} placeholder={t('attachments.categoryPlaceholder')} />
           </label>
 
           <label className="full-width">
-            <span>Notes</span>
+            <span>{t('attachments.notes')}</span>
             <textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} />
           </label>
 
@@ -83,23 +85,23 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
                 notes: notes || undefined,
               })}
             >
-              {uploadMutation.isPending ? 'Uploading…' : 'Upload attachment'}
+              {uploadMutation.isPending ? t('attachments.uploading') : t('attachments.upload')}
             </button>
           </div>
 
           {uploadMutation.isError && (
             <p className="field-error full-width">
-              Upload failed. Use JPEG, PNG, WebP, or PDF up to 10 MB.
+              {t('attachments.uploadError')}
             </p>
           )}
         </div>
       )}
 
-      {attachmentsQuery.isLoading && <p className="state">Loading attachments…</p>}
-      {attachmentsQuery.isError && <p className="state error">Unable to load attachments.</p>}
+      {attachmentsQuery.isLoading && <p className="state">{t('attachments.loading')}</p>}
+      {attachmentsQuery.isError && <p className="state error">{t('attachments.loadError')}</p>}
 
       {attachmentsQuery.data && attachmentsQuery.data.length === 0 && (
-        <p className="state">No attachments uploaded.</p>
+        <p className="state">{t('attachments.empty')}</p>
       )}
 
       {attachmentsQuery.data && attachmentsQuery.data.length > 0 && (
@@ -109,7 +111,7 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
               <div>
                 <strong>{attachment.originalName}</strong>
                 <p className="muted">
-                  {attachment.category || 'Uncategorized'} · {(attachment.size / 1024).toFixed(1)} KB
+                  {attachment.category || t('attachments.uncategorized')} · {(attachment.size / 1024).toFixed(1)} KB
                 </p>
                 {attachment.notes && <p>{attachment.notes}</p>}
               </div>
@@ -119,7 +121,7 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
                   className="button secondary"
                   onClick={() => void downloadPatientAttachment(attachment.fileId, attachment.originalName)}
                 >
-                  Download
+                  {t('attachments.download')}
                 </button>
                 {canUpload && (
                   <button
@@ -127,7 +129,7 @@ export function PatientAttachmentsPanel({ patientId }: { patientId: string }) {
                     disabled={deleteMutation.isPending}
                     onClick={() => deleteMutation.mutate(attachment.attachmentId)}
                   >
-                    Delete
+                    {t('attachments.delete')}
                   </button>
                 )}
               </div>

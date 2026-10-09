@@ -1,14 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { cancelFollowUp, completeFollowUp, getFollowUps } from './api'
 import type { FollowUpBucket } from './types'
 
-const buckets: FollowUpBucket[] = ['Today', 'Upcoming', 'Overdue', 'Completed']
+const buckets: { value: FollowUpBucket; labelKey: string }[] = [
+  { value: 'Today', labelKey: 'followUps.today' },
+  { value: 'Upcoming', labelKey: 'followUps.upcoming' },
+  { value: 'Overdue', labelKey: 'followUps.overdue' },
+  { value: 'Completed', labelKey: 'followUps.completed' },
+]
 
 export function FollowUpsPage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [bucket, setBucket] = useState<FollowUpBucket>('Today')
 
@@ -35,7 +42,7 @@ export function FollowUpsPage() {
   if (!auth.hasPermission('FollowUp_View')) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view follow-ups.</p>
+        <p className="state error">{t('followUps.denied')}</p>
       </main>
     )
   }
@@ -44,49 +51,49 @@ export function FollowUpsPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Patient continuity</p>
-          <h1>Follow-ups</h1>
-          <p className="muted">Today, upcoming, overdue, and completed patient reviews.</p>
+          <p className="eyebrow">{t('followUps.eyebrow')}</p>
+          <h1>{t('followUps.title')}</h1>
+          <p className="muted">{t('followUps.intro')}</p>
         </div>
         <div className="actions">
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">Employees</Link>
+            <Link className="button secondary nav-button" to="/employees">{t('common.employees')}</Link>
           )}
           <Link className="button secondary nav-button" to="/pending-documentation">
-            Pending documentation
+            {t('common.pendingDocumentation')}
           </Link>
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/queue">{t('common.queue')}</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
       <section className="panel">
-        <div className="bucket-tabs" role="tablist" aria-label="Follow-up status">
+        <div className="bucket-tabs" role="tablist" aria-label={t('followUps.statusAria')}>
           {buckets.map((item) => (
             <button
-              key={item}
-              className={`button ${bucket === item ? 'primary' : 'secondary'}`}
-              onClick={() => setBucket(item)}
+              key={item.value}
+              className={`button ${bucket === item.value ? 'primary' : 'secondary'}`}
+              onClick={() => setBucket(item.value)}
             >
-              {item}
+              {t(item.labelKey)}
             </button>
           ))}
         </div>
 
-        {query.isLoading && <p className="state">Loading follow-ups…</p>}
-        {query.isError && <p className="state error">Unable to load follow-ups.</p>}
-        {query.data?.length === 0 && <p className="state">No {bucket.toLowerCase()} follow-ups.</p>}
+        {query.isLoading && <p className="state">{t('followUps.loading')}</p>}
+        {query.isError && <p className="state error">{t('followUps.loadError')}</p>}
+        {query.data?.length === 0 && <p className="state">{t('followUps.empty', { bucket: t(`followUps.${bucket.toLowerCase()}`) })}</p>}
 
         {query.data && query.data.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Recommendation</th>
-                  <th>Recommended date</th>
-                  <th>Status</th>
+                  <th>{t('followUps.patient')}</th>
+                  <th>{t('followUps.doctor')}</th>
+                  <th>{t('followUps.recommendation')}</th>
+                  <th>{t('followUps.recommendedDate')}</th>
+                  <th>{t('followUps.status')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -111,14 +118,14 @@ export function FollowUpsPage() {
                             disabled={completeMutation.isPending}
                             onClick={() => completeMutation.mutate(followUp.id)}
                           >
-                            Complete
+                            {t('followUps.complete')}
                           </button>
                           <button
                             className="button danger"
                             disabled={cancelMutation.isPending}
                             onClick={() => cancelMutation.mutate(followUp.id)}
                           >
-                            Cancel
+                            {t('followUps.cancel')}
                           </button>
                         </div>
                       )}
