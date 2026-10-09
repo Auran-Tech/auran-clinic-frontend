@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -15,6 +16,7 @@ const sectionTypes = ['Structured', 'Text', 'Image', 'File']
 
 export function ClinicalOrderSectionConfigurationPanel() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
@@ -61,24 +63,24 @@ export function ClinicalOrderSectionConfigurationPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical order sections</h2>
+          <h2>{t('adminConfig.orderSections.title')}</h2>
           <p className="muted">
-            Configure structured, text, image, and file sections used by the clinical order workspace.
+            {t('adminConfig.orderSections.intro')}
           </p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading clinical order configuration…</p>}
-      {query.isError && <p className="state error">Unable to load clinical order configuration.</p>}
+      {query.isLoading && <p className="state">{t('adminConfig.orderSections.loading')}</p>}
+      {query.isError && <p className="state error">{t('adminConfig.orderSections.loadError')}</p>}
 
       {canManage && (
         <div className="profile-config-create-row">
           <label>
-            <span>New section name</span>
+            <span>{t('adminConfig.orderSections.newSection')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('adminConfig.type')}</span>
             <select
               value={sectionType}
               onChange={(event) => setSectionType(event.target.value)}
@@ -89,7 +91,7 @@ export function ClinicalOrderSectionConfigurationPanel() {
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -103,14 +105,14 @@ export function ClinicalOrderSectionConfigurationPanel() {
               disabled={!name.trim() || sortOrder < 0 || createMutation.isPending}
               onClick={() => createMutation.mutate()}
             >
-              {createMutation.isPending ? 'Adding…' : 'Add order section'}
+              {createMutation.isPending ? t('adminConfig.adding') : t('adminConfig.orderSections.addSection')}
             </button>
           </div>
         </div>
       )}
 
       {createMutation.isError && (
-        <p className="field-error">Unable to create clinical order section.</p>
+        <p className="field-error">{t('adminConfig.orderSections.createError')}</p>
       )}
 
       <div className="profile-config-fields">
@@ -125,7 +127,7 @@ export function ClinicalOrderSectionConfigurationPanel() {
       </div>
 
       {query.data?.sections.length === 0 && (
-        <p className="state">No clinical order sections are configured.</p>
+        <p className="state">{t('adminConfig.orderSections.empty')}</p>
       )}
     </section>
   )
@@ -140,6 +142,7 @@ function ClinicalOrderSectionEditor({
   canManage: boolean
   onConfiguration: (configuration: ClinicalOrderSectionAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(section.name)
   const [sectionType, setSectionType] = useState(section.sectionType)
   const [sortOrder, setSortOrder] = useState(section.sortOrder)
@@ -170,8 +173,8 @@ function ClinicalOrderSectionEditor({
           <strong>{section.name}</strong>
           <div className="role-badges">
             <span className="role-badge">{section.sectionType}</span>
-            {!section.isEnabled && <span className="role-badge">Disabled</span>}
-            {section.hasData && <span className="role-badge">Has data</span>}
+            {!section.isEnabled && <span className="role-badge">{t('adminConfig.disabled')}</span>}
+            {section.hasData && <span className="role-badge">{t('adminConfig.hasData')}</span>}
           </div>
         </div>
       </div>
@@ -179,11 +182,11 @@ function ClinicalOrderSectionEditor({
       {canManage && (
         <div className="profile-config-field-form">
           <label>
-            <span>Name</span>
+            <span>{t('adminConfig.name')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('adminConfig.type')}</span>
             <select
               value={sectionType}
               disabled={section.hasData}
@@ -195,7 +198,7 @@ function ClinicalOrderSectionEditor({
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -209,7 +212,7 @@ function ClinicalOrderSectionEditor({
               checked={isEnabled}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('adminConfig.enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -217,7 +220,7 @@ function ClinicalOrderSectionEditor({
               disabled={!name.trim() || sortOrder < 0 || mutation.isPending}
               onClick={() => mutation.mutate()}
             >
-              {mutation.isPending ? 'Saving…' : 'Save section'}
+              {mutation.isPending ? t('adminConfig.saving') : t('adminConfig.orderSections.saveSection')}
             </button>
           </div>
         </div>
@@ -225,12 +228,12 @@ function ClinicalOrderSectionEditor({
 
       {section.hasData && canManage && (
         <p className="muted">
-          Section type is locked because clinical order data already exists. Name, order, and enabled state remain editable.
+          {t('adminConfig.orderSections.typeLocked')}
         </p>
       )}
 
       {mutation.isError && (
-        <p className="field-error">Unable to update this clinical order section.</p>
+        <p className="field-error">{t('adminConfig.orderSections.updateError')}</p>
       )}
     </article>
   )
