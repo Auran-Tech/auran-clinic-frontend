@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPanel'
@@ -38,6 +39,7 @@ const emptyForm: UpdateClinicSettingsInput = {
 
 export function SettingsPage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
@@ -93,7 +95,7 @@ export function SettingsPage() {
   if (!canView) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view clinic settings.</p>
+        <p className="state error">{t('settingsPage.denied')}</p>
       </main>
     )
   }
@@ -111,45 +113,45 @@ export function SettingsPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Administration</p>
-          <h1>Clinic settings</h1>
+          <p className="eyebrow">{t('settingsPage.eyebrow')}</p>
+          <h1>{t('settingsPage.title')}</h1>
           <p className="muted">
-            Configure branding, localization, patient numbering, contact details, and clinical defaults.
+            {t('settingsPage.intro')}
           </p>
         </div>
         <div className="actions">
-          <Link className="button secondary nav-button" to="/guide">Guide</Link>
+          <Link className="button secondary nav-button" to="/guide">{t('common.guide')}</Link>
           {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">Audit</Link>
+            <Link className="button secondary nav-button" to="/audit">{t('common.audit')}</Link>
           )}
           {auth.hasPermission('Reports_View') && (
-            <Link className="button secondary nav-button" to="/reports">Dashboard</Link>
+            <Link className="button secondary nav-button" to="/reports">{t('common.dashboard')}</Link>
           )}
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">Employees</Link>
+            <Link className="button secondary nav-button" to="/employees">{t('common.employees')}</Link>
           )}
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
-      {settingsQuery.isLoading && <p className="state">Loading clinic settings…</p>}
-      {settingsQuery.isError && <p className="state error">Unable to load clinic settings.</p>}
+      {settingsQuery.isLoading && <p className="state">{t('settingsPage.loading')}</p>}
+      {settingsQuery.isError && <p className="state error">{t('settingsPage.loadError')}</p>}
 
       {settingsQuery.data && (
         <>
           <section className="panel">
             <div className="panel-heading">
               <div>
-                <h2>General</h2>
+                <h2>{t('settingsPage.general')}</h2>
                 <p className="muted">
-                  Clinic code: <span className="mono">{settingsQuery.data.clinicCode}</span>
+                  {t('settingsPage.clinicCode')}: <span className="mono">{settingsQuery.data.clinicCode}</span>
                 </p>
               </div>
             </div>
 
             <div className="settings-grid">
               <label>
-                <span>Clinic name</span>
+                <span>{t('settingsPage.clinicName')}</span>
                 <input
                   value={form.clinicName}
                   disabled={disabled}
@@ -158,7 +160,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Patient number prefix</span>
+                <span>{t('settingsPage.patientPrefix')}</span>
                 <input
                   value={form.patientNumberPrefix ?? ''}
                   disabled={disabled}
@@ -168,7 +170,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Documentation reminder hours</span>
+                <span>{t('settingsPage.reminderHours')}</span>
                 <input
                   type="number"
                   min="1"
@@ -186,14 +188,14 @@ export function SettingsPage() {
           <section className="panel">
             <div className="panel-heading">
               <div>
-                <h2>Branding & welcome</h2>
-                <p className="muted">Clinic-level identity used by production surfaces.</p>
+                <h2>{t('settingsPage.branding')}</h2>
+                <p className="muted">{t('settingsPage.brandingIntro')}</p>
               </div>
             </div>
 
             <div className="settings-grid">
               <label className="full-width">
-                <span>Logo URL</span>
+                <span>{t('settingsPage.logoUrl')}</span>
                 <input
                   value={form.logoUrl ?? ''}
                   disabled={disabled}
@@ -202,7 +204,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Primary color</span>
+                <span>{t('settingsPage.primaryColor')}</span>
                 <input
                   value={form.primaryColor ?? ''}
                   disabled={disabled}
@@ -212,7 +214,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Secondary color</span>
+                <span>{t('settingsPage.secondaryColor')}</span>
                 <input
                   value={form.secondaryColor ?? ''}
                   disabled={disabled}
@@ -222,7 +224,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Font family</span>
+                <span>{t('settingsPage.fontFamily')}</span>
                 <input
                   value={form.fontFamily ?? ''}
                   disabled={disabled}
@@ -231,7 +233,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Welcome button text</span>
+                <span>{t('settingsPage.welcomeButton')}</span>
                 <input
                   value={form.welcomeButtonText ?? ''}
                   disabled={disabled}
@@ -240,7 +242,7 @@ export function SettingsPage() {
               </label>
 
               <label className="full-width">
-                <span>Welcome title</span>
+                <span>{t('settingsPage.welcomeTitle')}</span>
                 <input
                   value={form.welcomeTitle ?? ''}
                   disabled={disabled}
@@ -249,7 +251,7 @@ export function SettingsPage() {
               </label>
 
               <label className="full-width">
-                <span>Welcome message</span>
+                <span>{t('settingsPage.welcomeMessage')}</span>
                 <textarea
                   rows={4}
                   value={form.welcomeMessage ?? ''}
@@ -263,20 +265,20 @@ export function SettingsPage() {
           <section className="panel">
             <div className="panel-heading">
               <div>
-                <h2>Localization</h2>
-                <p className="muted">Timezone and locale are clinic-specific.</p>
+                <h2>{t('settingsPage.localization')}</h2>
+                <p className="muted">{t('settingsPage.localizationIntro')}</p>
               </div>
             </div>
 
             <div className="settings-grid">
               <label>
-                <span>Timezone</span>
+                <span>{t('settingsPage.timezone')}</span>
                 <select
                   value={form.timeZoneId ?? ''}
                   disabled={disabled || lookupsQuery.isLoading}
                   onChange={(event) => updateField('timeZoneId', event.target.value)}
                 >
-                  <option value="">Not configured</option>
+                  <option value="">{t('settingsPage.notConfigured')}</option>
                   {(lookupsQuery.data?.timeZones ?? []).map((timeZone) => (
                     <option key={timeZone.id} value={timeZone.id}>
                       {timeZone.displayName}
@@ -286,13 +288,13 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Locale</span>
+                <span>{t('settingsPage.locale')}</span>
                 <select
                   value={form.locale ?? ''}
                   disabled={disabled || lookupsQuery.isLoading}
                   onChange={(event) => updateField('locale', event.target.value)}
                 >
-                  <option value="">Not configured</option>
+                  <option value="">{t('settingsPage.notConfigured')}</option>
                   {(lookupsQuery.data?.locales ?? []).map((locale) => (
                     <option key={locale.code} value={locale.code}>
                       {locale.displayName} — {locale.nativeName}
@@ -302,7 +304,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Date format</span>
+                <span>{t('settingsPage.dateFormat')}</span>
                 <input
                   value={form.dateFormat ?? ''}
                   disabled={disabled}
@@ -312,7 +314,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Time format</span>
+                <span>{t('settingsPage.timeFormat')}</span>
                 <input
                   value={form.timeFormat ?? ''}
                   disabled={disabled}
@@ -326,14 +328,14 @@ export function SettingsPage() {
           <section className="panel">
             <div className="panel-heading">
               <div>
-                <h2>Contact</h2>
-                <p className="muted">Public and operational clinic contact information.</p>
+                <h2>{t('settingsPage.contact')}</h2>
+                <p className="muted">{t('settingsPage.contactIntro')}</p>
               </div>
             </div>
 
             <div className="settings-grid">
               <label>
-                <span>Phone</span>
+                <span>{t('settingsPage.phone')}</span>
                 <input
                   value={form.phone ?? ''}
                   disabled={disabled}
@@ -342,7 +344,7 @@ export function SettingsPage() {
               </label>
 
               <label>
-                <span>Email</span>
+                <span>{t('settingsPage.email')}</span>
                 <input
                   type="email"
                   value={form.email ?? ''}
@@ -352,7 +354,7 @@ export function SettingsPage() {
               </label>
 
               <label className="full-width">
-                <span>Address</span>
+                <span>{t('settingsPage.address')}</span>
                 <textarea
                   rows={3}
                   value={form.address ?? ''}
@@ -362,7 +364,7 @@ export function SettingsPage() {
               </label>
 
               <label className="full-width">
-                <span>Website</span>
+                <span>{t('settingsPage.website')}</span>
                 <input
                   value={form.website ?? ''}
                   disabled={disabled}
@@ -375,14 +377,14 @@ export function SettingsPage() {
           <section className="panel">
             <div className="panel-heading">
               <div>
-                <h2>Prescription defaults</h2>
-                <p className="muted">Default header and footer text for clinical orders/prescriptions.</p>
+                <h2>{t('settingsPage.prescriptionDefaults')}</h2>
+                <p className="muted">{t('settingsPage.prescriptionIntro')}</p>
               </div>
             </div>
 
             <div className="settings-grid">
               <label className="full-width">
-                <span>Prescription header</span>
+                <span>{t('settingsPage.prescriptionHeader')}</span>
                 <textarea
                   rows={4}
                   value={form.prescriptionHeader ?? ''}
@@ -392,7 +394,7 @@ export function SettingsPage() {
               </label>
 
               <label className="full-width">
-                <span>Prescription footer</span>
+                <span>{t('settingsPage.prescriptionFooter')}</span>
                 <textarea
                   rows={4}
                   value={form.prescriptionFooter ?? ''}
@@ -414,8 +416,8 @@ export function SettingsPage() {
           {canManage && (
             <section className="settings-save-bar">
               <div>
-                <strong>Save clinic configuration</strong>
-                <p className="muted">Changes affect the authenticated clinic only.</p>
+                <strong>{t('settingsPage.saveTitle')}</strong>
+                <p className="muted">{t('settingsPage.saveIntro')}</p>
               </div>
               <button
                 className="button primary"
@@ -447,13 +449,13 @@ export function SettingsPage() {
                   prescriptionFooter: form.prescriptionFooter?.trim() || undefined,
                 })}
               >
-                {mutation.isPending ? 'Saving…' : 'Save settings'}
+                {mutation.isPending ? t('settingsPage.saving') : t('settingsPage.save')}
               </button>
             </section>
           )}
 
-          {mutation.isSuccess && <p className="state">Clinic settings saved.</p>}
-          {mutation.isError && <p className="state error">Unable to save clinic settings.</p>}
+          {mutation.isSuccess && <p className="state">{t('settingsPage.saved')}</p>}
+          {mutation.isError && <p className="state error">{t('settingsPage.saveError')}</p>}
         </>
       )}
     </main>
