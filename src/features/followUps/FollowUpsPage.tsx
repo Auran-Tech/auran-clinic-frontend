@@ -60,7 +60,7 @@ export function FollowUpsPage() {
             <Link className="button secondary nav-button" to="/employees">{t('common.employees')}</Link>
           )}
           <Link className="button secondary nav-button" to="/pending-documentation">
-            Pending documentation
+            {t('common.pendingDocumentation')}
           </Link>
           <Link className="button secondary nav-button" to="/queue">{t('common.queue')}</Link>
           <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
@@ -118,14 +118,14 @@ export function FollowUpsPage() {
                             disabled={completeMutation.isPending}
                             onClick={() => completeMutation.mutate(followUp.id)}
                           >
-                            Complete
+                            {t('followUps.complete')}
                           </button>
                           <button
                             className="button danger"
                             disabled={cancelMutation.isPending}
                             onClick={() => cancelMutation.mutate(followUp.id)}
                           >
-                            Cancel
+                            {t('followUps.cancel')}
                           </button>
                         </div>
                       )}
