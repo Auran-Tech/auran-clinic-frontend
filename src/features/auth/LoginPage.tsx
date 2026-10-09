@@ -20,12 +20,12 @@ export function LoginPage() {
     mutationFn: login,
     onSuccess: (session) => {
       auth.setSession(session)
-      navigate('/patients', { replace: true })
+      navigate('/', { replace: true })
     },
   })
 
   if (auth.session) {
-    return <Navigate to="/patients" replace />
+    return <Navigate to="/" replace />
   }
 
   return (
