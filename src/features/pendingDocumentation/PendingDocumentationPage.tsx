@@ -11,10 +11,10 @@ import type { PendingDocumentation } from './types'
 
 function PendingDocumentationEditor({
   item,
-  on{t('pendingDocs.close')},
+  onClose,
 }: {
   item: PendingDocumentation
-  on{t('pendingDocs.close')}: () => void
+  onClose: () => void
 }) {
   const queryClient = useQueryClient()
   const { t } = useTranslation()
@@ -36,7 +36,7 @@ function PendingDocumentationEditor({
     mutationFn: completePendingDocumentation,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['pending-documentation'] })
-      on{t('pendingDocs.close')}()
+      onClose()
     },
   })
 
@@ -55,7 +55,7 @@ function PendingDocumentationEditor({
           <h2>{item.patientName}</h2>
           <p className="muted mono">{item.patientNumber}</p>
         </div>
-        <button className="button secondary" onClick={on{t('pendingDocs.close')}}>{t('pendingDocs.close')}</button>
+        <button className="button secondary" onClick={onClose}>{t('pendingDocs.close')}</button>
       </div>
 
       <div className="clinical-form">
@@ -200,7 +200,7 @@ export function PendingDocumentationPage() {
 
       {selected && (
         <section className="panel">
-          <PendingDocumentationEditor item={selected} on{t('pendingDocs.close')}={() => setSelected(null)} />
+          <PendingDocumentationEditor item={selected} onClose={() => setSelected(null)} />
         </section>
       )}
     </main>
