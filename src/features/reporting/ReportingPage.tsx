@@ -5,11 +5,11 @@ import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import {
-  export{t('common.visit')}Report,
+  exportVisitReport,
   getDashboardSummary,
-  get{t('common.visit')}Report,
+  getVisitReport,
 } from './api'
-import type { {t('common.visit')}ReportQuery } from './types'
+import type { VisitReportQuery } from './types'
 
 export function ReportingPage() {
   const auth = useAuth()
@@ -19,11 +19,11 @@ export function ReportingPage() {
 
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
-  const [doctorId, set{t('common.doctor')}Id] = useState('')
-  const [visitStatus, set{t('common.visit')}Status] = useState('')
-  const [documentationStatus, set{t('common.documentation')}Status] = useState('')
+  const [doctorId, setDoctorId] = useState('')
+  const [visitStatus, setVisitStatus] = useState('')
+  const [documentationStatus, setDocumentationStatus] = useState('')
 
-  const reportQueryParams = useMemo<{t('common.visit')}ReportQuery>(() => ({
+  const reportQueryParams = useMemo<VisitReportQuery>(() => ({
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
     doctorId: doctorId || undefined,
@@ -46,7 +46,7 @@ export function ReportingPage() {
 
   const reportQuery = useQuery({
     queryKey: ['visit-report', reportQueryParams],
-    queryFn: () => get{t('common.visit')}Report(reportQueryParams),
+    queryFn: () => getVisitReport(reportQueryParams),
     enabled: canView,
   })
 
@@ -66,16 +66,14 @@ export function ReportingPage() {
         <div>
           <p className="eyebrow">{t('reporting.eyebrow')}</p>
           <h1>{t('reporting.title')}</h1>
-          <p className="muted">
-            {t('reporting.intro')}
-          </p>
+          <p className="muted">{t('reporting.intro')}</p>
         </div>
         <div className="actions">
           <Link className="button secondary nav-button" to="/guide">{t('common.guide')}</Link>
-          {auth.hasPermission('{t('common.audit')}_View') && (
+          {auth.hasPermission('Audit_View') && (
             <Link className="button secondary nav-button" to="/audit">{t('common.audit')}</Link>
           )}
-          {auth.hasPermission('{t('common.settings')}_View') && (
+          {auth.hasPermission('Settings_View') && (
             <Link className="button secondary nav-button" to="/settings">{t('common.settings')}</Link>
           )}
           <Link className="button secondary nav-button" to="/follow-ups">{t('common.followUps')}</Link>
@@ -94,8 +92,8 @@ export function ReportingPage() {
           </div>
           <section className="kpi-grid">
             <article className="kpi-card">
-              <span>{t('reporting.total{t('reporting.patient')}s')}</span>
-              <strong>{dashboard.total{t('common.patients')}}</strong>
+              <span>{t('reporting.totalPatients')}</span>
+              <strong>{dashboard.totalPatients}</strong>
             </article>
             <article className="kpi-card">
               <span>{t('reporting.visitsToday')}</span>
@@ -107,14 +105,14 @@ export function ReportingPage() {
             </article>
             <article className="kpi-card">
               <span>{t('reporting.completedToday')}</span>
-              <strong>{dashboard.completed{t('common.visit')}sToday}</strong>
+              <strong>{dashboard.completedVisitsToday}</strong>
             </article>
             <article className="kpi-card">
-              <span>{t('reporting.pending{t('common.documentation')}')}</span>
-              <strong>{dashboard.pending{t('common.documentation')}}</strong>
+              <span>{t('reporting.pendingDocumentation')}</span>
+              <strong>{dashboard.pendingDocumentation}</strong>
             </article>
             <article className="kpi-card">
-              <span>{t('common.followUps')} today</span>
+              <span>{t('reporting.followUpsToday')}</span>
               <strong>{dashboard.followUpsToday}</strong>
             </article>
             <article className="kpi-card kpi-attention">
@@ -129,9 +127,7 @@ export function ReportingPage() {
         <div className="panel-heading">
           <div>
             <h2>{t('reporting.visitReport')}</h2>
-            <p className="muted">
-              {t('reporting.visitReportIntro')}
-            </p>
+            <p className="muted">{t('reporting.visitReportIntro')}</p>
           </div>
           <div className="actions report-export-actions">
             <button
@@ -145,7 +141,7 @@ export function ReportingPage() {
               <button
                 className="button secondary no-print"
                 type="button"
-                onClick={() => void export{t('common.visit')}Report(reportQueryParams)}
+                onClick={() => void exportVisitReport(reportQueryParams)}
               >
                 {t('reporting.exportCsv')}
               </button>
@@ -156,17 +152,25 @@ export function ReportingPage() {
         <div className="report-filters no-print">
           <label>
             <span>{t('reporting.fromDate')}</span>
-            <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(event) => setFromDate(event.target.value)}
+            />
           </label>
           <label>
             <span>{t('reporting.toDate')}</span>
-            <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+            <input
+              type="date"
+              value={toDate}
+              onChange={(event) => setToDate(event.target.value)}
+            />
           </label>
 
           {auth.hasPermission('Users_View') && (
             <label>
               <span>{t('common.doctor')}</span>
-              <select value={doctorId} onChange={(event) => set{t('common.doctor')}Id(event.target.value)}>
+              <select value={doctorId} onChange={(event) => setDoctorId(event.target.value)}>
                 <option value="">{t('reporting.allDoctors')}</option>
                 {(employeesQuery.data ?? [])
                   .filter((employee) => employee.roles.includes('DOCTOR'))
@@ -179,22 +183,25 @@ export function ReportingPage() {
 
           <label>
             <span>{t('reporting.visitStatus')}</span>
-            <select value={visitStatus} onChange={(event) => set{t('common.visit')}Status(event.target.value)}>
+            <select value={visitStatus} onChange={(event) => setVisitStatus(event.target.value)}>
               <option value="">{t('reporting.allStatuses')}</option>
-              <option value="{t('reporting.open')}">{t('reporting.open')}</option>
-              <option value="{t('reporting.completed')}">{t('reporting.completed')}</option>
-              <option value="{t('reporting.cancelled')}">{t('reporting.cancelled')}</option>
+              <option value="Open">{t('reporting.open')}</option>
+              <option value="Completed">{t('reporting.completed')}</option>
+              <option value="Cancelled">{t('reporting.cancelled')}</option>
             </select>
           </label>
 
           <label>
             <span>{t('common.documentation')}</span>
-            <select value={documentationStatus} onChange={(event) => set{t('common.documentation')}Status(event.target.value)}>
+            <select
+              value={documentationStatus}
+              onChange={(event) => setDocumentationStatus(event.target.value)}
+            >
               <option value="">{t('reporting.allStatuses')}</option>
               <option value="NotStarted">{t('reporting.notStarted')}</option>
-              <option value="{t('reporting.draft')}">{t('reporting.draft')}</option>
-              <option value="{t('reporting.pending')}">{t('reporting.pending')}</option>
-              <option value="{t('reporting.completed')}">{t('reporting.completed')}</option>
+              <option value="Draft">{t('reporting.draft')}</option>
+              <option value="Pending">{t('reporting.pending')}</option>
+              <option value="Completed">{t('reporting.completed')}</option>
             </select>
           </label>
 
@@ -204,9 +211,9 @@ export function ReportingPage() {
               onClick={() => {
                 setFromDate('')
                 setToDate('')
-                set{t('common.doctor')}Id('')
-                set{t('common.visit')}Status('')
-                set{t('common.documentation')}Status('')
+                setDoctorId('')
+                setVisitStatus('')
+                setDocumentationStatus('')
               }}
             >
               {t('reporting.clearFilters')}
@@ -216,9 +223,7 @@ export function ReportingPage() {
 
         {reportQuery.isLoading && <p className="state">{t('reporting.loadingReport')}</p>}
         {reportQuery.isError && (
-          <p className="state error">
-            {t('reporting.reportError')}
-          </p>
+          <p className="state error">{t('reporting.reportError')}</p>
         )}
 
         {reportQuery.data && (
