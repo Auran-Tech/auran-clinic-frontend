@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   getClinicalMeasurementFields,
@@ -36,6 +37,7 @@ export function ClinicalMeasurementsPanel({
   visitId,
 }: ClinicalMeasurementsPanelProps) {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Visit_View')
   const canEdit = auth.hasPermission('Visit_Edit')
@@ -88,20 +90,20 @@ export function ClinicalMeasurementsPanel({
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical measurements</h2>
+          <h2>{t('measurements.title')}</h2>
           <p className="muted">
-            Record configured typed measurements while preserving visit history.
+            {t('measurements.intro')}
           </p>
         </div>
       </div>
 
-      {fieldsQuery.isLoading && <p className="state">Loading measurement fields…</p>}
+      {fieldsQuery.isLoading && <p className="state">{t('measurements.loadingFields')}</p>}
       {fieldsQuery.isError && (
-        <p className="state error">Unable to load clinical measurement configuration.</p>
+        <p className="state error">{t('measurements.fieldsError')}</p>
       )}
 
       {fields.length === 0 && !fieldsQuery.isLoading && (
-        <p className="state">No clinical measurement fields are configured.</p>
+        <p className="state">{t('measurements.noFields')}</p>
       )}
 
       {fields.length > 0 && (
@@ -125,26 +127,26 @@ export function ClinicalMeasurementsPanel({
             disabled={pendingValues.length === 0 || recordMutation.isPending}
             onClick={() => recordMutation.mutate()}
           >
-            {recordMutation.isPending ? 'Recording…' : 'Record measurements'}
+            {recordMutation.isPending ? t('measurements.recording') : t('measurements.record')}
           </button>
         </div>
       )}
 
       {recordMutation.isError && (
         <p className="field-error">
-          Unable to record measurements. The visit may be closed or a configured value may be invalid.
+          {t('measurements.recordError')}
         </p>
       )}
 
       <div className="clinical-measurement-history">
-        <h3>Visit history</h3>
+        <h3>{t('measurements.history')}</h3>
 
-        {measurementsQuery.isLoading && <p className="state">Loading measurement history…</p>}
+        {measurementsQuery.isLoading && <p className="state">{t('measurements.loadingHistory')}</p>}
         {measurementsQuery.isError && (
-          <p className="state error">Unable to load measurement history.</p>
+          <p className="state error">{t('measurements.historyError')}</p>
         )}
         {measurementsQuery.data?.length === 0 && (
-          <p className="state">No measurements recorded for this visit.</p>
+          <p className="state">{t('measurements.noHistory')}</p>
         )}
 
         {measurementsQuery.data && measurementsQuery.data.length > 0 && (
@@ -152,16 +154,16 @@ export function ClinicalMeasurementsPanel({
             <table>
               <thead>
                 <tr>
-                  <th>Measurement</th>
-                  <th>Value</th>
-                  <th>Recorded</th>
+                  <th>{t('measurements.measurement')}</th>
+                  <th>{t('measurements.value')}</th>
+                  <th>{t('measurements.recorded')}</th>
                 </tr>
               </thead>
               <tbody>
                 {measurementsQuery.data.map((measurement) => (
                   <tr key={measurement.id}>
                     <td>{measurement.fieldName}</td>
-                    <td>{formatMeasurement(measurement, fields)}</td>
+                    <td>{formatMeasurement(measurement, fields, t('measurements.yes'), t('measurements.no'))}</td>
                     <td>{new Date(measurement.recordedAtUtc).toLocaleString()}</td>
                   </tr>
                 ))}
@@ -185,6 +187,7 @@ function MeasurementFieldInput({
   disabled: boolean
   onChange: (updater: (draft: MeasurementDraft) => MeasurementDraft) => void
 }) {
+  const { t } = useTranslation()
   const label = field.unit ? `${field.name} (${field.unit})` : field.name
 
   switch (field.fieldType) {
@@ -246,9 +249,9 @@ function MeasurementFieldInput({
               }))
             }
           >
-            <option value="">Not recorded</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
+            <option value="">{t('measurements.notRecorded')}</option>
+            <option value="true">{t('measurements.yes')}</option>
+            <option value="false">{t('measurements.no')}</option>
           </select>
         </label>
       )
@@ -279,7 +282,7 @@ function MeasurementFieldInput({
               onChange((current) => ({ ...current, text: event.target.value }))
             }
           >
-            <option value="">Not recorded</option>
+            <option value="">{t('measurements.notRecorded')}</option>
             {field.options.map((option) => (
               <option key={option.id} value={option.value}>
                 {option.label}
@@ -323,8 +326,8 @@ function MeasurementFieldInput({
       return (
         <div className="dynamic-file-field">
           <span className="profile-label">{label}</span>
-          <strong>Not recordable here</strong>
-          <p className="muted">Image/File clinical fields require an attachment workflow.</p>
+          <strong>{t('measurements.notRecordable')}</strong>
+          <p className="muted">{t('measurements.fileHint')}</p>
         </div>
       )
   }
@@ -388,6 +391,8 @@ function isDraftEmpty(field: ClinicalMeasurementField, draft: MeasurementDraft) 
 function formatMeasurement(
   measurement: ClinicalMeasurement,
   fields: ClinicalMeasurementField[],
+  yesLabel: string,
+  noLabel: string,
 ) {
   const field = fields.find((item) => item.id === measurement.clinicalFieldId)
 
@@ -398,7 +403,7 @@ function formatMeasurement(
   }
 
   if (measurement.booleanValue != null) {
-    return measurement.booleanValue ? 'Yes' : 'No'
+    return measurement.booleanValue ? yesLabel : noLabel
   }
 
   if (measurement.dateValue) return measurement.dateValue
