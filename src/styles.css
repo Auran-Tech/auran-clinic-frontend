@@ -1217,3 +1217,41 @@ select {
     flex-direction: column;
   }
 }
+
+.medical-history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.medical-history-column,
+.medical-history-list,
+.medical-history-form {
+  display: grid;
+  gap: 10px;
+}
+
+.medical-history-column {
+  align-content: start;
+}
+
+.medical-history-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e2e7eb;
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.medical-history-item p {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 960px) {
+  .medical-history-grid {
+    grid-template-columns: 1fr;
+  }
+}
