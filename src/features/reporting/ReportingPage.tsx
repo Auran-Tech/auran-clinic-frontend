@@ -60,7 +60,7 @@ export function ReportingPage() {
 
   return (
     <main className="page-shell">
-      <section className="page-header">
+      <section className="page-header no-print">
         <div>
           <p className="eyebrow">Operations & intelligence</p>
           <h1>Dashboard & reports</h1>
@@ -131,17 +131,27 @@ export function ReportingPage() {
               Filter visits by local date range, doctor, visit state, and documentation state.
             </p>
           </div>
-          {canExport && (
+          <div className="actions report-export-actions">
             <button
-              className="button secondary"
-              onClick={() => void exportVisitReport(reportQueryParams)}
+              className="button secondary no-print"
+              type="button"
+              onClick={() => window.print()}
             >
-              Export CSV
+              Print / Save PDF
             </button>
-          )}
+            {canExport && (
+              <button
+                className="button secondary no-print"
+                type="button"
+                onClick={() => void exportVisitReport(reportQueryParams)}
+              >
+                Export CSV
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="report-filters">
+        <div className="report-filters no-print">
           <label>
             <span>From date</span>
             <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
