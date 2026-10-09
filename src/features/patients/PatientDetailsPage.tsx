@@ -11,6 +11,7 @@ import { ClinicalWorkspace } from '../clinicalSessions/ClinicalWorkspace'
 import { PatientAttachmentsPanel } from '../attachments/PatientAttachmentsPanel'
 import { DynamicPatientProfilePanel } from '../patientProfile/DynamicPatientProfilePanel'
 import { PatientMedicalHistoryPanel } from '../patientMedicalHistory/PatientMedicalHistoryPanel'
+import { PatientVisitHistoryPanel } from '../visits/PatientVisitHistoryPanel'
 import { patientSchema, type PatientFormValues } from './schema'
 
 export function PatientDetailsPage() {
@@ -57,6 +58,7 @@ export function PatientDetailsPage() {
     mutationFn: startVisit,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['active-visit', patientId] })
+      await queryClient.invalidateQueries({ queryKey: ['patient-visit-history', patientId] })
       setSelectedDoctorId('')
     },
   })
@@ -179,6 +181,8 @@ export function PatientDetailsPage() {
       <DynamicPatientProfilePanel patientId={patient.id} />
 
       <PatientMedicalHistoryPanel patientId={patient.id} />
+
+      <PatientVisitHistoryPanel patientId={patient.id} />
 
       <PatientAttachmentsPanel patientId={patient.id} />
 
