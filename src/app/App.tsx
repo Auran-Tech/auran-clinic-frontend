@@ -12,11 +12,20 @@ import { SettingsPage } from '../features/settings/SettingsPage'
 import { ReportingPage } from '../features/reporting/ReportingPage'
 import { AuditPage } from '../features/audit/AuditPage'
 import { SystemGuidePage } from '../features/guide/SystemGuidePage'
+import { ClinicHomePage } from '../features/home/ClinicHomePage'
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <ClinicHomePage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/patients"
         element={
