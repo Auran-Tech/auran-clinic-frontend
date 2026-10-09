@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -14,6 +15,7 @@ import {
 
 export function EmployeesPage() {
   const auth = useAuth()
+  const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
 
   const canViewUsers = auth.hasPermission('Users_View')
@@ -107,16 +109,18 @@ export function EmployeesPage() {
     for (const permission of permissionsQuery.data ?? []) {
       map.set(
         permission.key,
-        permission.descriptions.en ?? permission.descriptions.ar ?? permission.key,
+        i18n.resolvedLanguage === 'ar'
+          ? permission.descriptions.ar ?? permission.descriptions.en ?? permission.key
+          : permission.descriptions.en ?? permission.descriptions.ar ?? permission.key,
       )
     }
     return map
-  }, [permissionsQuery.data])
+  }, [permissionsQuery.data, i18n.resolvedLanguage])
 
   if (!canViewUsers && !canViewRbac) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view employee administration.</p>
+        <p className="state error">{t('employeesPage.denied')}</p>
       </main>
     )
   }
@@ -137,22 +141,22 @@ export function EmployeesPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Administration</p>
-          <h1>Employees & RBAC</h1>
+          <p className="eyebrow">{t('employeesPage.eyebrow')}</p>
+          <h1>{t('employeesPage.title')}</h1>
           <p className="muted">
-            Manage clinic staff accounts and assign protected system roles.
+            {t('employeesPage.intro')}
           </p>
         </div>
         <div className="actions">
           {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">Audit</Link>
+            <Link className="button secondary nav-button" to="/audit">{t('common.audit')}</Link>
           )}
           {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">Settings</Link>
+            <Link className="button secondary nav-button" to="/settings">{t('common.settings')}</Link>
           )}
-          <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/follow-ups">{t('common.followUps')}</Link>
+          <Link className="button secondary nav-button" to="/queue">{t('common.queue')}</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
@@ -160,26 +164,26 @@ export function EmployeesPage() {
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Create employee</h2>
-              <p className="muted">Normal employees require at least one protected system role.</p>
+              <h2>{t('employeesPage.createTitle')}</h2>
+              <p className="muted">{t('employeesPage.createIntro')}</p>
             </div>
           </div>
 
           <div className="employee-form">
             <label>
-              <span>Full name</span>
+              <span>{t('employeesPage.fullName')}</span>
               <input value={createName} onChange={(event) => setCreateName(event.target.value)} />
             </label>
             <label>
-              <span>Email</span>
+              <span>{t('employeesPage.email')}</span>
               <input type="email" value={createEmail} onChange={(event) => setCreateEmail(event.target.value)} />
             </label>
             <label>
-              <span>Phone</span>
+              <span>{t('employeesPage.phone')}</span>
               <input value={createPhone} onChange={(event) => setCreatePhone(event.target.value)} />
             </label>
             <label>
-              <span>Temporary password</span>
+              <span>{t('employeesPage.temporaryPassword')}</span>
               <input type="password" value={createPassword} onChange={(event) => setCreatePassword(event.target.value)} />
             </label>
 
@@ -190,12 +194,12 @@ export function EmployeesPage() {
                   checked={createSuperUser}
                   onChange={(event) => setCreateSuperUser(event.target.checked)}
                 />
-                <span>Create as Clinic Super User</span>
+                <span>{t('employeesPage.createSuperUser')}</span>
               </label>
             )}
 
             <div className="full-width">
-              <span className="form-section-label">System roles</span>
+              <span className="form-section-label">{t('employeesPage.systemRoles')}</span>
               <div className="role-choice-grid">
                 {(rolesQuery.data ?? []).map((role) => (
                   <label className="role-choice" key={role.code}>
@@ -234,13 +238,13 @@ export function EmployeesPage() {
                   })
                 }
               >
-                {createMutation.isPending ? 'Creating…' : 'Create employee'}
+                {createMutation.isPending ? t('employeesPage.creating') : t('employeesPage.create')}
               </button>
             </div>
 
             {createMutation.isError && (
               <p className="field-error full-width">
-                Unable to create employee. Check email uniqueness, password requirements, and role selection.
+                {t('employeesPage.createError')}
               </p>
             )}
           </div>
@@ -251,23 +255,23 @@ export function EmployeesPage() {
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Clinic employees</h2>
-              <p className="muted">Account status and assigned roles are enforced by the backend.</p>
+              <h2>{t('employeesPage.clinicEmployees')}</h2>
+              <p className="muted">{t('employeesPage.employeesIntro')}</p>
             </div>
           </div>
 
-          {employeesQuery.isLoading && <p className="state">Loading employees…</p>}
-          {employeesQuery.isError && <p className="state error">Unable to load employees.</p>}
+          {employeesQuery.isLoading && <p className="state">{t('employeesPage.loading')}</p>}
+          {employeesQuery.isError && <p className="state error">{t('employeesPage.loadError')}</p>}
 
           {employeesQuery.data && employeesQuery.data.length > 0 && (
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Employee</th>
-                    <th>Roles</th>
-                    <th>Status</th>
-                    <th>Super User</th>
+                    <th>{t('employeesPage.employee')}</th>
+                    <th>{t('employeesPage.roles')}</th>
+                    <th>{t('employeesPage.status')}</th>
+                    <th>{t('employeesPage.superUser')}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -285,8 +289,8 @@ export function EmployeesPage() {
                           ))}
                         </div>
                       </td>
-                      <td>{employee.isActive ? 'Active' : 'Inactive'}</td>
-                      <td>{employee.isSuperUser ? 'Yes' : 'No'}</td>
+                      <td>{employee.isActive ? t('employeesPage.active') : t('employeesPage.inactive')}</td>
+                      <td>{employee.isSuperUser ? t('employeesPage.yes') : t('employeesPage.no')}</td>
                       <td>
                         <button
                           className="button secondary"
@@ -294,7 +298,7 @@ export function EmployeesPage() {
                             selectedId === employee.id ? null : employee.id,
                           )}
                         >
-                          {selectedId === employee.id ? 'Close' : 'Manage'}
+                          {selectedId === employee.id ? t('employeesPage.close') : t('employeesPage.manage')}
                         </button>
                       </td>
                     </tr>
@@ -310,11 +314,11 @@ export function EmployeesPage() {
         <section className="panel employee-manager">
           <div className="panel-heading">
             <div>
-              <h2>Manage {selectedEmployee.fullName}</h2>
+              <h2>{t('employeesPage.manageName', { name: selectedEmployee.fullName })}</h2>
               <p className="muted">
                 {selectedEmployee.isSuperUser
-                  ? 'Protected Clinic Super User'
-                  : 'Clinic employee account'}
+                  ? t('employeesPage.protectedSuperUser')
+                  : t('employeesPage.clinicEmployeeAccount')}
               </p>
             </div>
           </div>
@@ -322,15 +326,15 @@ export function EmployeesPage() {
           {canManageUsers && (
             <div className="employee-form">
               <label>
-                <span>Full name</span>
+                <span>{t('employeesPage.fullName')}</span>
                 <input value={editName} onChange={(event) => setEditName(event.target.value)} />
               </label>
               <label>
-                <span>Email</span>
+                <span>{t('employeesPage.email')}</span>
                 <input type="email" value={editEmail} onChange={(event) => setEditEmail(event.target.value)} />
               </label>
               <label>
-                <span>Phone</span>
+                <span>{t('employeesPage.phone')}</span>
                 <input value={editPhone} onChange={(event) => setEditPhone(event.target.value)} />
               </label>
               <div className="actions">
@@ -346,7 +350,7 @@ export function EmployeesPage() {
                     })
                   }
                 >
-                  {updateMutation.isPending ? 'Saving…' : 'Save profile'}
+                  {updateMutation.isPending ? t('employeesPage.saving') : t('employeesPage.saveProfile')}
                 </button>
               </div>
             </div>
@@ -354,7 +358,7 @@ export function EmployeesPage() {
 
           {canManageRbac && !selectedEmployee.isSuperUser && (
             <div className="employee-section">
-              <span className="form-section-label">Assigned system roles</span>
+              <span className="form-section-label">{t('employeesPage.assignedRoles')}</span>
               <div className="role-choice-grid">
                 {(rolesQuery.data ?? []).map((role) => (
                   <label className="role-choice" key={role.code}>
@@ -381,7 +385,7 @@ export function EmployeesPage() {
                     })
                   }
                 >
-                  {rolesMutation.isPending ? 'Saving roles…' : 'Save roles'}
+                  {rolesMutation.isPending ? t('employeesPage.savingRoles') : t('employeesPage.saveRoles')}
                 </button>
               </div>
             </div>
@@ -389,7 +393,7 @@ export function EmployeesPage() {
 
           {canManageStatus && (
             <div className="employee-section">
-              <span className="form-section-label">Account status</span>
+              <span className="form-section-label">{t('employeesPage.accountStatus')}</span>
               <div className="actions">
                 <button
                   className={`button ${selectedEmployee.isActive ? 'danger' : 'secondary'}`}
@@ -402,10 +406,10 @@ export function EmployeesPage() {
                   }
                 >
                   {statusMutation.isPending
-                    ? 'Updating…'
+                    ? t('employeesPage.updating')
                     : selectedEmployee.isActive
-                      ? 'Deactivate employee'
-                      : 'Activate employee'}
+                      ? t('employeesPage.deactivate')
+                      : t('employeesPage.activate')}
                 </button>
               </div>
             </div>
@@ -413,7 +417,7 @@ export function EmployeesPage() {
 
           {(updateMutation.isError || rolesMutation.isError || statusMutation.isError) && (
             <p className="field-error">
-              Unable to apply this employee change. Protected Super User and last-Super-User rules may apply.
+              {t('employeesPage.changeError')}
             </p>
           )}
         </section>
@@ -423,14 +427,14 @@ export function EmployeesPage() {
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Protected role matrix</h2>
+              <h2>{t('employeesPage.matrixTitle')}</h2>
               <p className="muted">
-                Role definitions and built-in permissions are backend-owned and read-only in V1.
+                {t('employeesPage.matrixIntro')}
               </p>
             </div>
           </div>
 
-          {rolesQuery.isLoading && <p className="state">Loading roles…</p>}
+          {rolesQuery.isLoading && <p className="state">{t('employeesPage.loadingRoles')}</p>}
           {rolesQuery.data && (
             <div className="role-matrix">
               {rolesQuery.data.map((role) => (
