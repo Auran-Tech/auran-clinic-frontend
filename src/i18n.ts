@@ -1,7 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-const storedLanguage = localStorage.getItem('auran.language')
+const storedLanguage = typeof window === 'undefined'\n  ? null\n  : window.localStorage.getItem('auran.language')
 const initialLanguage = storedLanguage === 'ar' ? 'ar' : 'en'
 
 void i18n.use(initReactI18next).init({
