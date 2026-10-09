@@ -187,7 +187,7 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
                             disabled={unlinkMutation.isPending}
                             onClick={() => unlinkMutation.mutate(link.linkId)}
                           >
-                            Unlink
+                            {t('orderAttachments.unlink')}
                           </button>
                         )}
                       </article>
