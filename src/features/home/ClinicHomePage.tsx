@@ -1,66 +1,68 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { getDashboardSummary } from '../reporting/api'
 
 interface HomeCard {
-  title: string
-  description: string
+  titleKey: string
+  descriptionKey: string
   to: string
   permission?: string
 }
 
 const cards: HomeCard[] = [
   {
-    title: 'Patients',
-    description: 'Find patients, review profiles, check in visits, and manage attachments.',
+    titleKey: 'home.cards.patientsTitle',
+    descriptionKey: 'home.cards.patientsDescription',
     to: '/patients',
     permission: 'Patient_View',
   },
   {
-    title: 'Live queue',
-    description: 'Track active visits and move patients through clinic workflow stages.',
+    titleKey: 'home.cards.queueTitle',
+    descriptionKey: 'home.cards.queueDescription',
     to: '/queue',
     permission: 'Queue_View',
   },
   {
-    title: 'Pending documentation',
-    description: 'Finish clinical notes that still require documentation.',
+    titleKey: 'home.cards.pendingTitle',
+    descriptionKey: 'home.cards.pendingDescription',
     to: '/pending-documentation',
     permission: 'Visit_View',
   },
   {
-    title: 'Follow-ups',
-    description: 'Review due, overdue, upcoming, and completed follow-up work.',
+    titleKey: 'home.cards.followUpsTitle',
+    descriptionKey: 'home.cards.followUpsDescription',
     to: '/follow-ups',
     permission: 'FollowUp_View',
   },
   {
-    title: 'Employees & access',
-    description: 'Manage clinic staff and role assignments.',
+    titleKey: 'home.cards.employeesTitle',
+    descriptionKey: 'home.cards.employeesDescription',
     to: '/employees',
   },
   {
-    title: 'Dashboard & reports',
-    description: 'Review clinic KPIs and visit-level reporting.',
+    titleKey: 'home.cards.reportsTitle',
+    descriptionKey: 'home.cards.reportsDescription',
     to: '/reports',
     permission: 'Reports_View',
   },
   {
-    title: 'Clinic settings',
-    description: 'Configure clinic behavior, workflows, fields, and localization.',
+    titleKey: 'home.cards.settingsTitle',
+    descriptionKey: 'home.cards.settingsDescription',
     to: '/settings',
     permission: 'Settings_View',
   },
   {
-    title: 'System guide',
-    description: 'Open the role-aware guide for the main Auran Clinic workflows.',
+    titleKey: 'home.cards.guideTitle',
+    descriptionKey: 'home.cards.guideDescription',
     to: '/guide',
   },
 ]
 
 export function ClinicHomePage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const canViewReports = auth.hasPermission('Reports_View')
 
   const dashboardQuery = useQuery({
@@ -83,13 +85,11 @@ export function ClinicHomePage() {
       <section className="home-hero">
         <div>
           <p className="eyebrow">Auran Clinic</p>
-          <h1>Welcome, {auth.session?.user.fullName}</h1>
-          <p className="muted">
-            Choose a workflow below or use today’s clinic summary to decide what needs attention first.
-          </p>
+          <h1>{t('home.welcome', { name: auth.session?.user.fullName ?? '' })}</h1>
+          <p className="muted">{t('home.intro')}</p>
         </div>
         <Link className="button secondary nav-button" to="/guide">
-          System guide
+          {t('home.systemGuide')}
         </Link>
       </section>
 
@@ -97,45 +97,43 @@ export function ClinicHomePage() {
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Today at a glance</h2>
-              <p className="muted">
-                Live operational metrics based on the clinic’s configured local date.
-              </p>
+              <h2>{t('home.todayAtGlance')}</h2>
+              <p className="muted">{t('home.todayIntro')}</p>
             </div>
             <Link className="button secondary nav-button" to="/reports">
-              Open reports
+              {t('home.openReports')}
             </Link>
           </div>
 
-          {dashboardQuery.isLoading && <p className="state">Loading clinic summary…</p>}
+          {dashboardQuery.isLoading && <p className="state">{t('home.loadingSummary')}</p>}
           {dashboardQuery.isError && (
-            <p className="state error">Unable to load clinic summary.</p>
+            <p className="state error">{t('home.summaryError')}</p>
           )}
 
           {dashboardQuery.data && (
             <>
               <div className="dashboard-date">
-                Clinic local date: <strong>{dashboardQuery.data.localDate}</strong>
+                {t('home.clinicLocalDate')}: <strong>{dashboardQuery.data.localDate}</strong>
               </div>
               <div className="kpi-grid home-kpi-grid">
                 <article className="kpi-card">
-                  <span>Visits today</span>
+                  <span>{t('home.visitsToday')}</span>
                   <strong>{dashboardQuery.data.visitsToday}</strong>
                 </article>
                 <article className="kpi-card">
-                  <span>Active queue</span>
+                  <span>{t('home.activeQueue')}</span>
                   <strong>{dashboardQuery.data.activeQueue}</strong>
                 </article>
                 <article className="kpi-card">
-                  <span>Pending documentation</span>
+                  <span>{t('home.pendingDocumentation')}</span>
                   <strong>{dashboardQuery.data.pendingDocumentation}</strong>
                 </article>
                 <article className="kpi-card">
-                  <span>Follow-ups today</span>
+                  <span>{t('home.followUpsToday')}</span>
                   <strong>{dashboardQuery.data.followUpsToday}</strong>
                 </article>
                 <article className="kpi-card kpi-attention">
-                  <span>Overdue follow-ups</span>
+                  <span>{t('home.overdueFollowUps')}</span>
                   <strong>{dashboardQuery.data.overdueFollowUps}</strong>
                 </article>
               </div>
@@ -147,10 +145,8 @@ export function ClinicHomePage() {
       <section className="home-workflows">
         <div className="panel-heading">
           <div>
-            <h2>Your workflows</h2>
-            <p className="muted">
-              Only workflows available to your current permissions are shown.
-            </p>
+            <h2>{t('home.yourWorkflows')}</h2>
+            <p className="muted">{t('home.workflowsIntro')}</p>
           </div>
         </div>
 
@@ -158,8 +154,8 @@ export function ClinicHomePage() {
           {visibleCards.map((card) => (
             <Link className="home-card" key={card.to} to={card.to}>
               <div>
-                <h3>{card.title}</h3>
-                <p className="muted">{card.description}</p>
+                <h3>{t(card.titleKey)}</h3>
+                <p className="muted">{t(card.descriptionKey)}</p>
               </div>
               <span className="home-card-action" aria-hidden="true">→</span>
             </Link>
