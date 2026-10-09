@@ -1,58 +1,59 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 interface GuideCard {
-  title: string
-  description: string
+  titleKey: string
+  descriptionKey: string
   to: string
   permission?: string
 }
 
 const cards: GuideCard[] = [
   {
-    title: 'Patients',
-    description: 'Find, create, review, and update patient profiles before starting a visit.',
+    titleKey: 'common.patients',
+    descriptionKey: 'guide.cards.patientsDescription',
     to: '/patients',
     permission: 'Patient_View',
   },
   {
-    title: 'Live queue',
-    description: 'Track active visits and move patients through configured clinic workflow stages.',
+    titleKey: 'common.queue',
+    descriptionKey: 'guide.cards.queueDescription',
     to: '/queue',
     permission: 'Queue_View',
   },
   {
-    title: 'Pending documentation',
-    description: 'Finish Draft or Pending clinical notes after the operational visit has ended.',
+    titleKey: 'common.pendingDocumentation',
+    descriptionKey: 'guide.cards.pendingDescription',
     to: '/pending-documentation',
     permission: 'Visit_View',
   },
   {
-    title: 'Follow-ups',
-    description: 'Review today, upcoming, overdue, and completed patient follow-up recommendations.',
+    titleKey: 'common.followUps',
+    descriptionKey: 'guide.cards.followUpsDescription',
     to: '/follow-ups',
     permission: 'FollowUp_View',
   },
   {
-    title: 'Employees & RBAC',
-    description: 'Manage clinic staff accounts, status, and protected system-role assignments.',
+    titleKey: 'guide.cards.employeesTitle',
+    descriptionKey: 'guide.cards.employeesDescription',
     to: '/employees',
   },
   {
-    title: 'Clinic settings',
-    description: 'Configure branding, localization, workflow stages, contact details, and clinical defaults.',
+    titleKey: 'common.settings',
+    descriptionKey: 'guide.cards.settingsDescription',
     to: '/settings',
     permission: 'Settings_View',
   },
   {
-    title: 'Dashboard & reports',
-    description: 'Review operational KPIs, filter visit activity, and export permitted reports.',
+    titleKey: 'guide.cards.reportsTitle',
+    descriptionKey: 'guide.cards.reportsDescription',
     to: '/reports',
     permission: 'Reports_View',
   },
   {
-    title: 'Audit log',
-    description: 'Review sensitive administrative and clinical actions recorded for the clinic.',
+    titleKey: 'guide.cards.auditTitle',
+    descriptionKey: 'guide.cards.auditDescription',
     to: '/audit',
     permission: 'Audit_View',
   },
@@ -60,6 +61,7 @@ const cards: GuideCard[] = [
 
 export function SystemGuidePage() {
   const auth = useAuth()
+  const { t } = useTranslation()
 
   const visibleCards = cards.filter((card) => {
     if (card.to === '/employees') {
@@ -72,26 +74,24 @@ export function SystemGuidePage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Help</p>
-          <h1>System guide</h1>
-          <p className="muted">
-            Use this guide as a role-aware map of the main Auran Clinic workflows.
-          </p>
+          <p className="eyebrow">{t('guide.eyebrow')}</p>
+          <h1>{t('guide.title')}</h1>
+          <p className="muted">{t('guide.intro')}</p>
         </div>
         <Link className="button secondary nav-button" to="/patients">
-          Patients
+          {t('common.patients')}
         </Link>
       </section>
 
       <section className="guide-intro panel">
-        <h2>Recommended daily flow</h2>
+        <h2>{t('guide.recommendedFlow')}</h2>
         <ol className="guide-steps">
-          <li>Find or create the patient.</li>
-          <li>Start the visit and check the patient into the clinic queue.</li>
-          <li>Move the patient through the configured workflow stages.</li>
-          <li>Document clinical sessions and orders as care is delivered.</li>
-          <li>Complete or mark documentation pending before/after exit.</li>
-          <li>Schedule follow-up when further review is needed.</li>
+          <li>{t('guide.steps.patient')}</li>
+          <li>{t('guide.steps.checkIn')}</li>
+          <li>{t('guide.steps.workflow')}</li>
+          <li>{t('guide.steps.clinical')}</li>
+          <li>{t('guide.steps.documentation')}</li>
+          <li>{t('guide.steps.followUp')}</li>
         </ol>
       </section>
 
@@ -99,22 +99,19 @@ export function SystemGuidePage() {
         {visibleCards.map((card) => (
           <article className="guide-card" key={card.to}>
             <div>
-              <h2>{card.title}</h2>
-              <p className="muted">{card.description}</p>
+              <h2>{t(card.titleKey)}</h2>
+              <p className="muted">{t(card.descriptionKey)}</p>
             </div>
             <Link className="button secondary nav-button" to={card.to}>
-              Open
+              {t('common.open')}
             </Link>
           </article>
         ))}
       </section>
 
       <section className="panel">
-        <h2>Access & safety rules</h2>
-        <p className="muted">
-          The backend is always the source of truth for permissions and clinic isolation.
-          Navigation and buttons only improve the user experience; they do not replace API authorization.
-        </p>
+        <h2>{t('guide.accessTitle')}</h2>
+        <p className="muted">{t('guide.accessText')}</p>
       </section>
     </main>
   )
