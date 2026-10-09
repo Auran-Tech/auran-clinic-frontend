@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -18,6 +19,7 @@ export function PatientDetailsPage() {
   const { patientId } = useParams()
   const queryClient = useQueryClient()
   const auth = useAuth()
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [selectedDoctorId, setSelectedDoctorId] = useState('')
 
@@ -73,14 +75,14 @@ export function PatientDetailsPage() {
   })
 
   if (patientQuery.isLoading) {
-    return <main className="page-shell"><p className="state">Loading patient…</p></main>
+    return <main className="page-shell"><p className="state">{t('patientDetails.loading')}</p></main>
   }
 
   if (patientQuery.isError || !patientQuery.data) {
     return (
       <main className="page-shell">
-        <Link className="back-link" to="/patients">← Patients</Link>
-        <p className="state error">Unable to load patient.</p>
+        <Link className="back-link" to="/patients">← {t('patientDetails.back')}</Link>
+        <p className="state error">{t('patientDetails.loadError')}</p>
       </main>
     )
   }
@@ -91,17 +93,17 @@ export function PatientDetailsPage() {
 
   return (
     <main className="page-shell">
-      <Link className="back-link" to="/patients">← Patients</Link>
+      <Link className="back-link" to="/patients">← {t('patientDetails.back')}</Link>
 
       <section className="page-header patient-profile-header">
         <div>
           <p className="eyebrow mono">{patient.patientNumber}</p>
           <h1>{patient.fullName}</h1>
-          <p className="muted">Patient profile</p>
+          <p className="muted">{t('patientDetails.profile')}</p>
         </div>
         {canEdit && (
           <button className="button secondary" onClick={() => setEditing((value) => !value)}>
-            {editing ? 'Cancel edit' : 'Edit patient'}
+            {editing ? t('patientDetails.cancelEdit') : t('patientDetails.editPatient')}
           </button>
         )}
       </section>
@@ -109,37 +111,37 @@ export function PatientDetailsPage() {
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>Clinic visit</h2>
-            <p className="muted">Check the patient in and place them into the configured clinic workflow.</p>
+            <h2>{t('patientDetails.clinicVisit')}</h2>
+            <p className="muted">{t('patientDetails.clinicVisitIntro')}</p>
           </div>
         </div>
 
-        {activeVisitQuery.isLoading && <p className="state">Checking active visit…</p>}
+        {activeVisitQuery.isLoading && <p className="state">{t('patientDetails.checkingActive')}</p>}
 
         {activeVisitQuery.data ? (
           <div className="visit-status-card">
             <div>
-              <span className="profile-label">Active visit</span>
+              <span className="profile-label">{t('patientDetails.activeVisit')}</span>
               <strong>{activeVisitQuery.data.status}</strong>
             </div>
             <div>
-              <span className="profile-label">Current stage</span>
+              <span className="profile-label">{t('patientDetails.currentStage')}</span>
               <strong>{activeVisitQuery.data.workflowStatusName}</strong>
             </div>
             <div>
-              <span className="profile-label">Checked in</span>
+              <span className="profile-label">{t('patientDetails.checkedIn')}</span>
               <strong>{new Date(activeVisitQuery.data.entryAtUtc).toLocaleString()}</strong>
             </div>
           </div>
         ) : canStartVisit ? (
           <div className="checkin-form">
             <label>
-              <span>Doctor</span>
+              <span>{t('common.doctor')}</span>
               <select
                 value={selectedDoctorId}
                 onChange={(event) => setSelectedDoctorId(event.target.value)}
               >
-                <option value="">Select doctor</option>
+                <option value="">{t('patientDetails.selectDoctor')}</option>
                 {(doctorsQuery.data ?? []).map((doctor) => (
                   <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>
                 ))}
@@ -147,13 +149,11 @@ export function PatientDetailsPage() {
             </label>
 
             {doctorsQuery.isError && (
-              <p className="field-error">Unable to load doctors.</p>
+              <p className="field-error">{t('patientDetails.doctorsError')}</p>
             )}
 
             {startVisitMutation.isError && (
-              <p className="field-error">
-                Unable to check in this patient. They may already have an active visit or clinic workflow is not configured.
-              </p>
+              <p className="field-error">{t('patientDetails.checkInError')}</p>
             )}
 
             <div className="actions">
@@ -165,12 +165,14 @@ export function PatientDetailsPage() {
                   doctorId: selectedDoctorId,
                 })}
               >
-                {startVisitMutation.isPending ? 'Checking in…' : 'Check in patient'}
+                {startVisitMutation.isPending
+                  ? t('patientDetails.checkingIn')
+                  : t('patientDetails.checkIn')}
               </button>
             </div>
           </div>
         ) : (
-          <p className="muted">You do not have permission to start clinic visits.</p>
+          <p className="muted">{t('patientDetails.noStartPermission')}</p>
         )}
       </section>
 
@@ -199,7 +201,7 @@ export function PatientDetailsPage() {
             }))}
           >
             <label>
-              <span>Full name</span>
+              <span>{t('patients.fullName')}</span>
               <input {...form.register('fullName')} />
               {form.formState.errors.fullName && (
                 <small className="field-error">{form.formState.errors.fullName.message}</small>
@@ -207,7 +209,7 @@ export function PatientDetailsPage() {
             </label>
 
             <label>
-              <span>Phone</span>
+              <span>{t('patients.phone')}</span>
               <input {...form.register('phone')} inputMode="tel" />
               {form.formState.errors.phone && (
                 <small className="field-error">{form.formState.errors.phone.message}</small>
@@ -215,33 +217,33 @@ export function PatientDetailsPage() {
             </label>
 
             <label>
-              <span>Gender</span>
+              <span>{t('patients.gender')}</span>
               <select {...form.register('gender')}>
-                <option value="">Not specified</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
+                <option value="">{t('patients.notSpecified')}</option>
+                <option value="Female">{t('patients.female')}</option>
+                <option value="Male">{t('patients.male')}</option>
               </select>
             </label>
 
             <label>
-              <span>Date of birth</span>
+              <span>{t('patients.dob')}</span>
               <input type="date" {...form.register('dateOfBirth')} />
             </label>
 
             <label className="full-width">
-              <span>Notes</span>
+              <span>{t('patients.notes')}</span>
               <textarea rows={4} {...form.register('notes')} />
             </label>
 
             {updateMutation.isError && (
-              <p className="field-error full-width">
-                Unable to update patient. The phone number may already belong to another patient.
-              </p>
+              <p className="field-error full-width">{t('patientDetails.updateError')}</p>
             )}
 
             <div className="actions full-width">
               <button className="button primary" type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? 'Saving…' : 'Save changes'}
+                {updateMutation.isPending
+                  ? t('patientDetails.saving')
+                  : t('patientDetails.saveChanges')}
               </button>
             </div>
           </form>
@@ -250,26 +252,26 @@ export function PatientDetailsPage() {
         <section className="panel">
           <div className="profile-grid">
             <div>
-              <span className="profile-label">Phone</span>
+              <span className="profile-label">{t('patients.phone')}</span>
               <strong className="mono">{patient.phone}</strong>
             </div>
             <div>
-              <span className="profile-label">Date of birth</span>
-              <strong>{patient.dateOfBirth ?? 'Not provided'}</strong>
+              <span className="profile-label">{t('patients.dob')}</span>
+              <strong>{patient.dateOfBirth ?? t('patientDetails.notProvided')}</strong>
             </div>
             <div>
-              <span className="profile-label">Gender</span>
-              <strong>{patient.gender ?? 'Not provided'}</strong>
+              <span className="profile-label">{t('patients.gender')}</span>
+              <strong>{patient.gender ?? t('patientDetails.notProvided')}</strong>
             </div>
             <div>
-              <span className="profile-label">Registered</span>
+              <span className="profile-label">{t('patientDetails.registered')}</span>
               <strong>{new Date(patient.createdDate).toLocaleDateString()}</strong>
             </div>
           </div>
 
           <div className="profile-notes">
-            <span className="profile-label">Notes</span>
-            <p>{patient.notes || 'No notes recorded.'}</p>
+            <span className="profile-label">{t('patients.notes')}</span>
+            <p>{patient.notes || t('patientDetails.noNotes')}</p>
           </div>
         </section>
       )}
