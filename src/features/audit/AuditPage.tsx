@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
@@ -8,6 +9,7 @@ import type { AuditLogQuery } from './types'
 
 export function AuditPage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const canView = auth.hasPermission('Audit_View')
   const [action, setAction] = useState('')
   const [entityType, setEntityType] = useState('')
@@ -40,7 +42,7 @@ export function AuditPage() {
   if (!canView) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view audit logs.</p>
+        <p className="state error">{t('auditPage.denied')}</p>
       </main>
     )
   }
@@ -49,58 +51,56 @@ export function AuditPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">System administration</p>
-          <h1>Audit log</h1>
-          <p className="muted">
-            Review sensitive clinic activity across users, visits, files, follow-ups, settings, and clinical workflows.
-          </p>
+          <p className="eyebrow">{t('auditPage.eyebrow')}</p>
+          <h1>{t('auditPage.title')}</h1>
+          <p className="muted">{t('auditPage.intro')}</p>
         </div>
         <div className="actions">
           {auth.hasPermission('Reports_View') && (
-            <Link className="button secondary nav-button" to="/reports">Dashboard</Link>
+            <Link className="button secondary nav-button" to="/reports">{t('common.dashboard')}</Link>
           )}
           {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">Settings</Link>
+            <Link className="button secondary nav-button" to="/settings">{t('common.settings')}</Link>
           )}
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">Employees</Link>
+            <Link className="button secondary nav-button" to="/employees">{t('common.employees')}</Link>
           )}
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h2>Search audit events</h2>
-            <p className="muted">Results are tenant-scoped and capped at 200 events.</p>
+            <h2>{t('auditPage.searchTitle')}</h2>
+            <p className="muted">{t('auditPage.searchIntro')}</p>
           </div>
         </div>
 
         <div className="audit-filters">
           <label>
-            <span>Action</span>
+            <span>{t('auditPage.action')}</span>
             <input
               value={action}
               onChange={(event) => setAction(event.target.value)}
-              placeholder="e.g. User., FollowUp."
+              placeholder={t('auditPage.actionPlaceholder')}
             />
           </label>
 
           <label>
-            <span>Entity type</span>
+            <span>{t('auditPage.entityType')}</span>
             <input
               value={entityType}
               onChange={(event) => setEntityType(event.target.value)}
-              placeholder="e.g. Visit"
+              placeholder={t('auditPage.entityPlaceholder')}
             />
           </label>
 
           {auth.hasPermission('Users_View') && (
             <label>
-              <span>Actor</span>
+              <span>{t('auditPage.actor')}</span>
               <select value={actorUserId} onChange={(event) => setActorUserId(event.target.value)}>
-                <option value="">All actors</option>
+                <option value="">{t('auditPage.allActors')}</option>
                 {(employeesQuery.data ?? []).map((employee) => (
                   <option key={employee.id} value={employee.id}>
                     {employee.fullName}
@@ -111,7 +111,7 @@ export function AuditPage() {
           )}
 
           <label>
-            <span>From</span>
+            <span>{t('auditPage.from')}</span>
             <input
               type="datetime-local"
               value={fromLocal}
@@ -120,7 +120,7 @@ export function AuditPage() {
           </label>
 
           <label>
-            <span>To</span>
+            <span>{t('auditPage.to')}</span>
             <input
               type="datetime-local"
               value={toLocal}
@@ -129,7 +129,7 @@ export function AuditPage() {
           </label>
 
           <label>
-            <span>Rows</span>
+            <span>{t('auditPage.rows')}</span>
             <select value={take} onChange={(event) => setTake(Number(event.target.value))}>
               <option value={50}>50</option>
               <option value={100}>100</option>
@@ -149,16 +149,16 @@ export function AuditPage() {
                 setTake(100)
               }}
             >
-              Clear filters
+              {t('auditPage.clear')}
             </button>
           </div>
         </div>
 
-        {logsQuery.isLoading && <p className="state">Loading audit events…</p>}
-        {logsQuery.isError && <p className="state error">Unable to load audit events.</p>}
+        {logsQuery.isLoading && <p className="state">{t('auditPage.loading')}</p>}
+        {logsQuery.isError && <p className="state error">{t('auditPage.loadError')}</p>}
 
         {logsQuery.data?.length === 0 && (
-          <p className="state">No audit events match these filters.</p>
+          <p className="state">{t('auditPage.empty')}</p>
         )}
 
         {logsQuery.data && logsQuery.data.length > 0 && (
@@ -179,18 +179,18 @@ export function AuditPage() {
 
                 <dl className="audit-meta">
                   <div>
-                    <dt>Actor</dt>
+                    <dt>{t('auditPage.actor')}</dt>
                     <dd>{log.actorName}</dd>
                   </div>
                   <div>
-                    <dt>IP</dt>
+                    <dt>{t('auditPage.ip')}</dt>
                     <dd className="mono">{log.ipAddress ?? '—'}</dd>
                   </div>
                 </dl>
 
                 {log.metadataJson && (
                   <details>
-                    <summary>Metadata</summary>
+                    <summary>{t('auditPage.metadata')}</summary>
                     <pre className="audit-json">{formatMetadata(log.metadataJson)}</pre>
                   </details>
                 )}
