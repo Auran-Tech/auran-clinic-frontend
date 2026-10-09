@@ -120,7 +120,7 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
             items={query.data.conditions.map((item) => ({
               id: item.id,
               title: item.name,
-              details: item.notes,
+              details: item.notes ?? undefined,
             }))}
             canEdit={canEdit}
             onDelete={(id) => deleteConditionMutation.mutate(id)}
