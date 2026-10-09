@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
@@ -7,6 +8,7 @@ import type { QueueEntry } from './types'
 
 function QueueRow({ entry }: { entry: QueueEntry }) {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const auth = useAuth()
   const [selectedStatusId, setSelectedStatusId] = useState('')
 
@@ -39,7 +41,7 @@ function QueueRow({ entry }: { entry: QueueEntry }) {
           <strong>{entry.patientName}</strong>
         </Link>
       </td>
-      <td>{entry.doctorName ?? 'Unassigned'}</td>
+      <td>{entry.doctorName ?? t('queuePage.unassigned')}</td>
       <td>
         <span className="status-pill">
           <span
@@ -50,7 +52,7 @@ function QueueRow({ entry }: { entry: QueueEntry }) {
           {entry.workflowStatusName}
         </span>
       </td>
-      <td>{elapsedMinutes} min</td>
+      <td>{t('queuePage.minutes', { count: elapsedMinutes })}</td>
       <td>
         {auth.hasPermission('Queue_Move') ? (
           <div className="queue-move">
@@ -58,7 +60,7 @@ function QueueRow({ entry }: { entry: QueueEntry }) {
               value={selectedStatusId}
               onChange={(event) => setSelectedStatusId(event.target.value)}
             >
-              <option value="">Move to…</option>
+              <option value="">{t('queuePage.moveTo')}</option>
               {(transitionsQuery.data ?? []).map((status) => (
                 <option key={status.workflowStatusId} value={status.workflowStatusId}>
                   {status.name}
@@ -73,14 +75,14 @@ function QueueRow({ entry }: { entry: QueueEntry }) {
                 toWorkflowStatusId: selectedStatusId,
               })}
             >
-              {moveMutation.isPending ? 'Moving…' : 'Move'}
+              {moveMutation.isPending ? t('queuePage.moving') : t('queuePage.move')}
             </button>
             {moveMutation.isError && (
-              <small className="field-error">Transition is no longer available.</small>
+              <small className="field-error">{t('queuePage.transitionError')}</small>
             )}
           </div>
         ) : (
-          <span className="muted">View only</span>
+          <span className="muted">{t('queuePage.viewOnly')}</span>
         )}
       </td>
     </tr>
@@ -89,6 +91,7 @@ function QueueRow({ entry }: { entry: QueueEntry }) {
 
 export function QueuePage() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queueQuery = useQuery({
     queryKey: ['queue'],
     queryFn: getActiveQueue,
@@ -99,7 +102,7 @@ export function QueuePage() {
   if (!auth.hasPermission('Queue_View')) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view the clinic queue.</p>
+        <p className="state error">{t('queuePage.denied')}</p>
       </main>
     )
   }
@@ -108,34 +111,34 @@ export function QueuePage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Clinic operations</p>
-          <h1>Live queue</h1>
-          <p className="muted">Active patients ordered by workflow stage and arrival time.</p>
+          <p className="eyebrow">{t('queuePage.eyebrow')}</p>
+          <h1>{t('queuePage.title')}</h1>
+          <p className="muted">{t('queuePage.intro')}</p>
         </div>
         <div className="actions">
           <Link className="button secondary nav-button" to="/pending-documentation">
-            Pending documentation
+            {t('common.pendingDocumentation')}
           </Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/patients">{t('common.patients')}</Link>
         </div>
       </section>
 
       <section className="panel">
-        {queueQuery.isLoading && <p className="state">Loading clinic queue…</p>}
-        {queueQuery.isError && <p className="state error">Unable to load the clinic queue.</p>}
-        {queueQuery.data?.length === 0 && <p className="state">The active queue is empty.</p>}
+        {queueQuery.isLoading && <p className="state">{t('queuePage.loading')}</p>}
+        {queueQuery.isError && <p className="state error">{t('queuePage.loadError')}</p>}
+        {queueQuery.data?.length === 0 && <p className="state">{t('queuePage.empty')}</p>}
 
         {queueQuery.data && queueQuery.data.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Patient no.</th>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Stage</th>
-                  <th>Waiting</th>
-                  <th>Workflow</th>
+                  <th>{t('queuePage.patientNo')}</th>
+                  <th>{t('queuePage.patient')}</th>
+                  <th>{t('queuePage.doctor')}</th>
+                  <th>{t('queuePage.stage')}</th>
+                  <th>{t('queuePage.waiting')}</th>
+                  <th>{t('queuePage.workflow')}</th>
                 </tr>
               </thead>
               <tbody>
