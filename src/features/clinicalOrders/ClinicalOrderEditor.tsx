@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   getClinicalOrder,
@@ -18,6 +19,7 @@ interface SectionDraft {
 
 export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canEdit = auth.hasPermission('Visit_Edit')
   const [drafts, setDrafts] = useState<Record<string, SectionDraft>>({})
@@ -100,23 +102,23 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical order / prescription</h2>
+          <h2>{t('clinicalOrders.title')}</h2>
           <p className="muted">
-            Sections come from the clinic configuration and are stored with this visit.
+            {t('clinicalOrders.intro')}
           </p>
         </div>
       </div>
 
       {(definitionsQuery.isLoading || orderQuery.isLoading) && (
-        <p className="state">Loading clinical order…</p>
+        <p className="state">{t('clinicalOrders.loading')}</p>
       )}
 
       {definitionsQuery.isError || orderQuery.isError ? (
-        <p className="state error">Unable to load clinical order configuration.</p>
+        <p className="state error">{t('clinicalOrders.loadError')}</p>
       ) : null}
 
       {!definitionsQuery.isLoading && definitions.length === 0 && (
-        <p className="state">No enabled clinical-order sections are configured.</p>
+        <p className="state">{t('clinicalOrders.noSections')}</p>
       )}
 
       {definitions.length > 0 && (
@@ -133,12 +135,12 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
 
                 {definition.sectionType === 'Structured' ? (
                   <label>
-                    <span>Items</span>
+                    <span>{t('clinicalOrders.items')}</span>
                     <textarea
                       rows={5}
                       value={draft.itemsText}
                       disabled={!canEdit}
-                      placeholder="One item per line"
+                      placeholder={t('clinicalOrders.onePerLine')}
                       onChange={(event) =>
                         setDrafts((current) => ({
                           ...current,
@@ -152,7 +154,7 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
                   </label>
                 ) : (
                   <label>
-                    <span>Content</span>
+                    <span>{t('clinicalOrders.content')}</span>
                     <textarea
                       rows={5}
                       value={draft.textValue}
@@ -180,13 +182,13 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
                 disabled={saveMutation.isPending}
                 onClick={() => saveMutation.mutate()}
               >
-                {saveMutation.isPending ? 'Saving…' : 'Save clinical order'}
+                {saveMutation.isPending ? t('clinicalOrders.saving') : t('clinicalOrders.save')}
               </button>
             </div>
           )}
 
           {saveMutation.isError && (
-            <p className="field-error">Unable to save the clinical order.</p>
+            <p className="field-error">{t('clinicalOrders.saveError')}</p>
           )}
         </div>
       )}
