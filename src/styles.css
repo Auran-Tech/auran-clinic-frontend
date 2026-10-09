@@ -1382,3 +1382,67 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+
+@media print {
+  @page {
+    size: auto;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  body {
+    font-size: 11pt;
+  }
+
+  .no-print,
+  .locale-switch {
+    display: none !important;
+  }
+
+  .page-shell {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .panel,
+  .kpi-card {
+    border: 0;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  table {
+    width: 100%;
+    font-size: 9pt;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  td,
+  th {
+    break-inside: avoid;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
