@@ -33,7 +33,8 @@ if (!frontend || !api) {
         throw new Error('Only HTTP(S) URLs are supported');
       }
       const response = await fetch(url, {
-        redirect: 'follow',
+        // Do not silently treat an SSO/login redirect as a healthy deployment.
+        redirect: 'manual',
         signal: AbortSignal.timeout(timeoutMs),
         headers: { Accept: check.expectHtml ? 'text/html' : '*/*' },
       });
