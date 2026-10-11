@@ -32,6 +32,12 @@ if (!frontend || !api) {
       if (!['https:', 'http:'].includes(url.protocol)) {
         throw new Error('Only HTTP(S) URLs are supported');
       }
+      // Require an explicit deployment origin, not a URL with credentials or an unexpected path.
+      const suppliedBase = new URL(check.base);
+      if (suppliedBase.username || suppliedBase.password || suppliedBase.search || suppliedBase.hash ||
+          suppliedBase.pathname !== '/') {
+        throw new Error('Deployment base URL must be an origin without credentials, path, query or fragment');
+      }
       const response = await fetch(url, {
         // Do not silently treat an SSO/login redirect as a healthy deployment.
         redirect: 'manual',
