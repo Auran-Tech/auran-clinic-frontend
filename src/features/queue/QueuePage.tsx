@@ -112,7 +112,12 @@ export function QueuePage() {
           <h1>Live queue</h1>
           <p className="muted">Active patients ordered by workflow stage and arrival time.</p>
         </div>
-        <Link className="button secondary nav-button" to="/patients">Patients</Link>
+        <div className="actions">
+          <Link className="button secondary nav-button" to="/pending-documentation">
+            Pending documentation
+          </Link>
+          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+        </div>
       </section>
 
       <section className="panel">

@@ -4,6 +4,8 @@ import { ProtectedRoute } from '../features/auth/ProtectedRoute'
 import { PatientDetailsPage } from '../features/patients/PatientDetailsPage'
 import { PatientsPage } from '../features/patients/PatientsPage'
 import { QueuePage } from '../features/queue/QueuePage'
+import { PendingDocumentationPage } from '../features/pendingDocumentation/PendingDocumentationPage'
+import { FollowUpsPage } from '../features/followUps/FollowUpsPage'
 
 export function App() {
   return (
@@ -30,6 +32,22 @@ export function App() {
         element={
           <ProtectedRoute>
             <QueuePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pending-documentation"
+        element={
+          <ProtectedRoute>
+            <PendingDocumentationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/follow-ups"
+        element={
+          <ProtectedRoute>
+            <FollowUpsPage />
           </ProtectedRoute>
         }
       />
