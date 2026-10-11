@@ -49,6 +49,9 @@ export function FollowUpsPage() {
           <p className="muted">Today, upcoming, overdue, and completed patient reviews.</p>
         </div>
         <div className="actions">
+          {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
+            <Link className="button secondary nav-button" to="/employees">Employees</Link>
+          )}
           <Link className="button secondary nav-button" to="/pending-documentation">
             Pending documentation
           </Link>

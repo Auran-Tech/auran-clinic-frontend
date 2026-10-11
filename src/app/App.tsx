@@ -6,6 +6,7 @@ import { PatientsPage } from '../features/patients/PatientsPage'
 import { QueuePage } from '../features/queue/QueuePage'
 import { PendingDocumentationPage } from '../features/pendingDocumentation/PendingDocumentationPage'
 import { FollowUpsPage } from '../features/followUps/FollowUpsPage'
+import { EmployeesPage } from '../features/employees/EmployeesPage'
 
 export function App() {
   return (
@@ -48,6 +49,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <FollowUpsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees"
+        element={
+          <ProtectedRoute>
+            <EmployeesPage />
           </ProtectedRoute>
         }
       />

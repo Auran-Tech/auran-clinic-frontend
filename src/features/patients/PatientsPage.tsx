@@ -89,6 +89,11 @@ export function PatientsPage() {
               {showForm ? 'Close' : 'Add patient'}
             </button>
           )}
+          {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
+            <Link className="button secondary nav-button" to="/employees">
+              Employees
+            </Link>
+          )}
           {auth.hasPermission('Queue_View') && (
             <Link className="button secondary nav-button" to="/queue">
               Live queue
