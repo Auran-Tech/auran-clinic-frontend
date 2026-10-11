@@ -89,6 +89,11 @@ export function PatientsPage() {
               {showForm ? 'Close' : 'Add patient'}
             </button>
           )}
+          {auth.hasPermission('Queue_View') && (
+            <Link className="button secondary nav-button" to="/queue">
+              Live queue
+            </Link>
+          )}
           <button className="button secondary" onClick={() => void auth.signOut()}>
             Sign out
           </button>

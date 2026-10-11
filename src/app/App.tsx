@@ -3,6 +3,7 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { ProtectedRoute } from '../features/auth/ProtectedRoute'
 import { PatientDetailsPage } from '../features/patients/PatientDetailsPage'
 import { PatientsPage } from '../features/patients/PatientsPage'
+import { QueuePage } from '../features/queue/QueuePage'
 
 export function App() {
   return (
@@ -21,6 +22,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <PatientDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/queue"
+        element={
+          <ProtectedRoute>
+            <QueuePage />
           </ProtectedRoute>
         }
       />

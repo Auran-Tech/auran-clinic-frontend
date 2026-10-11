@@ -240,3 +240,41 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
     grid-template-columns: 1fr;
   }
 }
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.queue-move {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 280px;
+}
+
+.queue-move .field-error {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .queue-move {
+    min-width: 220px;
+  }
+}
