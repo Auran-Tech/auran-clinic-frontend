@@ -9,6 +9,7 @@ import { FollowUpsPage } from '../features/followUps/FollowUpsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { ReportingPage } from '../features/reporting/ReportingPage'
+import { AuditPage } from '../features/audit/AuditPage'
 
 export function App() {
   return (
@@ -75,6 +76,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <ReportingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/audit"
+        element={
+          <ProtectedRoute>
+            <AuditPage />
           </ProtectedRoute>
         }
       />
