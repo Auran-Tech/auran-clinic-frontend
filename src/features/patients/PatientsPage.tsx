@@ -89,6 +89,11 @@ export function PatientsPage() {
               {showForm ? 'Close' : 'Add patient'}
             </button>
           )}
+          {auth.hasPermission('Settings_View') && (
+            <Link className="button secondary nav-button" to="/settings">
+              Settings
+            </Link>
+          )}
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
             <Link className="button secondary nav-button" to="/employees">
               Employees

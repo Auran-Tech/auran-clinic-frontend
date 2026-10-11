@@ -144,6 +144,9 @@ export function EmployeesPage() {
           </p>
         </div>
         <div className="actions">
+          {auth.hasPermission('Settings_View') && (
+            <Link className="button secondary nav-button" to="/settings">Settings</Link>
+          )}
           <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
           <Link className="button secondary nav-button" to="/queue">Live queue</Link>
           <Link className="button secondary nav-button" to="/patients">Patients</Link>
