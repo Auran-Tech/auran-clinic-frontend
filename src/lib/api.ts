@@ -11,6 +11,7 @@ if (!baseURL) {
 
 export const api = axios.create({
   baseURL,
+  timeout: 20_000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -18,6 +19,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const session = readSession()
+  const language = localStorage.getItem('auran.language')
+  config.headers['Accept-Language'] = language === 'ar' ? 'ar' : 'en'
+
   if (session?.accessToken) {
     config.headers.Authorization = `Bearer ${session.accessToken}`
   }

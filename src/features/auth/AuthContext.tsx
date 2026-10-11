@@ -1,6 +1,7 @@
 import {
   createContext,
   type PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -22,12 +23,12 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: PropsWithChildren) {
   const [sessionState, setSessionState] = useState<AuthSession | null>(() => readSession())
 
-  const setSession = (session: AuthSession) => {
+  const setSession = useCallback((session: AuthSession) => {
     writeSession(session)
     setSessionState(session)
-  }
+  }, [])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const refreshToken = sessionState?.refreshToken
     try {
       if (refreshToken) {
@@ -37,7 +38,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       clearSession()
       setSessionState(null)
     }
-  }
+  }, [sessionState?.refreshToken])
 
   useEffect(() => {
     const handleExpired = () => {
@@ -48,13 +49,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => window.removeEventListener('auran:session-expired', handleExpired)
   }, [])
 
+  const hasPermission = useCallback(
+    (permission: string) =>
+      Boolean(sessionState?.user.isSuperUser || sessionState?.user.permissions.includes(permission)),
+    [sessionState],
+  )
+
   const value = useMemo<AuthContextValue>(() => ({
     session: sessionState,
     setSession,
     signOut,
-    hasPermission: (permission) =>
-      Boolean(sessionState?.user.isSuperUser || sessionState?.user.permissions.includes(permission)),
-  }), [sessionState])
+    hasPermission,
+  }), [sessionState, setSession, signOut, hasPermission])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

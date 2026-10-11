@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { App } from './app/App'
 import { LocaleController } from './app/LocaleController'
+import { AppErrorBoundary } from './app/AppErrorBoundary'
 import './i18n'
 import { AuthProvider } from './features/auth/AuthContext'
 import './styles.css'
@@ -23,7 +24,9 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <LocaleController />
-          <App />
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
