@@ -712,3 +712,54 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
     flex-direction: column;
   }
 }
+
+.locale-switch {
+  position: fixed;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  z-index: 1000;
+  border: 1px solid #d8dee3;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, .94);
+  color: #17202a;
+  box-shadow: 0 8px 24px rgba(20, 35, 50, .08);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+html[dir="rtl"] body {
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+html[dir="rtl"] .page-header,
+html[dir="rtl"] .panel-heading,
+html[dir="rtl"] .toolbar,
+html[dir="rtl"] .actions,
+html[dir="rtl"] .audit-card-heading,
+html[dir="rtl"] .settings-save-bar {
+  direction: rtl;
+}
+
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="datetime-local"],
+html[dir="rtl"] .mono {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+html[dir="rtl"] table {
+  direction: rtl;
+}
+
+html[dir="rtl"] th,
+html[dir="rtl"] td {
+  text-align: start;
+}
