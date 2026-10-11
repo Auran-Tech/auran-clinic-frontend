@@ -8,6 +8,7 @@ import { PendingDocumentationPage } from '../features/pendingDocumentation/Pendi
 import { FollowUpsPage } from '../features/followUps/FollowUpsPage'
 import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
+import { ReportingPage } from '../features/reporting/ReportingPage'
 
 export function App() {
   return (
@@ -66,6 +67,14 @@ export function App() {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <ReportingPage />
           </ProtectedRoute>
         }
       />
