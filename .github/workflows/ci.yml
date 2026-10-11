@@ -31,6 +31,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Deployment smoke regression
+        run: node --test scripts/smoke-deployment.check.mjs
+
       - name: Build
         run: npm run build
         env:

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -32,6 +33,7 @@ const fieldTypes = [
 
 export function PatientProfileConfigurationPanel() {
   const auth = useAuth()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
@@ -64,24 +66,24 @@ export function PatientProfileConfigurationPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Patient profile configuration</h2>
+          <h2>{t('adminConfig.patientProfile.title')}</h2>
           <p className="muted">
-            Define clinic-specific patient sections and typed fields without changing the database schema.
+            {t('adminConfig.patientProfile.intro')}
           </p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading patient profile configuration…</p>}
-      {query.isError && <p className="state error">Unable to load patient profile configuration.</p>}
+      {query.isLoading && <p className="state">{t('adminConfig.patientProfile.loading')}</p>}
+      {query.isError && <p className="state error">{t('adminConfig.patientProfile.loadError')}</p>}
 
       {canManage && (
         <div className="profile-config-create-row">
           <label>
-            <span>New section name</span>
+            <span>{t('adminConfig.patientProfile.newSection')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -100,14 +102,14 @@ export function PatientProfileConfigurationPanel() {
                 })
               }
             >
-              {createSectionMutation.isPending ? 'Adding…' : 'Add section'}
+              {createSectionMutation.isPending ? t('adminConfig.adding') : t('adminConfig.patientProfile.addSection')}
             </button>
           </div>
         </div>
       )}
 
       {createSectionMutation.isError && (
-        <p className="field-error">Unable to create patient profile section.</p>
+        <p className="field-error">{t('adminConfig.patientProfile.createSectionError')}</p>
       )}
 
       <div className="profile-config-sections">
@@ -122,7 +124,7 @@ export function PatientProfileConfigurationPanel() {
       </div>
 
       {query.data?.sections.length === 0 && (
-        <p className="state">No patient profile sections are configured.</p>
+        <p className="state">{t('adminConfig.patientProfile.empty')}</p>
       )}
     </section>
   )
@@ -137,6 +139,7 @@ function SectionEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [name, setName] = useState(section.name)
   const [sortOrder, setSortOrder] = useState(section.sortOrder)
   const [isEnabled, setIsEnabled] = useState(section.isEnabled)
@@ -186,8 +189,8 @@ function SectionEditor({
         <div>
           <h3>{section.name}</h3>
           <div className="role-badges">
-            {section.isSystem && <span className="role-badge">System</span>}
-            {!section.isEnabled && <span className="role-badge">Disabled</span>}
+            {section.isSystem && <span className="role-badge">{t('adminConfig.system')}</span>}
+            {!section.isEnabled && <span className="role-badge">{t('adminConfig.disabled')}</span>}
           </div>
         </div>
       </div>
@@ -195,11 +198,11 @@ function SectionEditor({
       {canManage && (
         <div className="profile-config-section-form">
           <label>
-            <span>Section name</span>
+            <span>{t('adminConfig.patientProfile.sectionName')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -214,7 +217,7 @@ function SectionEditor({
               disabled={section.isSystem}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('adminConfig.enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -222,27 +225,27 @@ function SectionEditor({
               disabled={!name.trim() || sortOrder < 0 || sectionMutation.isPending}
               onClick={() => sectionMutation.mutate()}
             >
-              {sectionMutation.isPending ? 'Saving…' : 'Save section'}
+              {sectionMutation.isPending ? t('adminConfig.saving') : t('adminConfig.patientProfile.saveSection')}
             </button>
           </div>
         </div>
       )}
 
       {sectionMutation.isError && (
-        <p className="field-error">Unable to update this section.</p>
+        <p className="field-error">{t('adminConfig.patientProfile.updateSectionError')}</p>
       )}
 
       {canManage && (
         <div className="profile-config-new-field">
           <label>
-            <span>New field label</span>
+            <span>{t('adminConfig.patientProfile.newField')}</span>
             <input
               value={fieldLabel}
               onChange={(event) => setFieldLabel(event.target.value)}
             />
           </label>
           <label>
-            <span>Field type</span>
+            <span>{t('adminConfig.patientProfile.fieldType')}</span>
             <select value={fieldType} onChange={(event) => setFieldType(event.target.value)}>
               {fieldTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
@@ -250,7 +253,7 @@ function SectionEditor({
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -264,7 +267,7 @@ function SectionEditor({
               checked={fieldRequired}
               onChange={(event) => setFieldRequired(event.target.checked)}
             />
-            <span>Required</span>
+            <span>{t('adminConfig.required')}</span>
           </label>
           <div className="actions">
             <button
@@ -272,14 +275,14 @@ function SectionEditor({
               disabled={!fieldLabel.trim() || fieldSortOrder < 0 || fieldMutation.isPending}
               onClick={() => fieldMutation.mutate()}
             >
-              {fieldMutation.isPending ? 'Adding…' : 'Add field'}
+              {fieldMutation.isPending ? t('adminConfig.adding') : t('adminConfig.patientProfile.addField')}
             </button>
           </div>
         </div>
       )}
 
       {fieldMutation.isError && (
-        <p className="field-error">Unable to add this field.</p>
+        <p className="field-error">{t('adminConfig.patientProfile.addFieldError')}</p>
       )}
 
       <div className="profile-config-fields">
@@ -294,7 +297,7 @@ function SectionEditor({
       </div>
 
       {section.fields.length === 0 && (
-        <p className="muted">No fields configured in this section.</p>
+        <p className="muted">{t('adminConfig.patientProfile.noFields')}</p>
       )}
     </article>
   )
@@ -309,6 +312,7 @@ function FieldEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [label, setLabel] = useState(field.label)
   const [fieldType, setFieldType] = useState(field.fieldType)
   const [isRequired, setIsRequired] = useState(field.isRequired)
@@ -364,9 +368,9 @@ function FieldEditor({
           <strong>{field.label}</strong>
           <div className="role-badges">
             <span className="role-badge">{field.fieldType}</span>
-            {field.isRequired && <span className="role-badge">Required</span>}
-            {!field.isEnabled && <span className="role-badge">Disabled</span>}
-            {field.hasValues && <span className="role-badge">Has values</span>}
+            {field.isRequired && <span className="role-badge">{t('adminConfig.required')}</span>}
+            {!field.isEnabled && <span className="role-badge">{t('adminConfig.disabled')}</span>}
+            {field.hasValues && <span className="role-badge">{t('adminConfig.hasValues')}</span>}
           </div>
         </div>
       </div>
@@ -374,11 +378,11 @@ function FieldEditor({
       {canManage && (
         <div className="profile-config-field-form">
           <label>
-            <span>Label</span>
+            <span>{t('adminConfig.label')}</span>
             <input value={label} onChange={(event) => setLabel(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('adminConfig.type')}</span>
             <select
               value={fieldType}
               disabled={field.hasValues}
@@ -390,7 +394,7 @@ function FieldEditor({
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('adminConfig.sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -404,7 +408,7 @@ function FieldEditor({
               checked={isRequired}
               onChange={(event) => setIsRequired(event.target.checked)}
             />
-            <span>Required</span>
+            <span>{t('adminConfig.required')}</span>
           </label>
           <label className="inline-toggle">
             <input
@@ -412,7 +416,7 @@ function FieldEditor({
               checked={isEnabled}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('adminConfig.enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -420,7 +424,7 @@ function FieldEditor({
               disabled={!label.trim() || sortOrder < 0 || updateMutation.isPending}
               onClick={() => updateMutation.mutate()}
             >
-              {updateMutation.isPending ? 'Saving…' : 'Save field'}
+              {updateMutation.isPending ? t('adminConfig.saving') : t('adminConfig.save')}
             </button>
           </div>
         </div>
@@ -428,41 +432,41 @@ function FieldEditor({
 
       {field.hasValues && canManage && (
         <p className="muted">
-          Field type is locked because patient values have already been recorded.
+          {t('adminConfig.patientProfile.typeLocked')}
         </p>
       )}
 
       {updateMutation.isError && (
-        <p className="field-error">Unable to update this field.</p>
+        <p className="field-error">{t('adminConfig.patientProfile.updateFieldError')}</p>
       )}
 
       {isSelect && (
         <div className="profile-config-options">
           <div className="profile-config-options-heading">
-            <strong>Options</strong>
+            <strong>{t('adminConfig.options')}</strong>
             {field.hasValues && (
-              <span className="muted">Values/delete are locked after patient data exists.</span>
+              <span className="muted">{t('adminConfig.patientProfile.optionLocked')}</span>
             )}
           </div>
 
           {canManage && (
             <div className="profile-config-option-form">
               <label>
-                <span>Label</span>
+                <span>{t('adminConfig.label')}</span>
                 <input
                   value={optionLabel}
                   onChange={(event) => setOptionLabel(event.target.value)}
                 />
               </label>
               <label>
-                <span>Value</span>
+                <span>{t('adminConfig.value')}</span>
                 <input
                   value={optionValue}
                   onChange={(event) => setOptionValue(event.target.value)}
                 />
               </label>
               <label>
-                <span>Order</span>
+                <span>{t('adminConfig.order')}</span>
                 <input
                   type="number"
                   min="0"
@@ -481,14 +485,14 @@ function FieldEditor({
                   }
                   onClick={() => createOptionMutation.mutate()}
                 >
-                  {createOptionMutation.isPending ? 'Adding…' : 'Add option'}
+                  {createOptionMutation.isPending ? t('adminConfig.adding') : t('adminConfig.patientProfile.addOption')}
                 </button>
               </div>
             </div>
           )}
 
           {createOptionMutation.isError && (
-            <p className="field-error">Unable to add option. Option values must be unique.</p>
+            <p className="field-error">{t('adminConfig.patientProfile.addOptionError')}</p>
           )}
 
           <div className="profile-config-option-list">
@@ -519,6 +523,7 @@ function OptionEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation()
   const [label, setLabel] = useState(option.label)
   const [value, setValue] = useState(option.value)
   const [sortOrder, setSortOrder] = useState(option.sortOrder)
@@ -556,18 +561,18 @@ function OptionEditor({
   return (
     <div className="profile-config-option-editor">
       <input
-        aria-label="Option label"
+        aria-label={t('adminConfig.label')}
         value={label}
         onChange={(event) => setLabel(event.target.value)}
       />
       <input
-        aria-label="Option value"
+        aria-label={t('adminConfig.value')}
         value={value}
         disabled={fieldHasValues}
         onChange={(event) => setValue(event.target.value)}
       />
       <input
-        aria-label="Option sort order"
+        aria-label={t('adminConfig.sortOrder')}
         type="number"
         min="0"
         value={sortOrder}
@@ -579,19 +584,19 @@ function OptionEditor({
           disabled={!label.trim() || !value.trim() || sortOrder < 0 || updateMutation.isPending}
           onClick={() => updateMutation.mutate()}
         >
-          Save
+          {t('adminConfig.save')}
         </button>
         <button
           className="button danger"
           disabled={fieldHasValues || deleteMutation.isPending}
           onClick={() => deleteMutation.mutate()}
         >
-          Delete
+          {t('adminConfig.delete')}
         </button>
       </div>
       {(updateMutation.isError || deleteMutation.isError) && (
         <p className="field-error full-width">
-          Unable to change this option. Existing patient values may protect it.
+          {t('adminConfig.patientProfile.optionChangeError')}
         </p>
       )}
     </div>
