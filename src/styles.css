@@ -778,3 +778,90 @@ html[dir="rtl"] td {
 .fatal-error-card .button {
   margin-top: 20px;
 }
+
+.workflow-status-form {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 22px;
+}
+
+.workflow-status-list {
+  display: grid;
+  gap: 10px;
+}
+
+.workflow-status-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e2e7eb;
+  border-radius: 14px;
+  background: #fafbfc;
+}
+
+.workflow-status-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workflow-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.12);
+  flex: 0 0 auto;
+}
+
+.workflow-status-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #68727d;
+  font-size: .85rem;
+}
+
+.workflow-edit-box,
+.workflow-transition-section {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #edf0f2;
+}
+
+.workflow-matrix-wrap {
+  overflow-x: auto;
+}
+
+.workflow-matrix th,
+.workflow-matrix td {
+  text-align: center;
+}
+
+.workflow-matrix th:first-child {
+  text-align: start;
+}
+
+.workflow-matrix input {
+  width: auto;
+}
+
+@media (max-width: 1000px) {
+  .workflow-status-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-status-card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .workflow-status-form {
+    grid-template-columns: 1fr;
+  }
+}
