@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthContext'
 import { getPatient, updatePatient } from './api'
 import { getDoctors } from '../users/api'
 import { getActiveVisit, startVisit } from '../visits/api'
+import { ClinicalWorkspace } from '../clinicalSessions/ClinicalWorkspace'
 import { patientSchema, type PatientFormValues } from './schema'
 
 export function PatientDetailsPage() {
@@ -167,6 +168,10 @@ export function PatientDetailsPage() {
           <p className="muted">You do not have permission to start clinic visits.</p>
         )}
       </section>
+
+      {activeVisitQuery.data && (
+        <ClinicalWorkspace visitId={activeVisitQuery.data.id} />
+      )}
 
       {editing ? (
         <section className="panel">

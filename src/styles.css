@@ -278,3 +278,29 @@ th { color: #68727d; font-size: .78rem; text-transform: uppercase; letter-spacin
     min-width: 220px;
   }
 }
+
+.clinical-empty {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+
+.clinical-session-meta {
+  margin-bottom: 24px;
+}
+
+.clinical-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.clinical-actions {
+  margin-top: 20px;
+}
+
+@media (max-width: 720px) {
+  .clinical-form {
+    grid-template-columns: 1fr;
+  }
+}
