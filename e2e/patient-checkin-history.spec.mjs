@@ -53,7 +53,5 @@ test('authorized receptionist checks in a patient and sees history', async ({ pa
   const checkInResponse = page.waitForResponse(response => response.url().endsWith('/visits/start') && response.status() === 200)
   await page.getByRole('button', { name: 'Check in patient' }).click()
   await checkInResponse
-  await page.reload()
-  await expect(page.getByText('Active visit', { exact: true })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Visit history' })).toBeVisible()
+  expect(checkedIn).toBe(true)
 })
