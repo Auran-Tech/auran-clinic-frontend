@@ -2,9 +2,9 @@
 
 This manually triggered workflow runs the frontend, published backend API, and SQL Server 2022 in one GitHub Actions job.
 
-## Prerequisite
+## Repository access
 
-In the **frontend repository**, configure the Actions secret `E2E_BACKEND_READ_TOKEN` with **Contents: Read** permission for `Auran-Tech/auran-clinic-backend`. Use a fine-grained repository-scoped token, not a broadly privileged token. Never commit the token.
+The backend repository is currently **public**, so the workflow checks it out with the job's standard GitHub token. No separate `E2E_BACKEND_READ_TOKEN` is required. If the backend later becomes private, configure appropriate least-privilege checkout credentials before running the workflow.
 
 ## Running
 
