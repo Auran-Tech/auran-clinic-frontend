@@ -35,3 +35,12 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: https://example.invalid/api
+
+      - name: Install browser test runner
+        run: npm install --no-save @playwright/test
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser smoke tests
+        run: npx playwright test
