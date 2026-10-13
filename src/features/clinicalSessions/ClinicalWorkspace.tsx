@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { ClinicalOrderEditor } from '../clinicalOrders/ClinicalOrderEditor'
+import { ClinicalMeasurementsPanel } from '../clinicalMeasurements/ClinicalMeasurementsPanel'
 import { FollowUpCreatePanel } from '../followUps/FollowUpCreatePanel'
 import {
   endClinicalSession,
@@ -167,6 +168,7 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
         </>
       )}
     </section>
+    <ClinicalMeasurementsPanel visitId={visitId} />
     <ClinicalOrderEditor visitId={visitId} />
     <FollowUpCreatePanel visitId={visitId} />
     </>
