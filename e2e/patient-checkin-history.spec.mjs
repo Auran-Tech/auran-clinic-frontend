@@ -21,6 +21,9 @@ test('authorized receptionist checks in a patient and sees history', async ({ pa
       id: patientId, fullName: 'Demo Patient', patientNumber: 'P-100',
       phone: '01012345678', createdDate: '2026-10-01T09:00:00Z',
     }
+    if (path.includes('/patient-profile/configuration')) data = { sections: [] }
+    if (path.endsWith('/patient-profile')) data = { values: [] }
+    if (path.endsWith('/patient-medical-history')) data = { conditions: [], allergies: [], medications: [] }
     if (path.endsWith('/users')) data = [
       { id: 'doctor-1', fullName: 'Demo Doctor', isActive: true, roles: ['DOCTOR'] },
     ]
