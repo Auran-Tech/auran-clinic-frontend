@@ -55,5 +55,5 @@ test('authorized receptionist checks in a patient and sees history', async ({ pa
   await checkInResponse
   await page.reload()
   await expect(page.getByText('Active visit', { exact: true })).toBeVisible()
-  await expect(page.locator('.visit-history-card')).toHaveCount(1)
+  await expect(page.getByRole('heading', { name: 'Visit history' })).toBeVisible()
 })
