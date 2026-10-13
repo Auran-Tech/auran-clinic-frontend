@@ -28,6 +28,16 @@ jobs:
       - name: Checkout frontend
         uses: actions/checkout@v4
 
+      - name: Validate backend repository access
+        shell: bash
+        env:
+          BACKEND_READ_TOKEN: ${{ secrets.E2E_BACKEND_READ_TOKEN }}
+        run: |
+          if [ -z "$BACKEND_READ_TOKEN" ]; then
+            echo "::error::Set E2E_BACKEND_READ_TOKEN with read access to Auran-Tech/auran-clinic-backend before running this workflow."
+            exit 1
+          fi
+
       - name: Checkout backend
         uses: actions/checkout@v4
         with:
@@ -89,6 +99,14 @@ jobs:
 
       - name: Run live-stack browser smoke
         run: npx playwright test e2e/live-stack.spec.mjs
+
+      - name: Upload browser test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-stack-playwright-results
+          path: test-results/
+          if-no-files-found: ignore
 
       - name: Upload backend logs on failure
         if: failure()
