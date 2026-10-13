@@ -28,21 +28,10 @@ jobs:
       - name: Checkout frontend
         uses: actions/checkout@v4
 
-      - name: Validate backend repository access
-        shell: bash
-        env:
-          BACKEND_READ_TOKEN: ${{ secrets.E2E_BACKEND_READ_TOKEN }}
-        run: |
-          if [ -z "$BACKEND_READ_TOKEN" ]; then
-            echo "::error::Set E2E_BACKEND_READ_TOKEN with read access to Auran-Tech/auran-clinic-backend before running this workflow."
-            exit 1
-          fi
-
-      - name: Checkout backend
+      - name: Checkout public backend
         uses: actions/checkout@v4
         with:
           repository: Auran-Tech/auran-clinic-backend
-          token: ${{ secrets.E2E_BACKEND_READ_TOKEN }}
           path: backend
 
       - name: Setup .NET 10
