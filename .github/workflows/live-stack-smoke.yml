@@ -56,7 +56,7 @@ jobs:
           dotnet restore Auran.Clinic.sln
           dotnet publish src/Auran.Clinic.Api/Auran.Clinic.Api.csproj -c Release -o ./artifacts/api
           for attempt in {1..30}; do
-            if dotnet ef database update --project src/Auran.Clinic.Infrastructure/Auran.Clinic.Infrastructure.csproj --startup-project src/Auran.Clinic.Api/Auran.Clinic.Api.csproj -c Release; then
+            if dotnet ef database update --project src/Auran.Clinic.Infrastructure/Auran.Clinic.Infrastructure.csproj --startup-project src/Auran.Clinic.Api/Auran.Clinic.Api.csproj --configuration Release --no-build; then
               exit 0
             fi
             sleep 2
