@@ -10,6 +10,7 @@ import { getActiveVisit, startVisit } from '../visits/api'
 import { ClinicalWorkspace } from '../clinicalSessions/ClinicalWorkspace'
 import { PatientAttachmentsPanel } from '../attachments/PatientAttachmentsPanel'
 import { DynamicPatientProfilePanel } from '../patientProfile/DynamicPatientProfilePanel'
+import { PatientMedicalHistoryPanel } from '../patientMedicalHistory/PatientMedicalHistoryPanel'
 import { patientSchema, type PatientFormValues } from './schema'
 
 export function PatientDetailsPage() {
@@ -176,6 +177,8 @@ export function PatientDetailsPage() {
       )}
 
       <DynamicPatientProfilePanel patientId={patient.id} />
+
+      <PatientMedicalHistoryPanel patientId={patient.id} />
 
       <PatientAttachmentsPanel patientId={patient.id} />
 
