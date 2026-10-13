@@ -23,7 +23,7 @@ test('authorized receptionist registers a patient in the browser', async ({ page
     const request = route.request()
     if (request.method() === 'POST') {
       const body = request.postDataJSON()
-      patients.push({ ...patient, ...body })
+      patients[0] = { ...patient, ...body }
       await route.fulfill({ status: 201, contentType: 'application/json',
         body: JSON.stringify({ status: true, data: patients[0] }) })
       return
@@ -40,5 +40,5 @@ test('authorized receptionist registers a patient in the browser', async ({ page
   await page.getByLabel('Full name').fill(patient.fullName)
   await page.getByLabel('Phone').fill(patient.phone)
   await page.getByRole('button', { name: 'Save patient' }).click()
-  await expect(page.getByRole('link', { name: patient.fullName })).toBeVisible()
+  await expect(page.getByRole('link', { name: patient.fullName })).toHaveCount(1)
 })
