@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
-import type { StartVisitInput, Visit } from './types'
+import type { PatientVisitHistory, StartVisitInput, Visit } from './types'
 
 export async function getActiveVisit(patientId: string) {
   try {
@@ -22,5 +22,21 @@ export async function startVisit(input: StartVisitInput) {
   if (!response.data.data) {
     throw new Error(response.data.message ?? 'Unable to start visit.')
   }
+  return response.data.data
+}
+
+export async function getPatientVisitHistory(
+  patientId: string,
+  page = 1,
+  pageSize = 10,
+) {
+  const response = await api.get<BaseResponse<PatientVisitHistory>>('/visits/history', {
+    params: { patientId, page, pageSize },
+  })
+
+  if (!response.data.data) {
+    throw new Error(response.data.message ?? 'Unable to load visit history.')
+  }
+
   return response.data.data
 }
