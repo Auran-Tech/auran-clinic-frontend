@@ -23,6 +23,7 @@ jobs:
       ASPNETCORE_URLS: http://127.0.0.1:5085
       ASPNETCORE_ENVIRONMENT: Production
       E2E_API_BASE_URL: http://127.0.0.1:5085/api
+      Cors__AllowedOrigins__0: http://127.0.0.1:4173
     steps:
       - name: Checkout frontend
         uses: actions/checkout@v4
