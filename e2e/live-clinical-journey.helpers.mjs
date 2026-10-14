@@ -1,5 +1,6 @@
 import { verifyClinicalDocumentation } from './live-clinical-documentation.helpers.mjs'
 import { expect } from '@playwright/test'
+import { finalizePendingVisit } from './live-pending-documentation.helpers.mjs'
 import { authenticatedHeaders, configureQueue, createDoctor } from './live-clinical-flow.helpers.mjs'
 
 export async function runClinicalJourney(page, request) {
@@ -56,6 +57,7 @@ export async function runClinicalJourney(page, request) {
   const moved = await moveResponse
   expect(moved.status()).toBe(200)
   await expect(row).toHaveCount(0)
+  await finalizePendingVisit(page, request, api, clinicToken, patient.fullName, visit.id)
   const history = await request.get(api + '/visits/history?patientId=' + patient.id, {
     headers: authenticatedHeaders(clinicToken),
   })
