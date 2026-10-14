@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/live-stack-smoke.yml'
       - 'e2e/live-stack.spec.mjs'
+      - 'e2e/live-login-rejection.spec.mjs'
 
 permissions:
   contents: read
@@ -91,7 +92,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
-        run: npx playwright test e2e/live-stack.spec.mjs
+        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs
 
       - name: Upload browser test artifacts on failure
         if: failure()
