@@ -14,8 +14,8 @@ import type {
 export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) {
   const auth = useAuth()
   const queryClient = useQueryClient()
-  const canView = auth.hasPermission('Visit_View')
-  const canEdit = auth.hasPermission('Visit_Edit')
+  const canView = auth.hasPermission('Visit_View') && auth.hasPermission('Files_View')
+  const canEdit = auth.hasPermission('Visit_Edit') && auth.hasPermission('Files_View')
   const [sectionId, setSectionId] = useState('')
   const [fileId, setFileId] = useState('')
 
