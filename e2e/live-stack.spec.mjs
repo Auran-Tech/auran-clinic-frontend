@@ -1,3 +1,4 @@
+import { runClinicalJourney } from './live-clinical-journey.helpers.mjs'
 import { test, expect } from '@playwright/test'
 
 const backend = process.env.E2E_API_BASE_URL
@@ -29,4 +30,9 @@ test('real frontend browser can reach hosted API and SQL readiness', async ({ pa
   await page.goto('/patients')
   await expect(page).toHaveURL('http://127.0.0.1:4173/login')
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
+})
+
+test('real authenticated doctor check-in and queue exit', async ({ page, request }) => {
+  test.skip(!backend, 'Requires running backend')
+  await runClinicalJourney(page, request)
 })
