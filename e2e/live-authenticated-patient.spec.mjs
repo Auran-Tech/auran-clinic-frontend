@@ -72,4 +72,44 @@ test('real clinic authentication and patient registration persist in SQL Server'
   })
   expect(persisted.status(), await persisted.text()).toBe(200)
   expect((await persisted.json()).data.fullName).toBe(patientName)
+
+  // A separately provisioned tenant must not read another clinic's patient by ID.
+  const clinicBAdmin = {
+    fullName: 'Second Clinic Administrator',
+    email: `clinic-b-${id}@example.invalid`,
+    password: 'CI_Only_SecondClinic_123456!',
+  }
+  const secondProvision = await request.post(`${backend}/platform/clinics`, {
+    headers: { Authorization: `Bearer ${platformSession.accessToken}` },
+    data: {
+      name: `CI Isolation Clinic ${id}`,
+      codePrefix: 'CI',
+      timeZoneId: 'Africa/Cairo',
+      patientNumberPrefix: 'PT',
+      locale: 'en',
+      admin: clinicBAdmin,
+    },
+  })
+  expect(secondProvision.status(), await secondProvision.text()).toBe(201)
+  const secondLogin = await request.post(`${backend}/auth/login`, {
+    data: { email: clinicBAdmin.email, password: clinicBAdmin.password },
+  })
+  expect(secondLogin.status(), await secondLogin.text()).toBe(200)
+  const secondToken = (await secondLogin.json()).data.accessToken
+
+  const crossClinicRead = await request.get(`${backend}/patients/detail?patientId=${patient.id}`, {
+    headers: { Authorization: `Bearer ${secondToken}` },
+  })
+  expect(crossClinicRead.status()).toBe(404)
+  const secondList = await request.get(`${backend}/patients?search=${encodeURIComponent(patientName)}`, {
+    headers: { Authorization: `Bearer ${secondToken}` },
+  })
+  expect(secondList.status(), await secondList.text()).toBe(200)
+  expect((await secondList.json()).data.data).toHaveLength(0)
+
+  // The first clinic still has access to its own patient.
+  const ownAfterIsolationCheck = await request.get(`${backend}/patients/detail?patientId=${patient.id}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  expect(ownAfterIsolationCheck.status()).toBe(200)
 })
