@@ -31,6 +31,7 @@ jobs:
       E2E_API_BASE_URL: http://127.0.0.1:5085/api
       Cors__AllowedOrigins__0: http://127.0.0.1:4173
       PlatformBootstrap__Enabled: 'true'
+      ApiSecurity__LoginPermitLimit: '20'
       PlatformBootstrap__FullName: CI Platform Administrator
       PlatformBootstrap__Email: auran-ci-platform@example.invalid
       PlatformBootstrap__Password: CI_Only_Platform_123456!
