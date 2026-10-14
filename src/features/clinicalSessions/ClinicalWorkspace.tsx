@@ -27,6 +27,9 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
     enabled: auth.hasPermission('Visit_View'),
   })
 
+  const documentationCompleted = sessionQuery.data?.documentationStatus === 'Completed'
+  const canEditDraft = canEdit && !documentationCompleted
+
   const [chiefComplaint, setChiefComplaint] = useState('')
   const [examination, setExamination] = useState('')
   const [diagnosis, setDiagnosis] = useState('')
@@ -121,38 +124,46 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
             </div>
           </div>
 
+          {documentationCompleted && (
+            <p className="state" role="status">
+              Clinical documentation has been finalized and is read-only. End the active session when finished.
+            </p>
+          )}
+
           <div className="clinical-form">
             <label>
               <span>Chief complaint</span>
-              <textarea rows={3} value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} disabled={!canEdit} />
+              <textarea rows={3} value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} disabled={!canEditDraft} />
             </label>
             <label>
               <span>Examination</span>
-              <textarea rows={4} value={examination} onChange={(e) => setExamination(e.target.value)} disabled={!canEdit} />
+              <textarea rows={4} value={examination} onChange={(e) => setExamination(e.target.value)} disabled={!canEditDraft} />
             </label>
             <label>
               <span>Diagnosis</span>
-              <textarea rows={4} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} disabled={!canEdit} />
+              <textarea rows={4} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} disabled={!canEditDraft} />
             </label>
             <label>
               <span>Treatment plan</span>
-              <textarea rows={4} value={treatmentPlan} onChange={(e) => setTreatmentPlan(e.target.value)} disabled={!canEdit} />
+              <textarea rows={4} value={treatmentPlan} onChange={(e) => setTreatmentPlan(e.target.value)} disabled={!canEditDraft} />
             </label>
             <label className="full-width">
               <span>Clinical notes</span>
-              <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!canEdit} />
+              <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!canEditDraft} />
             </label>
           </div>
 
           {canEdit && (
             <div className="actions clinical-actions">
-              <button
-                className="button secondary"
-                disabled={saveMutation.isPending}
-                onClick={() => saveMutation.mutate()}
-              >
-                {saveMutation.isPending ? 'Saving…' : 'Save draft'}
-              </button>
+              {!documentationCompleted && (
+                <button
+                  className="button secondary"
+                  disabled={saveMutation.isPending}
+                  onClick={() => saveMutation.mutate()}
+                >
+                  {saveMutation.isPending ? 'Saving…' : 'Save draft'}
+                </button>
+              )}
               <button
                 className="button primary"
                 disabled={endMutation.isPending}
