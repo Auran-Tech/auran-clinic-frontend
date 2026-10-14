@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -7,6 +8,7 @@ import {
   getPendingDocumentation,
 } from './api'
 import type { PendingDocumentation } from './types'
+import { DOCUMENTATION_FIELDS } from '../documentationPolicies/api'
 
 function PendingDocumentationEditor({
   item,
@@ -37,6 +39,17 @@ function PendingDocumentationEditor({
       onClose()
     },
   })
+
+  const missingFields = isAxiosError<{
+    error?: string
+    data?: string[]
+  }>(mutation.error) &&
+    mutation.error.response?.data?.error === 'documentation_required_fields_missing'
+      ? mutation.error.response.data.data ?? []
+      : []
+  const clinicalFieldNames = new Map<string, string>(
+    DOCUMENTATION_FIELDS.map((field) => [field.key, field.label]),
+  )
 
   const hasContent = Boolean(
     chiefComplaint.trim() ||
@@ -97,7 +110,20 @@ function PendingDocumentationEditor({
       </div>
 
       {mutation.isError && (
-        <p className="field-error">Unable to complete this documentation.</p>
+        <div className="field-error" role="alert">
+          {missingFields.length > 0 ? (
+            <>
+              <p>Complete these required fields before finalizing this clinical note:</p>
+              <ul>
+                {missingFields.map((field) => (
+                  <li key={field}>{clinicalFieldNames.get(field) ?? field}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>Unable to complete this documentation.</p>
+          )}
+        </div>
       )}
     </section>
   )
