@@ -23,4 +23,18 @@ export async function runClinicalJourney(page, request) {
   const clinicToken = (await clinicLogin.json()).data.accessToken
   const { waiting, exited } = await configureQueue(request, api, clinicToken)
   const doctorId = await createDoctor(request, api, clinicToken, 'doctor-' + id + '@example.invalid', password)
+  const patientResponse = await request.post(api + '/patients', {
+    headers: authenticatedHeaders(clinicToken),
+    data: { fullName: 'Workflow Patient ' + id, phone: '012' + String(Date.now()).slice(-8) },
+  })
+  expect(patientResponse.status()).toBe(201)
+  const patient = (await patientResponse.json()).data
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(admin.email)
+  await page.getByLabel('Password').fill(password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL(/\/patients$/)
+  await page.goto('/patients/' + patient.id)
+  await expect(page.getByRole('heading', { name: patient.fullName })).toBeVisible()
+  await page.getByLabel('Doctor').selectOption(doctorId)
 }
