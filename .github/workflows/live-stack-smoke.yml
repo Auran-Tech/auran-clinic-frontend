@@ -14,6 +14,7 @@ on:
       - 'e2e/live-clinical-flow.helpers.mjs'
       - 'e2e/live-finalized-record.spec.mjs'
       - 'e2e/live-finalized-record.helpers.mjs'
+      - 'e2e/live-specialty-documentation.spec.mjs'
       - 'e2e/live-authenticated-patient.spec.mjs'
 
 permissions:
@@ -34,7 +35,9 @@ jobs:
       ConnectionStrings__DefaultConnection: Server=localhost,1433;Database=AuranClinicCi;User Id=sa;Password=Auran_CI_Password_123!;TrustServerCertificate=True;Encrypt=False
       Jwt__SigningKey: Auran_CI_Only_JWT_Signing_Key_Not_A_Secret_2026
       ASPNETCORE_URLS: http://127.0.0.1:5085
-      ASPNETCORE_ENVIRONMENT: Production
+      # CI bootstraps throwaway users over HTTP; Production now correctly rejects this.
+      # Production configuration is tested separately by Backend CI.
+      ASPNETCORE_ENVIRONMENT: Development
       E2E_API_BASE_URL: http://127.0.0.1:5085/api
       Cors__AllowedOrigins__0: http://127.0.0.1:4173
       PlatformBootstrap__Enabled: 'true'
@@ -105,7 +108,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
-        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs
+        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs
 
       - name: Upload browser test artifacts on failure
         if: failure()
