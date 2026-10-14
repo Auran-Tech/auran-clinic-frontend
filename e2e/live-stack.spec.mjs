@@ -1,3 +1,4 @@
+import './live-clinical-journey.spec.mjs'
 import { test, expect } from '@playwright/test'
 
 const backend = process.env.E2E_API_BASE_URL
