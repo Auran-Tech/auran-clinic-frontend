@@ -63,7 +63,13 @@ export function PatientsPage() {
 
     // Do not apply an old duplicate check to patient details edited mid-request.
     const requestKey = duplicateReviewKey(normalized)
-    const matches = await duplicateMutation.mutateAsync(normalized)
+    let matches: PatientDuplicateCandidate[]
+    try {
+      matches = await duplicateMutation.mutateAsync(normalized)
+    } catch {
+      // Fail closed: do not create a patient when duplicate validation is unavailable.
+      return
+    }
     const currentKey = duplicateReviewKey(form.getValues())
     if (currentKey !== requestKey) return
 
@@ -225,6 +231,12 @@ export function PatientsPage() {
                   )}
                 </div>
               </div>
+            )}
+
+            {duplicateMutation.isError && (
+              <p className="field-error full-width" role="alert">
+                Unable to check for duplicate patients. Please retry saving when the service is available.
+              </p>
             )}
 
             {createMutation.isError && (
