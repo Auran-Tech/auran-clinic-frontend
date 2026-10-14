@@ -48,4 +48,15 @@ export async function runClinicalJourney(page, request) {
   const row = page.getByRole('row').filter({ hasText: patient.fullName })
   await expect(row).toBeVisible()
   await row.getByRole('combobox').selectOption(exited.id)
+  const moveResponse = page.waitForResponse(response =>
+    response.url() === api + '/queue/move' && response.request().method() === 'PUT')
+  await row.getByRole('button', { name: 'Move' }).click()
+  const moved = await moveResponse
+  expect(moved.status()).toBe(200)
+  await expect(row).toHaveCount(0)
+  const history = await request.get(api + '/visits/history?patientId=' + patient.id, {
+    headers: authenticatedHeaders(clinicToken),
+  })
+  expect(history.status()).toBe(200)
+  expect((await history.json()).data.visits.data.some(item => item.visitId === visit.id)).toBe(true)
 }
