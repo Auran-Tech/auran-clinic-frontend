@@ -35,4 +35,14 @@ export async function verifyClinicalDocumentation(page, request, api, token, vis
   })
   expect(list.status()).toBe(200)
   expect((await list.json()).data.some(item => item.id === followUp.id)).toBe(true)
+  await page.goto('/follow-ups')
+  await page.getByRole('button', { name: 'Upcoming' }).click()
+  const followUpRow = page.getByRole('row').filter({ hasText: 'Return for a routine review' })
+  await expect(followUpRow).toBeVisible()
+  const completing = page.waitForResponse(response =>
+    response.url() === api + '/follow-ups/complete' && response.request().method() === 'PUT')
+  await followUpRow.getByRole('button', { name: 'Complete' }).click()
+  expect((await completing).status()).toBe(200)
+  await page.getByRole('button', { name: 'Completed' }).click()
+  await expect(page.getByRole('row').filter({ hasText: 'Return for a routine review' })).toBeVisible()
 }
