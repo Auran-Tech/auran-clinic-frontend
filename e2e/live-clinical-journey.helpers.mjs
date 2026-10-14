@@ -25,6 +25,13 @@ export async function runClinicalJourney(page, request) {
   const clinicToken = (await clinicLogin.json()).data.accessToken
   const { waiting, exited } = await configureQueue(request, api, clinicToken)
   const doctorId = await createDoctor(request, api, clinicToken, 'doctor-' + id + '@example.invalid', password)
+  const otherDoctorEmail = 'other-doctor-' + id + '@example.invalid'
+  await createDoctor(request, api, clinicToken, otherDoctorEmail, password)
+  const otherDoctorLogin = await request.post(api + '/auth/login', {
+    data: { email: otherDoctorEmail, password },
+  })
+  expect(otherDoctorLogin.status()).toBe(200)
+  const otherDoctorToken = (await otherDoctorLogin.json()).data.accessToken
   const patientResponse = await request.post(api + '/patients', {
     headers: authenticatedHeaders(clinicToken),
     data: { fullName: 'Workflow Patient ' + id, phone: '012' + String(Date.now()).slice(-8) },
@@ -57,7 +64,7 @@ export async function runClinicalJourney(page, request) {
   const moved = await moveResponse
   expect(moved.status()).toBe(200)
   await expect(row).toHaveCount(0)
-  await finalizePendingVisit(page, request, api, clinicToken, patient.fullName, visit.id)
+  await finalizePendingVisit(page, request, api, clinicToken, patient.fullName, visit.id, otherDoctorToken)
   const history = await request.get(api + '/visits/history?patientId=' + patient.id, {
     headers: authenticatedHeaders(clinicToken),
   })
