@@ -20,7 +20,9 @@ export async function verifyClinicalDocumentation(page, request, api, token, vis
   const ending = page.waitForResponse(response =>
     response.url() === api + '/clinical-sessions/end' && response.request().method() === 'PUT')
   await page.getByRole('button', { name: 'End session' }).click()
-  expect((await ending).status()).toBe(200)
+  const ended = await ending
+  expect(ended.status()).toBe(200)
+  expect((await ended.json()).data.documentationStatus).toBe('Pending')
   await page.getByLabel('Recommendation').fill('Return for a routine review')
   await page.getByLabel('Or after days').fill('7')
   const creating = page.waitForResponse(response =>
