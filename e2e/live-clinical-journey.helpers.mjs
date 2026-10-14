@@ -1,3 +1,4 @@
+import { verifyClinicalDocumentation } from './live-clinical-documentation.helpers.mjs'
 import { expect } from '@playwright/test'
 import { authenticatedHeaders, configureQueue, createDoctor } from './live-clinical-flow.helpers.mjs'
 
@@ -44,6 +45,7 @@ export async function runClinicalJourney(page, request) {
   expect(started.status()).toBe(201)
   const visit = (await started.json()).data
   expect(visit.workflowStatusId).toBe(waiting.id)
+  await verifyClinicalDocumentation(page, request, api, clinicToken, visit)
   await page.goto('/queue')
   const row = page.getByRole('row').filter({ hasText: patient.fullName })
   await expect(row).toBeVisible()
