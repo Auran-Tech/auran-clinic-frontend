@@ -10,7 +10,8 @@ import {
   getPatients,
 } from './api'
 import { patientSchema, type PatientFormValues } from './schema'
-import type { PatientDuplicateCandidate } from './types'
+import type { CreatePatientInput, PatientDuplicateCandidate } from './types'
+import { duplicateReviewKey } from './duplicateReview'
 
 export function PatientsPage() {
   const queryClient = useQueryClient()
@@ -18,6 +19,7 @@ export function PatientsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [duplicates, setDuplicates] = useState<PatientDuplicateCandidate[]>([])
+  const [reviewedInput, setReviewedInput] = useState<CreatePatientInput | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   const patientsQuery = useQuery({
@@ -41,6 +43,7 @@ export function PatientsPage() {
     onSuccess: async () => {
       form.reset()
       setDuplicates([])
+      setReviewedInput(null)
       setShowForm(false)
       await queryClient.invalidateQueries({ queryKey: ['patients'] })
     },
@@ -58,12 +61,20 @@ export function PatientsPage() {
       notes: values.notes || undefined,
     }
 
+    // Do not apply an old duplicate check to patient details edited mid-request.
+    const requestKey = duplicateReviewKey(normalized)
     const matches = await duplicateMutation.mutateAsync(normalized)
+    const currentKey = duplicateReviewKey(form.getValues())
+    if (currentKey !== requestKey) return
+
     if (matches.length > 0) {
+      setReviewedInput(normalized)
       setDuplicates(matches)
       return
     }
 
+    setReviewedInput(null)
+    setDuplicates([])
     createMutation.mutate(normalized)
   })
 
@@ -124,7 +135,14 @@ export function PatientsPage() {
             </div>
           </div>
 
-          <form className="patient-form" onSubmit={onSubmit}>
+          <form
+            className="patient-form"
+            onSubmit={onSubmit}
+            onChange={() => {
+              setDuplicates([])
+              setReviewedInput(null)
+            }}
+          >
             <label>
               <span>Full name</span>
               <input {...form.register('fullName')} />
@@ -181,7 +199,10 @@ export function PatientsPage() {
                   <button
                     type="button"
                     className="button secondary"
-                    onClick={() => setDuplicates([])}
+                    onClick={() => {
+                      setDuplicates([])
+                      setReviewedInput(null)
+                    }}
                   >
                     Edit details
                   </button>
@@ -189,12 +210,15 @@ export function PatientsPage() {
                     <button
                       type="button"
                       className="button danger"
-                      onClick={() => createMutation.mutate({
-                        ...form.getValues(),
-                        gender: form.getValues('gender') || undefined,
-                        dateOfBirth: form.getValues('dateOfBirth') || undefined,
-                        notes: form.getValues('notes') || undefined,
-                      })}
+                      onClick={() => {
+                        if (!reviewedInput ||
+                            duplicateReviewKey(form.getValues()) !== duplicateReviewKey(reviewedInput)) {
+                          setDuplicates([])
+                          setReviewedInput(null)
+                          return
+                        }
+                        createMutation.mutate(reviewedInput)
+                      }}
                     >
                       Create anyway
                     </button>
