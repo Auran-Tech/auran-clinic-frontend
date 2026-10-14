@@ -7,6 +7,9 @@ on:
       - '.github/workflows/live-stack-smoke.yml'
       - 'e2e/live-stack.spec.mjs'
       - 'e2e/live-login-rejection.spec.mjs'
+      - 'e2e/live-clinical-journey.spec.mjs'
+      - 'e2e/live-clinical-journey.helpers.mjs'
+      - 'e2e/live-clinical-flow.helpers.mjs'
       - 'e2e/live-authenticated-patient.spec.mjs'
 
 permissions:
