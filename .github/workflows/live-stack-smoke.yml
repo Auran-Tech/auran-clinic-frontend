@@ -12,6 +12,8 @@ on:
       - 'e2e/live-clinical-documentation.helpers.mjs'
       - 'e2e/live-pending-documentation.helpers.mjs'
       - 'e2e/live-clinical-flow.helpers.mjs'
+      - 'e2e/live-finalized-record.spec.mjs'
+      - 'e2e/live-finalized-record.helpers.mjs'
       - 'e2e/live-authenticated-patient.spec.mjs'
 
 permissions:
