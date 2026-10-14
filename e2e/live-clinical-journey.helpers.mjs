@@ -37,4 +37,15 @@ export async function runClinicalJourney(page, request) {
   await page.goto('/patients/' + patient.id)
   await expect(page.getByRole('heading', { name: patient.fullName })).toBeVisible()
   await page.getByLabel('Doctor').selectOption(doctorId)
+  const startResponse = page.waitForResponse(response =>
+    response.url() === api + '/visits/start' && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Check in patient' }).click()
+  const started = await startResponse
+  expect(started.status()).toBe(201)
+  const visit = (await started.json()).data
+  expect(visit.workflowStatusId).toBe(waiting.id)
+  await page.goto('/queue')
+  const row = page.getByRole('row').filter({ hasText: patient.fullName })
+  await expect(row).toBeVisible()
+  await row.getByRole('combobox').selectOption(exited.id)
 }
