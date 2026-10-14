@@ -20,3 +20,12 @@ export async function configureQueue(request, apiBase, token) {
   if (edges.status() !== 200) throw new Error('Transition setup failed: ' + edges.status())
   return { waiting, exited }
 }
+
+export async function createDoctor(request, apiBase, token, email, password) {
+  const response = await request.post(apiBase + '/users', {
+    headers: authenticatedHeaders(token),
+    data: { fullName: 'Integration Doctor', email, password, roles: ['DOCTOR'], isSuperUser: false },
+  })
+  if (response.status() !== 201) throw new Error('Doctor setup failed: ' + response.status())
+  return (await response.json()).data.id
+}
