@@ -6,6 +6,7 @@ import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPan
 import { PatientProfileConfigurationPanel } from '../patientProfileAdmin/PatientProfileConfigurationPanel'
 import { ClinicalFieldConfigurationPanel } from '../clinicalFieldAdmin/ClinicalFieldConfigurationPanel'
 import { ClinicalOrderSectionConfigurationPanel } from '../clinicalOrderConfig/ClinicalOrderSectionConfigurationPanel'
+import { DocumentationPolicyPanel } from '../documentationPolicies/DocumentationPolicyPanel'
 import {
   getClinicSettings,
   getClinicSettingsLookups,
@@ -406,6 +407,7 @@ export function SettingsPage() {
           <PatientProfileConfigurationPanel />
           <ClinicalFieldConfigurationPanel />
           <ClinicalOrderSectionConfigurationPanel />
+          <DocumentationPolicyPanel />
 
           {canManage && (
             <section className="settings-save-bar">
