@@ -21,4 +21,18 @@ export async function verifyClinicalDocumentation(page, request, api, token, vis
     response.url() === api + '/clinical-sessions/end' && response.request().method() === 'PUT')
   await page.getByRole('button', { name: 'End session' }).click()
   expect((await ending).status()).toBe(200)
+  await page.getByLabel('Recommendation').fill('Return for a routine review')
+  await page.getByLabel('Or after days').fill('7')
+  const creating = page.waitForResponse(response =>
+    response.url() === api + '/follow-ups' && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Schedule follow-up' }).click()
+  const created = await creating
+  expect(created.status()).toBe(201)
+  const followUp = (await created.json()).data
+  expect(followUp.visitId).toBe(visit.id)
+  const list = await request.get(api + '/follow-ups?bucket=All', {
+    headers: authenticatedHeaders(token),
+  })
+  expect(list.status()).toBe(200)
+  expect((await list.json()).data.some(item => item.id === followUp.id)).toBe(true)
 }
