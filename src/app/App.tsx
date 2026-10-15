@@ -11,11 +11,13 @@ import { SettingsPage } from '../features/settings/SettingsPage'
 import { ReportingPage } from '../features/reporting/ReportingPage'
 import { AuditPage } from '../features/audit/AuditPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
+import { DashboardPage } from '../features/dashboard/DashboardPage'
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route
         path="/patients"
