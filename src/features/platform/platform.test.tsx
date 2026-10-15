@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   provision: vi.fn(),
   status: vi.fn(),
   logout: vi.fn(),
+  refresh: vi.fn(),
   details: vi.fn(),
   update: vi.fn(),
 }))
@@ -25,6 +26,7 @@ vi.mock('./api', () => ({
   provisionPlatformClinic: mocks.provision,
   setPlatformClinicStatus: mocks.status,
   platformLogout: mocks.logout,
+  platformRefresh: mocks.refresh,
   getPlatformClinicDetails: mocks.details,
   updatePlatformClinic: mocks.update,
 }))
@@ -45,13 +47,14 @@ describe('Platform actor UI boundary', () => {
     mocks.provision.mockReset()
     mocks.status.mockReset()
     mocks.logout.mockReset()
+    mocks.refresh.mockReset()
     mocks.details.mockReset()
     mocks.update.mockReset()
     mocks.details.mockResolvedValue({ id: 'clinic-id', name: 'Clinic One', code: 'C1', isActive: true, timeZoneId: 'Africa/Cairo', patientNumberPrefix: 'P', phone: null, email: null, address: null, website: null, locale: 'en', initialAdminEmail: 'doctor@example.com' })
     mocks.update.mockResolvedValue({ id: 'clinic-id', name: 'Clinic Updated', code: 'C1', isActive: true, initialAdminEmail: 'doctor@example.com' })
     mocks.login.mockResolvedValue({
       accessToken: 'platform-token', refreshToken: 'platform-refresh',
-      accessTokenExpiresDate: '2026-10-15', user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
+      accessTokenExpiresDate: '2099-10-15', user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
     })
     mocks.list.mockResolvedValue([{ id: 'clinic-id', name: 'Clinic One', code: 'C1', isActive: true, timeZoneId: 'Africa/Cairo' }])
     mocks.status.mockResolvedValue(undefined)
@@ -91,6 +94,28 @@ describe('Platform actor UI boundary', () => {
       expect.objectContaining({ clinicId: 'clinic-id', name: 'Clinic Updated' }),
     ))
     expect(mocks.update.mock.calls[0][1]).not.toHaveProperty('code')
+  })
+
+  it('rotates an expired platform token before requesting clinic details', async () => {
+    mocks.login.mockResolvedValueOnce({
+      accessToken: 'old-platform-token', refreshToken: 'old-refresh',
+      accessTokenExpiresDate: '2020-01-01',
+      user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
+    })
+    mocks.refresh.mockResolvedValueOnce({
+      accessToken: 'new-platform-token', refreshToken: 'new-refresh',
+      accessTokenExpiresDate: '2099-01-01',
+      user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
+    })
+    renderPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'Password123!' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Platform sign in' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Clinic One' }))
+    await waitFor(() => expect(mocks.details).toHaveBeenCalledWith(
+      expect.objectContaining({ accessToken: 'new-platform-token' }), 'clinic-id',
+    ))
+    expect(mocks.refresh).toHaveBeenCalledWith('old-refresh')
   })
 
   it('does not display clinic records when login fails', async () => {
