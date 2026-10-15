@@ -101,3 +101,10 @@ export async function updatePlatformClinic(session: PlatformSession, input: Upda
   if (!response.data.data) throw new Error(response.data.message ?? 'Unable to update clinic.')
   return response.data.data
 }
+
+export async function platformRefresh(refreshToken: string): Promise<PlatformSession> {
+  // Refresh uses the isolated Platform actor endpoint. Never use clinic refresh.
+  const response = await client.post<BaseResponse<PlatformSession>>('/platform/auth/refresh', { refreshToken })
+  if (!response.data.data) throw new Error(response.data.message ?? 'Platform session expired.')
+  return response.data.data
+}
