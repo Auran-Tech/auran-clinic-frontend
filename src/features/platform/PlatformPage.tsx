@@ -2,8 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
-  listPlatformClinics, platformLogin, platformLogout, provisionPlatformClinic, setPlatformClinicStatus,
-  type PlatformClinic, type PlatformSession, type ProvisionClinicInput,
+  getPlatformClinicDetails, listPlatformClinics, platformLogin, platformLogout, provisionPlatformClinic, setPlatformClinicStatus, updatePlatformClinic,
+  type PlatformClinic, type PlatformClinicDetails, type PlatformSession, type ProvisionClinicInput, type UpdatePlatformClinicInput,
 } from './api'
 
 export function PlatformPage() {
@@ -16,6 +16,8 @@ export function PlatformPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [showProvision, setShowProvision] = useState(false)
+  const [selectedClinic, setSelectedClinic] = useState<PlatformClinicDetails | null>(null)
+  const [edit, setEdit] = useState<UpdatePlatformClinicInput | null>(null)
   const [draft, setDraft] = useState<ProvisionClinicInput>({
     name: '', codePrefix: '', timeZoneId: '', patientNumberPrefix: '', locale: '',
     admin: { fullName: '', email: '', password: '' },
@@ -67,9 +69,38 @@ export function PlatformPage() {
     finally { setBusy(false) }
   }
 
+  async function openDetails(clinicId: string) {
+    if (!session) return
+    setBusy(true); setError('')
+    try {
+      const details = await getPlatformClinicDetails(session, clinicId)
+      setSelectedClinic(details)
+      setEdit({
+        clinicId: details.id, name: details.name,
+        timeZoneId: details.timeZoneId ?? '', patientNumberPrefix: details.patientNumberPrefix ?? '',
+        phone: details.phone ?? '', email: details.email ?? '', address: details.address ?? '',
+        website: details.website ?? '', locale: details.locale ?? '',
+      })
+    } catch { setError('Unable to load clinic details.') }
+    finally { setBusy(false) }
+  }
+
+  async function saveDetails(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!session || !edit) return
+    setBusy(true); setError('')
+    try {
+      const updated = await updatePlatformClinic(session, edit)
+      setSelectedClinic(updated)
+      setClinics(await listPlatformClinics(session))
+      setEdit(null)
+    } catch { setError('Unable to save clinic details. Review the fields and retry.') }
+    finally { setBusy(false) }
+  }
+
   async function signOut() {
     const active = session
-    setSession(null); setClinics([]); setError('')
+    setSession(null); setClinics([]); setSelectedClinic(null); setEdit(null); setError('')
     if (active) { try { await platformLogout(active) } catch { /* local credentials already cleared */ } }
   }
 
@@ -121,12 +152,33 @@ export function PlatformPage() {
           </form>
         </section>
       )}
+      {selectedClinic && (
+        <section className="panel">
+          <div className="panel-heading">
+            <div><h2>Clinic details — {selectedClinic.code}</h2><p className="muted">Generated clinic code is immutable. Initial administrator: {selectedClinic.initialAdminEmail ?? '—'}</p></div>
+            <button className="button secondary" onClick={() => { setSelectedClinic(null); setEdit(null) }}>Close</button>
+          </div>
+          {edit ? (
+            <form className="patient-form" onSubmit={saveDetails}>
+              <label><span>Clinic name</span><input required value={edit.name} onChange={e => setEdit(v => v && ({...v,name:e.target.value}))} /></label>
+              <label><span>Time zone</span><input value={edit.timeZoneId ?? ''} onChange={e => setEdit(v => v && ({...v,timeZoneId:e.target.value}))} /></label>
+              <label><span>Patient prefix</span><input value={edit.patientNumberPrefix ?? ''} onChange={e => setEdit(v => v && ({...v,patientNumberPrefix:e.target.value}))} /></label>
+              <label><span>Phone</span><input type="tel" value={edit.phone ?? ''} onChange={e => setEdit(v => v && ({...v,phone:e.target.value}))} /></label>
+              <label><span>Email</span><input type="email" value={edit.email ?? ''} onChange={e => setEdit(v => v && ({...v,email:e.target.value}))} /></label>
+              <label><span>Website</span><input type="url" value={edit.website ?? ''} onChange={e => setEdit(v => v && ({...v,website:e.target.value}))} /></label>
+              <label><span>Address</span><input value={edit.address ?? ''} onChange={e => setEdit(v => v && ({...v,address:e.target.value}))} /></label>
+              <label><span>Locale</span><input value={edit.locale ?? ''} onChange={e => setEdit(v => v && ({...v,locale:e.target.value}))} /></label>
+              <div className="actions full-width"><button className="button primary" type="submit" disabled={busy}>Save changes</button></div>
+            </form>
+          ) : <p className="muted">Clinic metadata saved. Select another clinic to edit its details.</p>}
+        </section>
+      )}
       <section className="panel">
         <h2>Registered clinics</h2>
         {clinics.length === 0 ? <p className="state">No clinics found.</p> : (
           <div className="table-wrap"><table><thead><tr><th>Clinic</th><th>Code</th><th>Status</th><th>Time zone</th><th>Action</th></tr></thead>
             <tbody>{clinics.map(clinic => <tr key={clinic.id}>
-              <td>{clinic.name}</td><td className="mono">{clinic.code}</td>
+              <td><button className="button secondary" disabled={busy} onClick={() => void openDetails(clinic.id)}>{clinic.name}</button></td><td className="mono">{clinic.code}</td>
               <td>{clinic.isActive ? 'Active' : 'Suspended'}</td><td>{clinic.timeZoneId ?? '—'}</td>
               <td><button className={clinic.isActive ? 'button danger' : 'button secondary'} disabled={busy} onClick={() => void toggleClinic(clinic)}>{clinic.isActive ? 'Suspend' : 'Reactivate'}</button></td>
             </tr>)}</tbody></table></div>
