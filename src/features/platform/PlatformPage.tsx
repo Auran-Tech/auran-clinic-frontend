@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
-  getPlatformClinicDetails, listPlatformClinics, platformLogin, platformLogout, provisionPlatformClinic, setPlatformClinicStatus, updatePlatformClinic,
+  getPlatformClinicDetails, listPlatformClinics, platformLogin, platformLogout, platformRefresh, provisionPlatformClinic, setPlatformClinicStatus, updatePlatformClinic,
   type PlatformClinic, type PlatformClinicDetails, type PlatformSession, type ProvisionClinicInput, type UpdatePlatformClinicInput,
 } from './api'
 
@@ -10,6 +10,41 @@ export function PlatformPage() {
   const clinicAuth = useAuth()
   // Deliberately memory-only. A page reload requires re-authentication as Platform.
   const [session, setSession] = useState<PlatformSession | null>(null)
+  const sessionRef = useRef<PlatformSession | null>(null)
+  const refreshInFlight = useRef<Promise<PlatformSession> | null>(null)
+  const actorGeneration = useRef(0)
+
+  // Never resurrect a logged-out identity after an asynchronous refresh.
+  async function activeSession(): Promise<PlatformSession> {
+    const active = sessionRef.current
+    if (!active) throw new Error('Platform session unavailable.')
+    const expiresAt = Date.parse(active.accessTokenExpiresDate)
+    if (Number.isFinite(expiresAt) && expiresAt > Date.now() + 60_000) return active
+    if (!refreshInFlight.current) {
+      const generation = actorGeneration.current
+      const refreshToken = active.refreshToken
+      const pending = platformRefresh(refreshToken).then(next => {
+        if (actorGeneration.current !== generation || sessionRef.current?.refreshToken !== refreshToken)
+          throw new Error('Platform session changed during refresh.')
+        sessionRef.current = next
+        setSession(next)
+        return next
+      }).catch(error => {
+        if (actorGeneration.current === generation && sessionRef.current?.refreshToken === refreshToken) {
+          actorGeneration.current += 1
+          sessionRef.current = null
+          setSession(null)
+          setClinics([])
+          setSelectedClinic(null)
+          setEdit(null)
+          setError('Platform session expired. Please sign in again.')
+        }
+        throw error
+      }).finally(() => { if (refreshInFlight.current === pending) refreshInFlight.current = null })
+      refreshInFlight.current = pending
+    }
+    return refreshInFlight.current
+  }
   const [clinics, setClinics] = useState<PlatformClinic[]>([])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,6 +64,8 @@ export function PlatformPage() {
     try {
       const next = await platformLogin(email, password)
       const items = await listPlatformClinics(next)
+      actorGeneration.current += 1
+      sessionRef.current = next
       setSession(next); setClinics(items); setPassword('')
     } catch {
       setError('Platform sign-in failed. Check the credentials or connection.')
@@ -38,7 +75,7 @@ export function PlatformPage() {
   async function reload() {
     if (!session) return
     setBusy(true); setError('')
-    try { setClinics(await listPlatformClinics(session)) }
+    try { setClinics(await listPlatformClinics(await activeSession())) }
     catch { setError('Unable to load platform clinics. Sign in again if your session expired.') }
     finally { setBusy(false) }
   }
@@ -48,8 +85,8 @@ export function PlatformPage() {
     if (!session) return
     setBusy(true); setError('')
     try {
-      await provisionPlatformClinic(session, draft)
-      setClinics(await listPlatformClinics(session))
+      await provisionPlatformClinic(await activeSession(), draft)
+      setClinics(await listPlatformClinics(await activeSession()))
       setShowProvision(false)
       setDraft({ name: '', codePrefix: '', admin: { fullName: '', email: '', password: '' } })
     } catch {
@@ -63,8 +100,8 @@ export function PlatformPage() {
     if (!window.confirm(`Are you sure you want to ${action} ${clinic.name}? Suspending invalidates active clinic sessions.`)) return
     setBusy(true); setError('')
     try {
-      await setPlatformClinicStatus(session, clinic.id, !clinic.isActive)
-      setClinics(await listPlatformClinics(session))
+      await setPlatformClinicStatus(await activeSession(), clinic.id, !clinic.isActive)
+      setClinics(await listPlatformClinics(await activeSession()))
     } catch { setError(`Unable to ${action} clinic.`) }
     finally { setBusy(false) }
   }
@@ -73,7 +110,7 @@ export function PlatformPage() {
     if (!session) return
     setBusy(true); setError('')
     try {
-      const details = await getPlatformClinicDetails(session, clinicId)
+      const details = await getPlatformClinicDetails(await activeSession(), clinicId)
       setSelectedClinic(details)
       setEdit({
         clinicId: details.id, name: details.name,
@@ -90,16 +127,18 @@ export function PlatformPage() {
     if (!session || !edit) return
     setBusy(true); setError('')
     try {
-      const updated = await updatePlatformClinic(session, edit)
+      const updated = await updatePlatformClinic(await activeSession(), edit)
       setSelectedClinic(updated)
-      setClinics(await listPlatformClinics(session))
+      setClinics(await listPlatformClinics(await activeSession()))
       setEdit(null)
     } catch { setError('Unable to save clinic details. Review the fields and retry.') }
     finally { setBusy(false) }
   }
 
   async function signOut() {
-    const active = session
+    const active = sessionRef.current
+    actorGeneration.current += 1
+    sessionRef.current = null
     setSession(null); setClinics([]); setSelectedClinic(null); setEdit(null); setError('')
     if (active) { try { await platformLogout(active) } catch { /* local credentials already cleared */ } }
   }
