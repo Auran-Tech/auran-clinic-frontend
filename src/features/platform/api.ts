@@ -108,3 +108,15 @@ export async function platformRefresh(refreshToken: string): Promise<PlatformSes
   if (!response.data.data) throw new Error(response.data.message ?? 'Platform session expired.')
   return response.data.data
 }
+
+export interface PlatformTimeZone { id: string; displayName: string; utcOffset: string }
+export interface PlatformLocale { code: string; displayName: string; nativeName: string }
+
+export async function getPlatformLookups(session: PlatformSession) {
+  const [timeZones, locales] = await Promise.all([
+    client.get<BaseResponse<PlatformTimeZone[]>>('/platform/lookups/time-zones', authorization(session)),
+    client.get<BaseResponse<PlatformLocale[]>>('/platform/lookups/locales', authorization(session)),
+  ])
+  if (!timeZones.data.data || !locales.data.data) throw new Error('Unable to retrieve platform lookups.')
+  return { timeZones: timeZones.data.data, locales: locales.data.data }
+}
