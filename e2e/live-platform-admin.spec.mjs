@@ -14,7 +14,7 @@ test('platform browser provisions and updates clinic against real API and SQL', 
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(password)
   await page.getByRole('button', { name: 'Platform sign in' }).click()
-  await expect(page.getByRole('heading', { name: 'Clinics' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Clinics', exact: true })).toBeVisible()
 
   const suffix = Date.now().toString(36)
   const name = 'Platform Browser Clinic ' + suffix
