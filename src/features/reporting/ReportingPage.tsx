@@ -125,7 +125,7 @@ export function ReportingPage() {
         </>
       )}
 
-      <section className="panel">
+      <section className="panel print-report">
         <div className="panel-heading">
           <div>
             <h2>Visit report</h2>
@@ -134,7 +134,10 @@ export function ReportingPage() {
             </p>
           </div>
           {canExport && (
-            <div className="actions">
+            <div className="actions print-actions">
+              <button className="button secondary" type="button" onClick={() => window.print()} disabled={!reportQuery.data || reportQuery.isFetching}>
+                Print / Save PDF
+              </button>
               <button
                 className="button secondary"
                 type="button"
@@ -227,6 +230,7 @@ export function ReportingPage() {
 
         {reportQuery.data && (
           <>
+            <p className="report-print-context">Date range: {fromDate || "Any"} – {toDate || "Any"} | Visit status: {visitStatus || "Any"} | Documentation: {documentationStatus || "Any"}</p>
             <p className="muted report-count">
               {reportQuery.data.totalCount} visit{reportQuery.data.totalCount === 1 ? '' : 's'}
             </p>
