@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   status: vi.fn(),
   logout: vi.fn(),
   refresh: vi.fn(),
+  lookups: vi.fn(),
   details: vi.fn(),
   update: vi.fn(),
 }))
@@ -27,6 +28,7 @@ vi.mock('./api', () => ({
   setPlatformClinicStatus: mocks.status,
   platformLogout: mocks.logout,
   platformRefresh: mocks.refresh,
+  getPlatformLookups: mocks.lookups,
   getPlatformClinicDetails: mocks.details,
   updatePlatformClinic: mocks.update,
 }))
@@ -48,6 +50,8 @@ describe('Platform actor UI boundary', () => {
     mocks.status.mockReset()
     mocks.logout.mockReset()
     mocks.refresh.mockReset()
+    mocks.lookups.mockReset()
+    mocks.lookups.mockResolvedValue({ timeZones: [{ id: 'Africa/Cairo', displayName: 'Cairo', utcOffset: '+02:00' }], locales: [{ code: 'en', displayName: 'English', nativeName: 'English' }] })
     mocks.details.mockReset()
     mocks.update.mockReset()
     mocks.details.mockResolvedValue({ id: 'clinic-id', name: 'Clinic One', code: 'C1', isActive: true, timeZoneId: 'Africa/Cairo', patientNumberPrefix: 'P', phone: null, email: null, address: null, website: null, locale: 'en', initialAdminEmail: 'doctor@example.com' })
