@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import {
   exportVisitReport,
+  exportVisitReportXlsx,
   getDashboardSummary,
   getVisitReport,
 } from './api'
@@ -28,6 +29,8 @@ export function ReportingPage() {
     visitStatus: visitStatus || undefined,
     documentationStatus: documentationStatus || undefined,
   }), [fromDate, toDate, doctorId, visitStatus, documentationStatus])
+
+  const xlsxExport = useMutation({ mutationFn: exportVisitReportXlsx })
 
   const dashboardQuery = useQuery({
     queryKey: ['dashboard-summary'],
@@ -131,15 +134,29 @@ export function ReportingPage() {
             </p>
           </div>
           {canExport && (
-            <button
-              className="button secondary"
-              onClick={() => void exportVisitReport(reportQueryParams)}
-            >
-              Export CSV
-            </button>
+            <div className="actions">
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => void exportVisitReport(reportQueryParams)}
+              >
+                Export CSV
+              </button>
+              <button
+                className="button secondary"
+                type="button"
+                disabled={xlsxExport.isPending}
+                onClick={() => xlsxExport.mutate(reportQueryParams)}
+              >
+                {xlsxExport.isPending ? 'Preparing Excel…' : 'Export Excel (.xlsx)'}
+              </button>
+            </div>
           )}
         </div>
 
+        {xlsxExport.isError && (
+          <p role="alert" className="field-error">Excel export failed. Please retry.</p>
+        )}
         <div className="report-filters">
           <label>
             <span>From date</span>
