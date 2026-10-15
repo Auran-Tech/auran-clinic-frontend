@@ -21,7 +21,7 @@ test('platform browser provisions and updates clinic against real API and SQL', 
   await page.getByRole('button', { name: 'Provision clinic' }).click()
   await page.getByLabel('Clinic name').fill(name)
   await page.getByLabel('Code prefix').fill('PB')
-  await page.getByLabel('Time zone (IANA)').fill('Africa/Cairo')
+  await page.getByLabel('Time zone (IANA)').selectOption('Africa/Cairo')
   await page.getByLabel('Initial admin full name').fill('Browser Admin')
   await page.getByLabel('Initial admin email').fill('platform-browser-' + suffix + '@example.invalid')
   await page.getByLabel('Initial admin password').fill(password)
