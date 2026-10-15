@@ -107,6 +107,9 @@ export function PatientsPage() {
             </button>
           )}
           {auth.hasPermission('Reports_View') && (
+            <Link className="button secondary nav-button" to="/dashboard">Dashboard</Link>
+          )}
+          {auth.hasPermission('Reports_View') && (
             <Link className="button secondary nav-button" to="/reports">
               Reports
             </Link>
