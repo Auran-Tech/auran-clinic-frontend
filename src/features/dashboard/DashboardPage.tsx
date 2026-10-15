@@ -9,8 +9,8 @@ const metrics = [
   { key: 'activeQueue', label: 'Active queue', permission: 'Queue_View' },
   { key: 'completedVisitsToday', label: 'Completed visits today', permission: 'Visit_View' },
   { key: 'pendingDocumentation', label: 'Pending documentation', permission: 'Visit_View' },
-  { key: 'followUpsToday', label: 'Follow-ups today', permission: 'FollowUps_View' },
-  { key: 'overdueFollowUps', label: 'Overdue follow-ups', permission: 'FollowUps_View' },
+  { key: 'followUpsToday', label: 'Follow-ups today', permission: 'FollowUp_View' },
+  { key: 'overdueFollowUps', label: 'Overdue follow-ups', permission: 'FollowUp_View' },
 ] as const
 
 export function DashboardPage() {
