@@ -43,3 +43,31 @@ export async function exportVisitReport(query: VisitReportQuery) {
   anchor.remove()
   URL.revokeObjectURL(url)
 }
+
+export async function exportVisitReportXlsx(query: VisitReportQuery) {
+  const response = await api.get<Blob>('/reporting/visits/export/xlsx', {
+    params: query,
+    responseType: 'blob',
+  })
+
+  const disposition = response.headers['content-disposition'] as string | undefined
+  const suggested = disposition?.match(/filename="?([^";]+)"?/i)?.[1]
+  const from = query.fromDate?.replaceAll('-', '') ?? 'all'
+  const to = query.toDate?.replaceAll('-', '') ?? 'all'
+  // Browsers may hide Content-Disposition unless CORS exposes it.
+  const fallbackName = `auran-visits-${from}-${to}.xlsx`
+  const fileName = suggested && /^[a-zA-Z0-9._-]+\.xlsx$/.test(suggested)
+    ? suggested
+    : fallbackName
+
+  const url = URL.createObjectURL(response.data)
+  try {
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = fileName
+    document.body.appendChild(anchor)
+    try { anchor.click() } finally { anchor.remove() }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
