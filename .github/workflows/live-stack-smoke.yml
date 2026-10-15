@@ -17,6 +17,8 @@ on:
       - 'e2e/live-specialty-documentation.spec.mjs'
       - 'e2e/live-authenticated-patient.spec.mjs'
       - 'e2e/live-report-excel.spec.mjs'
+      - 'e2e/live-platform-admin.spec.mjs'
+      - 'src/features/platform/**'
       - 'src/features/reporting/**'
 
 permissions:
@@ -110,7 +112,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
-        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs
+        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs
 
       - name: Upload browser test artifacts on failure
         if: failure()
