@@ -2,8 +2,8 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import {
-  getPlatformClinicDetails, listPlatformClinics, platformLogin, platformLogout, platformRefresh, provisionPlatformClinic, setPlatformClinicStatus, updatePlatformClinic,
-  type PlatformClinic, type PlatformClinicDetails, type PlatformSession, type ProvisionClinicInput, type UpdatePlatformClinicInput,
+  getPlatformClinicDetails, getPlatformLookups, listPlatformClinics, platformLogin, platformLogout, platformRefresh, provisionPlatformClinic, setPlatformClinicStatus, updatePlatformClinic,
+  type PlatformClinic, type PlatformClinicDetails, type PlatformLocale, type PlatformTimeZone, type PlatformSession, type ProvisionClinicInput, type UpdatePlatformClinicInput,
 } from './api'
 
 export function PlatformPage() {
@@ -46,6 +46,8 @@ export function PlatformPage() {
     return refreshInFlight.current
   }
   const [clinics, setClinics] = useState<PlatformClinic[]>([])
+  const [timeZones, setTimeZones] = useState<PlatformTimeZone[]>([])
+  const [locales, setLocales] = useState<PlatformLocale[]>([])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -63,7 +65,8 @@ export function PlatformPage() {
     setBusy(true); setError('')
     try {
       const next = await platformLogin(email, password)
-      const items = await listPlatformClinics(next)
+      const [items, lookups] = await Promise.all([listPlatformClinics(next), getPlatformLookups(next)])
+      setTimeZones(lookups.timeZones); setLocales(lookups.locales)
       actorGeneration.current += 1
       sessionRef.current = next
       setSession(next); setClinics(items); setPassword('')
@@ -139,7 +142,7 @@ export function PlatformPage() {
     const active = sessionRef.current
     actorGeneration.current += 1
     sessionRef.current = null
-    setSession(null); setClinics([]); setSelectedClinic(null); setEdit(null); setError('')
+    setSession(null); setClinics([]); setTimeZones([]); setLocales([]); setSelectedClinic(null); setEdit(null); setError('')
     if (active) { try { await platformLogout(active) } catch { /* local credentials already cleared */ } }
   }
 
@@ -182,8 +185,9 @@ export function PlatformPage() {
           <form className="patient-form" onSubmit={provision}>
             <label><span>Clinic name</span><input required maxLength={200} value={draft.name} onChange={e => setDraft(v => ({...v,name:e.target.value}))} /></label>
             <label><span>Code prefix</span><input required maxLength={20} value={draft.codePrefix} onChange={e => setDraft(v => ({...v,codePrefix:e.target.value}))} /></label>
-            <label><span>Time zone (IANA)</span><input value={draft.timeZoneId ?? ''} onChange={e => setDraft(v => ({...v,timeZoneId:e.target.value}))} placeholder="Africa/Cairo" /></label>
+            <label><span>Time zone (IANA)</span><select value={draft.timeZoneId ?? ''} onChange={e => setDraft(v => ({...v,timeZoneId:e.target.value}))}><option value="">Default timezone</option>{timeZones.map(zone => <option key={zone.id} value={zone.id}>{zone.displayName} ({zone.utcOffset})</option>)}</select></label>
             <label><span>Patient number prefix</span><input value={draft.patientNumberPrefix ?? ''} onChange={e => setDraft(v => ({...v,patientNumberPrefix:e.target.value}))} /></label>
+            <label><span>Locale</span><select value={draft.locale ?? ''} onChange={e => setDraft(v => ({...v,locale:e.target.value}))}><option value="">Default locale</option>{locales.map(locale => <option key={locale.code} value={locale.code}>{locale.displayName} — {locale.nativeName}</option>)}</select></label>
             <label><span>Initial admin full name</span><input required value={draft.admin.fullName} onChange={e => setDraft(v => ({...v,admin:{...v.admin,fullName:e.target.value}}))} /></label>
             <label><span>Initial admin email</span><input required type="email" value={draft.admin.email} onChange={e => setDraft(v => ({...v,admin:{...v.admin,email:e.target.value}}))} /></label>
             <label><span>Initial admin password</span><input required type="password" autoComplete="new-password" minLength={8} value={draft.admin.password} onChange={e => setDraft(v => ({...v,admin:{...v.admin,password:e.target.value}}))} /></label>
@@ -200,13 +204,13 @@ export function PlatformPage() {
           {edit ? (
             <form className="patient-form" onSubmit={saveDetails}>
               <label><span>Clinic name</span><input required value={edit.name} onChange={e => setEdit(v => v && ({...v,name:e.target.value}))} /></label>
-              <label><span>Time zone</span><input value={edit.timeZoneId ?? ''} onChange={e => setEdit(v => v && ({...v,timeZoneId:e.target.value}))} /></label>
+              <label><span>Time zone</span><select value={edit.timeZoneId ?? ''} onChange={e => setEdit(v => v && ({...v,timeZoneId:e.target.value}))}><option value="">Default timezone</option>{timeZones.map(zone => <option key={zone.id} value={zone.id}>{zone.displayName} ({zone.utcOffset})</option>)}</select></label>
               <label><span>Patient prefix</span><input value={edit.patientNumberPrefix ?? ''} onChange={e => setEdit(v => v && ({...v,patientNumberPrefix:e.target.value}))} /></label>
               <label><span>Phone</span><input type="tel" value={edit.phone ?? ''} onChange={e => setEdit(v => v && ({...v,phone:e.target.value}))} /></label>
               <label><span>Email</span><input type="email" value={edit.email ?? ''} onChange={e => setEdit(v => v && ({...v,email:e.target.value}))} /></label>
               <label><span>Website</span><input type="url" value={edit.website ?? ''} onChange={e => setEdit(v => v && ({...v,website:e.target.value}))} /></label>
               <label><span>Address</span><input value={edit.address ?? ''} onChange={e => setEdit(v => v && ({...v,address:e.target.value}))} /></label>
-              <label><span>Locale</span><input value={edit.locale ?? ''} onChange={e => setEdit(v => v && ({...v,locale:e.target.value}))} /></label>
+              <label><span>Locale</span><select value={edit.locale ?? ''} onChange={e => setEdit(v => v && ({...v,locale:e.target.value}))}><option value="">Default locale</option>{locales.map(locale => <option key={locale.code} value={locale.code}>{locale.displayName} — {locale.nativeName}</option>)}</select></label>
               <div className="actions full-width"><button className="button primary" type="submit" disabled={busy}>Save changes</button></div>
             </form>
           ) : <p className="muted">Clinic metadata saved. Select another clinic to edit its details.</p>}
