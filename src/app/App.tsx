@@ -10,11 +10,13 @@ import { EmployeesPage } from '../features/employees/EmployeesPage'
 import { SettingsPage } from '../features/settings/SettingsPage'
 import { ReportingPage } from '../features/reporting/ReportingPage'
 import { AuditPage } from '../features/audit/AuditPage'
+import { PlatformPage } from '../features/platform/PlatformPage'
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/platform" element={<PlatformPage />} />
       <Route
         path="/patients"
         element={
