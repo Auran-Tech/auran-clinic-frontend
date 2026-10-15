@@ -43,3 +43,27 @@ export async function exportVisitReport(query: VisitReportQuery) {
   anchor.remove()
   URL.revokeObjectURL(url)
 }
+
+export async function exportVisitReportXlsx(query: VisitReportQuery) {
+  const response = await api.get<Blob>('/reporting/visits/export/xlsx', {
+    params: query,
+    responseType: 'blob',
+  })
+
+  const disposition = response.headers['content-disposition'] as string | undefined
+  const suggested = disposition?.match(/filename="?([^";]+)"?/i)?.[1]
+  const fileName = suggested && /^[a-zA-Z0-9._-]+\.xlsx$/.test(suggested)
+    ? suggested
+    : 'auran-visits.xlsx'
+
+  const url = URL.createObjectURL(response.data)
+  try {
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = fileName
+    document.body.appendChild(anchor)
+    try { anchor.click() } finally { anchor.remove() }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
