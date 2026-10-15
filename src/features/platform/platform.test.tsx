@@ -118,6 +118,23 @@ describe('Platform actor UI boundary', () => {
     expect(mocks.refresh).toHaveBeenCalledWith('old-refresh')
   })
 
+  it('fails closed and clears clinic list when platform refresh fails', async () => {
+    mocks.login.mockResolvedValueOnce({
+      accessToken: 'expired-token', refreshToken: 'expired-refresh',
+      accessTokenExpiresDate: '2020-01-01',
+      user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
+    })
+    mocks.refresh.mockRejectedValueOnce(new Error('Revoked refresh'))
+    renderPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'Password123!' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Platform sign in' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Clinic One' }))
+    expect(await screen.findByRole('heading', { name: 'Platform administration' })).toBeTruthy()
+    expect(screen.queryByText('Clinic One')).toBeNull()
+    expect(mocks.details).not.toHaveBeenCalled()
+  })
+
   it('does not display clinic records when login fails', async () => {
     mocks.login.mockRejectedValueOnce(new Error('Unauthorized'))
     renderPage()
