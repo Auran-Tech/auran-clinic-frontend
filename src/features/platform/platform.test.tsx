@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   provision: vi.fn(),
   status: vi.fn(),
   logout: vi.fn(),
+  details: vi.fn(),
+  update: vi.fn(),
 }))
 
 vi.mock('../auth/AuthContext', () => ({
@@ -23,6 +25,8 @@ vi.mock('./api', () => ({
   provisionPlatformClinic: mocks.provision,
   setPlatformClinicStatus: mocks.status,
   platformLogout: mocks.logout,
+  getPlatformClinicDetails: mocks.details,
+  updatePlatformClinic: mocks.update,
 }))
 
 function renderPage() {
@@ -41,6 +45,10 @@ describe('Platform actor UI boundary', () => {
     mocks.provision.mockReset()
     mocks.status.mockReset()
     mocks.logout.mockReset()
+    mocks.details.mockReset()
+    mocks.update.mockReset()
+    mocks.details.mockResolvedValue({ id: 'clinic-id', name: 'Clinic One', code: 'C1', isActive: true, timeZoneId: 'Africa/Cairo', patientNumberPrefix: 'P', phone: null, email: null, address: null, website: null, locale: 'en', initialAdminEmail: 'doctor@example.com' })
+    mocks.update.mockResolvedValue({ id: 'clinic-id', name: 'Clinic Updated', code: 'C1', isActive: true, initialAdminEmail: 'doctor@example.com' })
     mocks.login.mockResolvedValue({
       accessToken: 'platform-token', refreshToken: 'platform-refresh',
       accessTokenExpiresDate: '2026-10-15', user: { platformUserId: 'id', fullName: 'Admin', email: 'admin@example.com' },
@@ -67,6 +75,22 @@ describe('Platform actor UI boundary', () => {
     await waitFor(() => expect(mocks.list).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('Clinic One')).toBeTruthy()
     expect(screen.getByText('Active')).toBeTruthy()
+  })
+
+  it('loads and saves operational clinic metadata without modifying the generated code', async () => {
+    renderPage()
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'admin@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'Password123!' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Platform sign in' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Clinic One' }))
+    expect(await screen.findByText(/Clinic details — C1/)).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Clinic name'), { target: { value: 'Clinic Updated' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ accessToken: 'platform-token' }),
+      expect.objectContaining({ clinicId: 'clinic-id', name: 'Clinic Updated' }),
+    ))
+    expect(mocks.update.mock.calls[0][1]).not.toHaveProperty('code')
   })
 
   it('does not display clinic records when login fails', async () => {
