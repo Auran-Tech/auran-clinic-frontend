@@ -23,6 +23,28 @@ export interface PlatformClinic {
   patientNumberPrefix: string | null
   createdDate: string
 }
+export interface PlatformClinicDetails extends PlatformClinic {
+  phone: string | null
+  email: string | null
+  address: string | null
+  website: string | null
+  locale: string | null
+  initialAdminUserId: string | null
+  initialAdminEmail: string | null
+}
+
+export interface UpdatePlatformClinicInput {
+  clinicId: string
+  name: string
+  timeZoneId?: string
+  patientNumberPrefix?: string
+  phone?: string
+  email?: string
+  address?: string
+  website?: string
+  locale?: string
+}
+
 export interface ProvisionClinicInput {
   name: string
   codePrefix: string
@@ -64,4 +86,18 @@ export async function setPlatformClinicStatus(session: PlatformSession, clinicId
 
 export async function platformLogout(session: PlatformSession) {
   await client.post('/platform/auth/logout', { refreshToken: session.refreshToken }, authorization(session))
+}
+
+export async function getPlatformClinicDetails(session: PlatformSession, clinicId: string): Promise<PlatformClinicDetails> {
+  const response = await client.get<BaseResponse<PlatformClinicDetails>>('/platform/clinics/details', {
+    ...authorization(session), params: { clinicId },
+  })
+  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load clinic details.')
+  return response.data.data
+}
+
+export async function updatePlatformClinic(session: PlatformSession, input: UpdatePlatformClinicInput): Promise<PlatformClinicDetails> {
+  const response = await client.put<BaseResponse<PlatformClinicDetails>>('/platform/clinics', input, authorization(session))
+  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to update clinic.')
+  return response.data.data
 }
