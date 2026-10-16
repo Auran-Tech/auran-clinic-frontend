@@ -10,6 +10,7 @@ import {
   getVisitReport,
 } from './api'
 import type { VisitReportQuery } from './types'
+import { reportErrorMessage } from './reportErrors'
 
 export function ReportingPage() {
   const auth = useAuth()
@@ -31,6 +32,7 @@ export function ReportingPage() {
   }), [fromDate, toDate, doctorId, visitStatus, documentationStatus])
 
   const xlsxExport = useMutation({ mutationFn: exportVisitReportXlsx })
+  const csvExport = useMutation({ mutationFn: exportVisitReport })
 
   const dashboardQuery = useQuery({
     queryKey: ['dashboard-summary'],
@@ -141,9 +143,10 @@ export function ReportingPage() {
               <button
                 className="button secondary"
                 type="button"
-                onClick={() => void exportVisitReport(reportQueryParams)}
+                disabled={csvExport.isPending}
+                onClick={() => csvExport.mutate(reportQueryParams)}
               >
-                Export CSV
+                {csvExport.isPending ? "Preparing CSV…" : "Export CSV"}
               </button>
               <button
                 className="button secondary"
@@ -158,7 +161,10 @@ export function ReportingPage() {
         </div>
 
         {xlsxExport.isError && (
-          <p role="alert" className="field-error">Excel export failed. Please retry.</p>
+          <p role="alert" className="field-error">{reportErrorMessage(xlsxExport.error, 'Excel export failed. Please retry.')}</p>
+        )}
+        {csvExport.isError && (
+          <p role="alert" className="field-error">{reportErrorMessage(csvExport.error, 'CSV export failed. Please retry.')}</p>
         )}
         <div className="report-filters">
           <label>
@@ -224,7 +230,7 @@ export function ReportingPage() {
         {reportQuery.isLoading && <p className="state">Loading report…</p>}
         {reportQuery.isError && (
           <p className="state error">
-            Unable to load report. Check the date range and filters.
+            {reportErrorMessage(reportQuery.error, 'Unable to load report. Check the date range and filters.')}
           </p>
         )}
 
