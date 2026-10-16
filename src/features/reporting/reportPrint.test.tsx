@@ -28,6 +28,7 @@ vi.mock('./api', () => ({
   exportVisitReportXlsx: vi.fn(),
 }))
 vi.mock('../employees/api', () => ({ getEmployees: vi.fn() }))
+vi.mock('./patientReportApi', () => ({ getPatientReport: vi.fn(), exportPatientReportCsv: vi.fn() }))
 
 afterEach(() => {
   cleanup()

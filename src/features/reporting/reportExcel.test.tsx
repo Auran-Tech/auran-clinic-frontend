@@ -25,6 +25,7 @@ vi.mock('./api', () => ({
   exportVisitReport: vi.fn(), exportVisitReportXlsx: vi.fn(),
 }))
 vi.mock('../employees/api', () => ({ getEmployees: vi.fn() }))
+vi.mock('./patientReportApi', () => ({ getPatientReport: vi.fn(), exportPatientReportCsv: vi.fn() }))
 
 beforeEach(() => { mocks.permissions.clear(); mocks.mutation.mockReset() })
 afterEach(cleanup)

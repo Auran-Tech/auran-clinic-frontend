@@ -18,6 +18,8 @@ on:
       - 'e2e/live-authenticated-patient.spec.mjs'
       - 'e2e/live-report-excel.spec.mjs'
       - 'e2e/live-platform-admin.spec.mjs'
+      - 'e2e/live-patient-report.spec.mjs'
+      - 'src/features/reporting/**'
       - 'src/features/platform/**'
       - 'src/features/reporting/**'
 
@@ -45,7 +47,8 @@ jobs:
       E2E_API_BASE_URL: http://127.0.0.1:5085/api
       Cors__AllowedOrigins__0: http://127.0.0.1:4173
       PlatformBootstrap__Enabled: 'true'
-      ApiSecurity__LoginPermitLimit: '20'
+      # Disposable parallel E2E actors can sign in repeatedly; rate-limit denial is tested in Backend CI.
+      ApiSecurity__LoginPermitLimit: '80'
       PlatformBootstrap__FullName: CI Platform Administrator
       PlatformBootstrap__Email: auran-ci-platform@example.invalid
       PlatformBootstrap__Password: CI_Only_Platform_123456!
@@ -112,7 +115,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
-        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs
+        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs e2e/live-patient-report.spec.mjs
 
       - name: Upload browser test artifacts on failure
         if: failure()

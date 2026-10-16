@@ -11,6 +11,7 @@ import {
 } from './api'
 import type { VisitReportQuery } from './types'
 import { reportErrorMessage } from './reportErrors'
+import { PatientReportPanel } from './PatientReportPanel'
 
 export function ReportingPage() {
   const auth = useAuth()
@@ -281,6 +282,7 @@ export function ReportingPage() {
           </>
         )}
       </section>
+      <PatientReportPanel />
     </main>
   )
 }
