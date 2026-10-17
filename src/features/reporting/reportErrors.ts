@@ -7,6 +7,6 @@ export function isReportTooLarge(error: unknown): boolean {
 
 export function reportErrorMessage(error: unknown, fallback: string): string {
   return isReportTooLarge(error)
-    ? 'Report exceeds 10,000 visits. Narrow the date range or other filters and try again.'
+    ? 'Report exceeds 10,000 rows. Narrow the date range or other filters and try again.'
     : fallback
 }

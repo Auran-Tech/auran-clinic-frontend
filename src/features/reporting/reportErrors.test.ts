@@ -16,7 +16,7 @@ describe('report size feedback', () => {
   it('recognizes 413 rejection and tells users how to narrow filters', () => {
     const error = errorWithStatus(413)
     expect(isReportTooLarge(error)).toBe(true)
-    expect(reportErrorMessage(error, 'retry')).toContain('10,000 visits')
+    expect(reportErrorMessage(error, 'retry')).toContain('10,000 rows')
     expect(reportErrorMessage(error, 'retry')).toContain('Narrow')
   })
 
