@@ -13,6 +13,7 @@ import type { VisitReportQuery } from './types'
 import { reportErrorMessage } from './reportErrors'
 import { PatientReportPanel } from './PatientReportPanel'
 import { QueueReportPanel } from './QueueReportPanel'
+import { DoctorActivityPanel } from './DoctorActivityPanel'
 
 export function ReportingPage() {
   const auth = useAuth()
@@ -285,6 +286,7 @@ export function ReportingPage() {
       </section>
       <PatientReportPanel />
       <QueueReportPanel />
+      <DoctorActivityPanel />
     </main>
   )
 }
