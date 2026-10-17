@@ -29,6 +29,12 @@ test('queue report enforces clinic actor and delivers CSV via browser', async ({
   })
   expect(wrongActor.status()).toBe(403)
 
+  const rejectedRange = await request.get(api + '/reporting/queue', {
+    headers: clinicHeaders,
+    params: { fromDate: '2026-10-17', toDate: '2026-10-01' },
+  })
+  expect(rejectedRange.status()).toBe(400)
+
   const preview = await request.get(api + '/reporting/queue', { headers: clinicHeaders })
   expect(preview.status()).toBe(200)
   const json = await preview.json()
