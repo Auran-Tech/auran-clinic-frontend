@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { createDoctor } from './live-clinical-flow.helpers.mjs'
 
 const api = process.env.E2E_API_BASE_URL
 
@@ -23,6 +24,7 @@ test('doctor activity preview and CSV keep tenant and platform actor boundaries'
   expect(login.status()).toBe(200)
   const clinicToken = (await login.json()).data.accessToken
   const clinicHeaders = { Authorization: 'Bearer ' + clinicToken }
+  const doctorId = await createDoctor(request, api, clinicToken, 'activitydoctor-' + unique + '@example.invalid', password)
   const wrongActor = await request.get(api + '/reporting/doctors/export', {
     headers: { Authorization: 'Bearer ' + platformToken },
   })
@@ -35,7 +37,13 @@ test('doctor activity preview and CSV keep tenant and platform actor boundaries'
   expect(preview.status()).toBe(200)
   const body = (await preview.json()).data
   expect(Array.isArray(body.rows)).toBe(true)
-  expect(body.rows.every(row => row.currentQueue >= 0 && row.totalVisits >= 0)).toBe(true)
+  const doctor = body.rows.find(row => row.doctorId === doctorId)
+  expect(doctor).toBeDefined()
+  expect(doctor.doctorName).toBe('Integration Doctor')
+  expect(doctor.currentQueue).toBe(0)
+  expect(doctor.totalVisits).toBe(0)
+  expect(doctor.completedDocs).toBe(0)
+  expect(doctor.pendingDocs).toBe(0)
 
   await page.goto('/login')
   await page.getByLabel('Email').fill(admin.email)
