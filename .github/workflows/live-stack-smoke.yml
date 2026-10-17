@@ -20,6 +20,7 @@ on:
       - 'e2e/live-platform-admin.spec.mjs'
       - 'e2e/live-patient-report.spec.mjs'
       - 'e2e/live-queue-report.spec.mjs'
+      - 'e2e/live-doctor-activity.spec.mjs'
       - 'src/features/reporting/**'
       - 'src/features/platform/**'
       - 'src/features/reporting/**'
@@ -116,7 +117,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
-        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs e2e/live-patient-report.spec.mjs e2e/live-queue-report.spec.mjs
+        run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs e2e/live-patient-report.spec.mjs e2e/live-queue-report.spec.mjs e2e/live-doctor-activity.spec.mjs
 
       - name: Upload browser test artifacts on failure
         if: failure()
