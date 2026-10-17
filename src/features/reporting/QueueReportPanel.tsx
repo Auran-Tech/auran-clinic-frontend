@@ -1,0 +1,110 @@
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useAuth } from '../auth/AuthContext'
+import { getEmployees } from '../employees/api'
+import { exportQueueReportCsv, getQueueReport } from './queueReportApi'
+import type { QueueReportQuery } from './queueReportTypes'
+import { reportErrorMessage } from './reportErrors'
+
+export function QueueReportPanel() {
+  const auth = useAuth()
+  const canView = auth.hasPermission('Reports_View')
+  const canExport = canView && auth.hasPermission('Reports_Export')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [doctorId, setDoctorId] = useState('')
+  const [workflowStatusId, setWorkflowStatusId] = useState('')
+  const [selectedStatusName, setSelectedStatusName] = useState('')
+  const validRange = !fromDate || !toDate || fromDate <= toDate
+  const filters = useMemo<QueueReportQuery>(() => ({
+    fromDate: fromDate || undefined,
+    toDate: toDate || undefined,
+    doctorId: doctorId || undefined,
+    workflowStatusId: workflowStatusId || undefined,
+  }), [fromDate, toDate, doctorId, workflowStatusId])
+  const preview = useQuery({
+    queryKey: ['queue-report', filters],
+    queryFn: () => getQueueReport(filters),
+    enabled: canView && validRange,
+  })
+  const employees = useQuery({
+    queryKey: ['employees', 'queue-report'],
+    queryFn: getEmployees,
+    enabled: canView && auth.hasPermission('Users_View'),
+  })
+  const download = useMutation({ mutationFn: exportQueueReportCsv })
+  // Workflow status options originate from the same clinic-scoped queue report.
+  // IDs are sent to the API, never arbitrary status labels.
+  const statuses = useMemo(() => {
+    const unique = new Map<string, string>()
+    for (const row of preview.data?.rows ?? [])
+      unique.set(row.workflowStatusId, row.workflowStatusName)
+    return [...unique].map(([id, name]) => ({ id, name }))
+  }, [preview.data])
+
+  if (!canView) return null
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <h2>Clinic queue report</h2>
+          <p className="muted">Queue entries by clinic-local date, doctor and workflow status.</p>
+        </div>
+        {canExport && (
+          <button className="button secondary" type="button"
+            disabled={!validRange || preview.isError || !preview.data || download.isPending}
+            onClick={() => download.mutate(filters)}>
+            {download.isPending ? 'Preparing CSV…' : 'Export queue CSV'}
+          </button>
+        )}
+      </div>
+      <div className="report-filters">
+        <label><span>Queue from</span><input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+        <label><span>Queue to</span><input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        {auth.hasPermission('Users_View') && (
+          <label><span>Queue doctor</span><select value={doctorId} onChange={e => setDoctorId(e.target.value)}>
+            <option value="">All doctors</option>
+            {(employees.data ?? []).filter(employee => employee.roles.includes('DOCTOR')).map(doctor =>
+              <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>)}
+          </select></label>
+        )}
+        <label><span>Workflow status</span><select value={workflowStatusId} onChange={e => {
+          setWorkflowStatusId(e.target.value)
+          setSelectedStatusName(e.target.selectedOptions[0]?.textContent ?? '')
+        }}>
+          <option value="">All statuses</option>
+          {workflowStatusId && !statuses.some(status => status.id === workflowStatusId) &&
+            <option value={workflowStatusId}>{selectedStatusName}</option>}
+          {statuses.map(status => <option key={status.id} value={status.id}>{status.name}</option>)}
+        </select></label>
+        <div className="actions report-filter-actions">
+          <button className="button secondary" type="button" onClick={() => {
+            setFromDate(''); setToDate(''); setDoctorId(''); setWorkflowStatusId(''); setSelectedStatusName('')
+          }}>Clear queue filters</button>
+        </div>
+      </div>
+      {!validRange && <p role="alert" className="field-error">Queue from must be on or before queue to.</p>}
+      {preview.isLoading && <p role="status" className="state">Loading queue report…</p>}
+      {preview.isError && <p role="alert" className="state error">{reportErrorMessage(preview.error, 'Unable to load queue report.')}</p>}
+      {download.isError && <p role="alert" className="field-error">{reportErrorMessage(download.error, 'Unable to export queue report.')}</p>}
+      {validRange && preview.data && (
+        <>
+          <p className="muted report-count">{preview.data.totalCount} queue entries</p>
+          {preview.data.rows.length === 0 ? <p className="state">No queue entries match these filters.</p> : (
+            <div className="table-wrap"><table>
+              <thead><tr><th>Patient</th><th>Doctor</th><th>Workflow</th><th>Entry (UTC)</th><th>Exit (UTC)</th><th>Clinic time (min)</th></tr></thead>
+              <tbody>{preview.data.rows.map(row => <tr key={row.queueEntryId}>
+                <td><Link className="patient-link" to={`/patients/${row.patientId}`}>{row.patientName}</Link><div className="muted mono">{row.patientNumber}</div></td>
+                <td>{row.doctorName ?? '—'}</td><td>{row.workflowStatusName}</td>
+                <td>{new Date(row.entryAtUtc).toISOString().replace('T', ' ').slice(0, 16)}</td>
+                <td>{row.exitAtUtc ? new Date(row.exitAtUtc).toISOString().replace('T', ' ').slice(0, 16) : 'Active'}</td>
+                <td>{row.durationMinutes == null ? '—' : row.durationMinutes.toFixed(2)}</td>
+              </tr>)}</tbody>
+            </table></div>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
