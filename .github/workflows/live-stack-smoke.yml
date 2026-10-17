@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/live-stack-smoke.yml'
+      - 'package.json'
+      - 'package-lock.json'
       - 'e2e/live-stack.spec.mjs'
       - 'e2e/live-login-rejection.spec.mjs'
       - 'e2e/live-clinical-journey.spec.mjs'
@@ -104,7 +106,10 @@ jobs:
           exit 1
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=moderate
 
       - name: Build frontend against real API
         run: npm run build
@@ -112,9 +117,7 @@ jobs:
           VITE_API_BASE_URL: http://127.0.0.1:5085/api
 
       - name: Install Playwright
-        run: |
-          npm install --no-save @playwright/test
-          npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run live-stack browser smoke
         run: npx playwright test e2e/live-stack.spec.mjs e2e/live-login-rejection.spec.mjs e2e/live-authenticated-patient.spec.mjs e2e/live-finalized-record.spec.mjs e2e/live-specialty-documentation.spec.mjs e2e/live-report-excel.spec.mjs e2e/live-platform-admin.spec.mjs e2e/live-patient-report.spec.mjs e2e/live-queue-report.spec.mjs e2e/live-doctor-activity.spec.mjs
