@@ -23,7 +23,10 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
 
       - name: Lint
         run: npm run lint
@@ -35,9 +38,6 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: https://example.invalid/api
-
-      - name: Install browser test runner
-        run: npm install --no-save @playwright/test
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
