@@ -29,6 +29,7 @@ vi.mock('./api', () => ({
 }))
 vi.mock('../employees/api', () => ({ getEmployees: vi.fn() }))
 vi.mock('./patientReportApi', () => ({ getPatientReport: vi.fn(), exportPatientReportCsv: vi.fn() }))
+vi.mock('./queueReportApi', () => ({ getQueueReport: vi.fn(), exportQueueReportCsv: vi.fn() }))
 
 afterEach(() => {
   cleanup()
