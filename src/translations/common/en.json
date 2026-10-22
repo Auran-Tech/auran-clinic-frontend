@@ -1,0 +1,11 @@
+{
+  "dashboard": "Dashboard",
+  "patients": "Patients",
+  "queue": "Live queue",
+  "followUps": "Follow-ups",
+  "pendingDocumentation": "Pending documentation",
+  "employees": "Employees",
+  "settings": "Settings",
+  "audit": "Audit",
+  "reports": "Reports"
+}

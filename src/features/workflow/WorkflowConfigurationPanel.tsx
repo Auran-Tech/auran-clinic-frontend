@@ -1,3 +1,5 @@
+import './workflow.css'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
@@ -19,6 +21,7 @@ const emptyStatus: WorkflowStatusInput = {
 }
 
 export function WorkflowConfigurationPanel() {
+  const { t } = useTranslation('workflow')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
@@ -65,7 +68,9 @@ export function WorkflowConfigurationPanel() {
     [query.data?.statuses],
   )
 
-  const syncConfiguration = (data: Awaited<ReturnType<typeof getWorkflowConfiguration>>) => {
+  const syncConfiguration = (
+    data: Awaited<ReturnType<typeof getWorkflowConfiguration>>,
+  ) => {
     queryClient.setQueryData(['workflow-config'], data)
   }
 
@@ -109,9 +114,9 @@ export function WorkflowConfigurationPanel() {
   const validStatus = (input: WorkflowStatusInput) =>
     Boolean(
       input.code.trim() &&
-        input.name.trim() &&
-        /^#[0-9A-Fa-f]{6}$/.test(input.color) &&
-        input.sortOrder >= 0,
+      input.name.trim() &&
+      /^#[0-9A-Fa-f]{6}$/.test(input.color) &&
+      input.sortOrder >= 0,
     )
 
   const toggleTransition = (fromStatusId: string, toStatusId: string) => {
@@ -128,22 +133,20 @@ export function WorkflowConfigurationPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinic workflow</h2>
-          <p className="muted">
-            Configure queue stages and allowed movements without customer-specific code.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading workflow configuration…</p>}
-      {query.isError && <p className="state error">Unable to load workflow configuration.</p>}
+      {query.isLoading && <p className="state">{t('loading')}</p>}
+      {query.isError && <p className="state error">{t('loadError')}</p>}
 
       {query.data && (
         <>
           {canManage && (
             <div className="workflow-status-form">
               <label>
-                <span>Code</span>
+                <span>{t('code')}</span>
                 <input
                   value={newStatus.code}
                   onChange={(event) =>
@@ -153,17 +156,17 @@ export function WorkflowConfigurationPanel() {
                 />
               </label>
               <label>
-                <span>Name</span>
+                <span>{t('name')}</span>
                 <input
                   value={newStatus.name}
                   onChange={(event) =>
                     setNewStatus((current) => ({ ...current, name: event.target.value }))
                   }
-                  placeholder="Waiting"
+                  placeholder={t('stageNameExample')}
                 />
               </label>
               <label>
-                <span>Color</span>
+                <span>{t('color')}</span>
                 <input
                   value={newStatus.color}
                   onChange={(event) =>
@@ -173,7 +176,7 @@ export function WorkflowConfigurationPanel() {
                 />
               </label>
               <label>
-                <span>Sort order</span>
+                <span>{t('sortOrder')}</span>
                 <input
                   type="number"
                   min="0"
@@ -197,7 +200,7 @@ export function WorkflowConfigurationPanel() {
                     }))
                   }
                 />
-                <span>Final exit stage</span>
+                <span>{t('finalExitStage')}</span>
               </label>
               <div className="actions">
                 <button
@@ -205,7 +208,7 @@ export function WorkflowConfigurationPanel() {
                   disabled={!validStatus(newStatus) || createMutation.isPending}
                   onClick={() => createMutation.mutate()}
                 >
-                  {createMutation.isPending ? 'Adding…' : 'Add stage'}
+                  {createMutation.isPending ? t('adding') : t('addStage')}
                 </button>
               </div>
             </div>
@@ -227,9 +230,11 @@ export function WorkflowConfigurationPanel() {
                 </div>
 
                 <div className="workflow-status-meta">
-                  <span>Order {status.sortOrder}</span>
-                  {status.isSystemFinal && <span className="role-badge">Final</span>}
-                  {status.isInUse && <span className="role-badge">In use</span>}
+                  <span>{t('orderValue', { order: status.sortOrder })}</span>
+                  {status.isSystemFinal && (
+                    <span className="role-badge">{t('final')}</span>
+                  )}
+                  {status.isInUse && <span className="role-badge">{t('inUse')}</span>}
                 </div>
 
                 {canManage && (
@@ -238,14 +243,16 @@ export function WorkflowConfigurationPanel() {
                       className="button secondary"
                       onClick={() => setEditing(status)}
                     >
-                      Edit
+                      {t('edit')}
                     </button>
                     <button
                       className="button danger"
-                      disabled={status.isSystemFinal || status.isInUse || deleteMutation.isPending}
+                      disabled={
+                        status.isSystemFinal || status.isInUse || deleteMutation.isPending
+                      }
                       onClick={() => deleteMutation.mutate(status.id)}
                     >
-                      Delete
+                      {t('delete')}
                     </button>
                   </div>
                 )}
@@ -257,19 +264,17 @@ export function WorkflowConfigurationPanel() {
             <div className="workflow-edit-box">
               <div className="panel-heading">
                 <div>
-                  <h3>Edit {editing.name}</h3>
-                  <p className="muted">
-                    Marking this stage final will automatically unset the previous final stage.
-                  </p>
+                  <h3>{t('editStage', { name: editing.name })}</h3>
+                  <p className="muted">{t('editSubtitle')}</p>
                 </div>
                 <button className="button secondary" onClick={() => setEditing(null)}>
-                  Close
+                  {t('close')}
                 </button>
               </div>
 
               <div className="workflow-status-form">
                 <label>
-                  <span>Code</span>
+                  <span>{t('code')}</span>
                   <input
                     value={editForm.code}
                     onChange={(event) =>
@@ -278,7 +283,7 @@ export function WorkflowConfigurationPanel() {
                   />
                 </label>
                 <label>
-                  <span>Name</span>
+                  <span>{t('name')}</span>
                   <input
                     value={editForm.name}
                     onChange={(event) =>
@@ -287,16 +292,19 @@ export function WorkflowConfigurationPanel() {
                   />
                 </label>
                 <label>
-                  <span>Color</span>
+                  <span>{t('color')}</span>
                   <input
                     value={editForm.color}
                     onChange={(event) =>
-                      setEditForm((current) => ({ ...current, color: event.target.value }))
+                      setEditForm((current) => ({
+                        ...current,
+                        color: event.target.value,
+                      }))
                     }
                   />
                 </label>
                 <label>
-                  <span>Sort order</span>
+                  <span>{t('sortOrder')}</span>
                   <input
                     type="number"
                     min="0"
@@ -321,7 +329,7 @@ export function WorkflowConfigurationPanel() {
                       }))
                     }
                   />
-                  <span>Final exit stage</span>
+                  <span>{t('finalExitStage')}</span>
                 </label>
                 <div className="actions">
                   <button
@@ -329,7 +337,7 @@ export function WorkflowConfigurationPanel() {
                     disabled={!validStatus(editForm) || updateMutation.isPending}
                     onClick={() => updateMutation.mutate()}
                   >
-                    {updateMutation.isPending ? 'Saving…' : 'Save stage'}
+                    {updateMutation.isPending ? t('saving') : t('saveStage')}
                   </button>
                 </div>
               </div>
@@ -339,10 +347,8 @@ export function WorkflowConfigurationPanel() {
           <div className="workflow-transition-section">
             <div className="panel-heading">
               <div>
-                <h3>Allowed transitions</h3>
-                <p className="muted">
-                  Select the destination stages each source stage can move to.
-                </p>
+                <h3>{t('transitionsTitle')}</h3>
+                <p className="muted">{t('transitionsSubtitle')}</p>
               </div>
               {canManage && (
                 <button
@@ -350,7 +356,7 @@ export function WorkflowConfigurationPanel() {
                   disabled={transitionMutation.isPending}
                   onClick={() => transitionMutation.mutate()}
                 >
-                  {transitionMutation.isPending ? 'Saving…' : 'Save transitions'}
+                  {transitionMutation.isPending ? t('saving') : t('saveTransitions')}
                 </button>
               )}
             </div>
@@ -359,7 +365,7 @@ export function WorkflowConfigurationPanel() {
               <table className="workflow-matrix">
                 <thead>
                   <tr>
-                    <th>From \ To</th>
+                    <th>{t('fromTo')}</th>
                     {sortedStatuses.map((status) => (
                       <th key={status.id}>{status.name}</th>
                     ))}
@@ -379,7 +385,10 @@ export function WorkflowConfigurationPanel() {
                           <td key={toStatus.id}>
                             <input
                               type="checkbox"
-                              aria-label={`${fromStatus.name} to ${toStatus.name}`}
+                              aria-label={t('transitionLabel', {
+                                from: fromStatus.name,
+                                to: toStatus.name,
+                              })}
                               disabled={disabled}
                               checked={checked}
                               onChange={() =>
@@ -400,10 +409,7 @@ export function WorkflowConfigurationPanel() {
             updateMutation.isError ||
             deleteMutation.isError ||
             transitionMutation.isError) && (
-            <p className="field-error">
-              Unable to apply this workflow change. Final-stage, duplicate-code, or historical-use
-              protections may apply.
-            </p>
+            <p className="field-error">{t('changeError')}</p>
           )}
         </>
       )}

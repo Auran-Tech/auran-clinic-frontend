@@ -1,0 +1,23 @@
+{
+  "title": "Clinical order files & images",
+  "subtitle": "Link existing patient uploads into configured Image/File order sections.",
+  "loading": "Loading order attachments…",
+  "loadError": "Unable to load order attachments.",
+  "noSections": "No Image/File clinical-order sections are configured.",
+  "orderSection": "Order section",
+  "selectSection": "Select section",
+  "patientAttachment": "Patient attachment",
+  "selectFile": "Select file",
+  "selectSectionFirst": "Select a section first",
+  "linking": "Linking…",
+  "link": "Link attachment",
+  "noEligible": "No additional eligible patient uploads are available for this section.",
+  "linkError": "Unable to link this file. Image sections only accept images, and duplicate links are not allowed.",
+  "linkedCount": "{{count}} linked",
+  "noFiles": "No files linked to this section.",
+  "unlink": "Unlink",
+  "uploadFirst": "Upload patient attachments first, then link them into the clinical order.",
+  "unlinkError": "Unable to unlink this file. The clinical visit may already be closed.",
+  "Image": "Image",
+  "File": "File"
+}

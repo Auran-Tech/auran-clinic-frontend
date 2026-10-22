@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import axios from 'axios'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
@@ -21,10 +22,7 @@ export async function startClinicalSession(visitId: string) {
   const response = await api.post<BaseResponse<ClinicalSession>>('/clinical-sessions/start', {
     visitId,
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to start clinical session.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to start clinical session.')
 }
 
 export async function saveClinicalDocumentation(input: ClinicalDocumentationInput) {
@@ -32,18 +30,12 @@ export async function saveClinicalDocumentation(input: ClinicalDocumentationInpu
     '/clinical-sessions/documentation',
     input,
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to save clinical documentation.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to save clinical documentation.')
 }
 
 export async function endClinicalSession(visitId: string) {
   const response = await api.put<BaseResponse<ClinicalSession>>('/clinical-sessions/end', {
     visitId,
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to end clinical session.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to end clinical session.')
 }

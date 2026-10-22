@@ -8,8 +8,10 @@ test('platform browser provisions and updates clinic against real API and SQL', 
   const password = process.env.PlatformBootstrap__Password
   if (!email || !password) throw new Error('Missing disposable platform bootstrap credentials')
 
-  // A clinic login is deliberately not used: Platform has its own actor scope.
-  await page.goto('/platform')
+  // The clinic login must make the separate Platform actor sign-in discoverable.
+  await page.goto('/login')
+  await page.getByRole('link', { name: 'Platform administration' }).click()
+  await expect(page).toHaveURL(/\/platform$/)
   await expect(page.getByRole('heading', { name: 'Platform administration' })).toBeVisible()
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(password)

@@ -1,11 +1,11 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { QueueReport, QueueReportQuery } from './queueReportTypes'
 
 export async function getQueueReport(filters: QueueReportQuery): Promise<QueueReport> {
   const response = await api.get<BaseResponse<QueueReport>>('/reporting/queue', { params: filters })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load queue report.')
-  return response.data.data
+  return requireData(response.data, 'Unable to load queue report.')
 }
 
 export async function exportQueueReportCsv(filters: QueueReportQuery) {

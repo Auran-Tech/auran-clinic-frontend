@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import { exportDoctorActivityCsv, getDoctorActivity } from './doctorActivityApi'
@@ -7,6 +8,7 @@ import type { DoctorActivityQuery } from './doctorActivityTypes'
 import { reportErrorMessage } from './reportErrors'
 
 export function DoctorActivityPanel() {
+  const { t } = useTranslation('reporting')
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = canView && auth.hasPermission('Reports_Export')
@@ -14,11 +16,14 @@ export function DoctorActivityPanel() {
   const [toDate, setToDate] = useState('')
   const [doctorId, setDoctorId] = useState('')
   const validRange = !fromDate || !toDate || fromDate <= toDate
-  const filters = useMemo<DoctorActivityQuery>(() => ({
-    fromDate: fromDate || undefined,
-    toDate: toDate || undefined,
-    doctorId: doctorId || undefined,
-  }), [fromDate, toDate, doctorId])
+  const filters = useMemo<DoctorActivityQuery>(
+    () => ({
+      fromDate: fromDate || undefined,
+      toDate: toDate || undefined,
+      doctorId: doctorId || undefined,
+    }),
+    [fromDate, toDate, doctorId],
+  )
 
   const report = useQuery({
     queryKey: ['doctor-activity-report', filters],
@@ -38,48 +43,114 @@ export function DoctorActivityPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Doctor activity report</h2>
-          <p className="muted">Visit and documentation counts for the selected clinic-local dates. Current queue is live, not historical.</p>
+          <h2>{t('doctorActivity')}</h2>
+          <p className="muted">{t('doctorActivitySubtitle')}</p>
         </div>
         {canExport && (
-          <button className="button secondary" type="button"
+          <button
+            className="button secondary"
+            type="button"
             disabled={!validRange || csv.isPending || report.isError || !report.data}
-            onClick={() => csv.mutate(filters)}>
-            {csv.isPending ? 'Preparing CSV…' : 'Export doctor CSV'}
+            onClick={() => csv.mutate(filters)}
+          >
+            {csv.isPending ? t('preparingCsv') : t('exportDoctors')}
           </button>
         )}
       </div>
       <div className="report-filters">
-        <label><span>Activity from</span><input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
-        <label><span>Activity to</span><input type="date" value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+        <label>
+          <span>{t('activityFrom')}</span>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </label>
+        <label>
+          <span>{t('activityTo')}</span>
+          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+        </label>
         {auth.hasPermission('Users_View') && (
-          <label><span>Activity doctor</span><select value={doctorId} onChange={e => setDoctorId(e.target.value)}>
-            <option value="">All doctors</option>
-            {(employees.data ?? []).filter(employee => employee.roles.includes('DOCTOR')).map(doctor =>
-              <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>)}
-          </select></label>
+          <label>
+            <span>{t('activityDoctor')}</span>
+            <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
+              <option value="">{t('allDoctors')}</option>
+              {(employees.data ?? [])
+                .filter((employee) => employee.roles.includes('DOCTOR'))
+                .map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.fullName}
+                  </option>
+                ))}
+            </select>
+          </label>
         )}
         <div className="actions report-filter-actions">
-          <button type="button" className="button secondary" onClick={() => {
-            setFromDate(''); setToDate(''); setDoctorId('')
-          }}>Clear activity filters</button>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => {
+              setFromDate('')
+              setToDate('')
+              setDoctorId('')
+            }}
+          >
+            {t('clearActivity')}
+          </button>
         </div>
       </div>
-      {!validRange && <p role="alert" className="field-error">Activity from must be on or before activity to.</p>}
-      {report.isLoading && <p className="state" role="status">Loading doctor activity…</p>}
-      {report.isError && <p role="alert" className="state error">{reportErrorMessage(report.error, 'Unable to load doctor activity.')}</p>}
-      {csv.isError && <p role="alert" className="field-error">{reportErrorMessage(csv.error, 'Unable to export doctor activity.')}</p>}
+      {!validRange && (
+        <p role="alert" className="field-error">
+          {t('activityDateError')}
+        </p>
+      )}
+      {report.isLoading && (
+        <p className="state" role="status">
+          {t('loadingActivity')}
+        </p>
+      )}
+      {report.isError && (
+        <p role="alert" className="state error">
+          {reportErrorMessage(report.error, t('activityError'))}
+        </p>
+      )}
+      {csv.isError && (
+        <p role="alert" className="field-error">
+          {reportErrorMessage(csv.error, t('activityExportError'))}
+        </p>
+      )}
       {validRange && report.data && (
         <>
-          <p className="muted report-count">{report.data.totalCount} doctors</p>
-          {report.data.rows.length === 0 ? <p className="state">No doctors match these filters.</p> : (
-            <div className="table-wrap"><table>
-              <thead><tr><th>Doctor</th><th>Current queue</th><th>Total visits</th><th>Completed docs</th><th>Pending docs</th></tr></thead>
-              <tbody>{report.data.rows.map(row => <tr key={row.doctorId}>
-                <td>{row.doctorName}</td><td>{row.currentQueue}</td><td>{row.totalVisits}</td>
-                <td>{row.completedDocs}</td><td>{row.pendingDocs}</td>
-              </tr>)}</tbody>
-            </table></div>
+          <p className="muted report-count">
+            {t('doctorCount', { count: report.data.totalCount })}
+          </p>
+          {report.data.rows.length === 0 ? (
+            <p className="state">{t('noDoctors')}</p>
+          ) : (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t('doctor')}</th>
+                    <th>{t('currentQueue')}</th>
+                    <th>{t('totalVisits')}</th>
+                    <th>{t('completedDocs')}</th>
+                    <th>{t('pendingDocs')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.data.rows.map((row) => (
+                    <tr key={row.doctorId}>
+                      <td>{row.doctorName}</td>
+                      <td>{row.currentQueue}</td>
+                      <td>{row.totalVisits}</td>
+                      <td>{row.completedDocs}</td>
+                      <td>{row.pendingDocs}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}

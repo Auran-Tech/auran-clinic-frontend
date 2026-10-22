@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { QueueEntry, QueueTransitionOption } from './types'
@@ -20,8 +21,5 @@ export async function moveQueueEntry(input: {
   notes?: string
 }) {
   const response = await api.put<BaseResponse<QueueEntry>>('/queue/move', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to move queue entry.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to move queue entry.')
 }

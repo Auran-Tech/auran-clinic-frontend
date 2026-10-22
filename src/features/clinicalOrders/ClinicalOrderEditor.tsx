@@ -1,11 +1,9 @@
+import './clinicalOrders.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
-import {
-  getClinicalOrder,
-  getClinicalOrderDefinitions,
-  saveClinicalOrder,
-} from './api'
+import { getClinicalOrder, getClinicalOrderDefinitions, saveClinicalOrder } from './api'
 
 interface ClinicalOrderEditorProps {
   visitId: string
@@ -17,6 +15,7 @@ interface SectionDraft {
 }
 
 export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
+  const { t } = useTranslation('clinicalOrders')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canEdit = auth.hasPermission('Visit_Edit')
@@ -34,10 +33,7 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
     enabled: auth.hasPermission('Visit_View'),
   })
 
-  const definitions = useMemo(
-    () => definitionsQuery.data ?? [],
-    [definitionsQuery.data],
-  )
+  const definitions = useMemo(() => definitionsQuery.data ?? [], [definitionsQuery.data])
 
   useEffect(() => {
     if (definitions.length === 0) return
@@ -82,10 +78,7 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
                   : [],
             }
           })
-          .filter(
-            (section) =>
-              Boolean(section.textValue) || section.items.length > 0,
-          ),
+          .filter((section) => Boolean(section.textValue) || section.items.length > 0),
       }),
     onSuccess: (order) => {
       queryClient.setQueryData(['clinical-order', visitId], order)
@@ -100,23 +93,21 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical order / prescription</h2>
-          <p className="muted">
-            Sections come from the clinic configuration and are stored with this visit.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
       {(definitionsQuery.isLoading || orderQuery.isLoading) && (
-        <p className="state">Loading clinical order…</p>
+        <p className="state">{t('loading')}</p>
       )}
 
       {definitionsQuery.isError || orderQuery.isError ? (
-        <p className="state error">Unable to load clinical order configuration.</p>
+        <p className="state error">{t('loadError')}</p>
       ) : null}
 
       {!definitionsQuery.isLoading && definitions.length === 0 && (
-        <p className="state">No enabled clinical-order sections are configured.</p>
+        <p className="state">{t('empty')}</p>
       )}
 
       {definitions.length > 0 && (
@@ -127,18 +118,20 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
             return (
               <div className="clinical-order-section" key={definition.id}>
                 <div>
-                  <span className="profile-label">{definition.sectionType}</span>
+                  <span className="profile-label">
+                    {t(definition.sectionType, { defaultValue: definition.sectionType })}
+                  </span>
                   <h3>{definition.name}</h3>
                 </div>
 
                 {definition.sectionType === 'Structured' ? (
                   <label>
-                    <span>Items</span>
+                    <span>{t('items')}</span>
                     <textarea
                       rows={5}
                       value={draft.itemsText}
                       disabled={!canEdit}
-                      placeholder="One item per line"
+                      placeholder={t('onePerLine')}
                       onChange={(event) =>
                         setDrafts((current) => ({
                           ...current,
@@ -152,7 +145,7 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
                   </label>
                 ) : (
                   <label>
-                    <span>Content</span>
+                    <span>{t('content')}</span>
                     <textarea
                       rows={5}
                       value={draft.textValue}
@@ -180,14 +173,12 @@ export function ClinicalOrderEditor({ visitId }: ClinicalOrderEditorProps) {
                 disabled={saveMutation.isPending}
                 onClick={() => saveMutation.mutate()}
               >
-                {saveMutation.isPending ? 'Saving…' : 'Save clinical order'}
+                {saveMutation.isPending ? t('saving') : t('save')}
               </button>
             </div>
           )}
 
-          {saveMutation.isError && (
-            <p className="field-error">Unable to save the clinical order.</p>
-          )}
+          {saveMutation.isError && <p className="field-error">{t('saveError')}</p>}
         </div>
       )}
     </section>

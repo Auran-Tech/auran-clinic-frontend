@@ -1,0 +1,19 @@
+{
+  "loading": "Loading patient profile fields…",
+  "loadError": "Unable to load dynamic patient profile.",
+  "title": "Extended patient profile",
+  "subtitle": "Clinic-configured fields for demographic and operational patient information.",
+  "system": "System",
+  "saving": "Saving…",
+  "save": "Save extended profile",
+  "requiredError": "Complete all required profile fields before saving.",
+  "saved": "Extended patient profile saved.",
+  "saveError": "Unable to save the extended profile. Check required values and configured options.",
+  "notSpecified": "Not specified",
+  "yes": "Yes",
+  "no": "No",
+  "fileAttached": "File attached",
+  "noFile": "No file attached",
+  "fileHelp": "Managed through patient attachments in this MVP slice.",
+  "unsupported": "Unsupported field type"
+}

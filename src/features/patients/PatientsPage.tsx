@@ -1,19 +1,18 @@
+import './patients.css'
 import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { useForm } from 'react-hook-form'
-import {
-  createPatient,
-  findPatientDuplicates,
-  getPatients,
-} from './api'
+import { createPatient, findPatientDuplicates, getPatients } from './api'
 import { patientSchema, type PatientFormValues } from './schema'
 import type { CreatePatientInput, PatientDuplicateCandidate } from './types'
 import { duplicateReviewKey } from './duplicateReview'
 
 export function PatientsPage() {
+  const { t } = useTranslation('patients')
   const queryClient = useQueryClient()
   const auth = useAuth()
   const [search, setSearch] = useState('')
@@ -88,26 +87,31 @@ export function PatientsPage() {
     () => patientsQuery.data?.setting.totalPage ?? 1,
     [patientsQuery.data],
   )
-  const hasExactPhoneDuplicate = duplicates.some((patient) => patient.matchReason === 'phone')
+  const hasExactPhoneDuplicate = duplicates.some(
+    (patient) => patient.matchReason === 'phone',
+  )
 
   return (
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Patient management</p>
-          <h1>Patients</h1>
-          <p className="muted">
-            Search, review, and register clinic patients.
-          </p>
+          <p className="eyebrow">{t('management')}</p>
+          <h1>{t('title')}</h1>
+          <p className="muted">{t('subtitle')}</p>
         </div>
         <div className="actions">
           {auth.hasPermission('Patient_Create') && (
-            <button className="button primary" onClick={() => setShowForm((value) => !value)}>
-              {showForm ? 'Close' : 'Add patient'}
+            <button
+              className="button primary"
+              onClick={() => setShowForm((value) => !value)}
+            >
+              {showForm ? t('close') : t('add')}
             </button>
           )}
           {auth.hasPermission('Reports_View') && (
-            <Link className="button secondary nav-button" to="/dashboard">Dashboard</Link>
+            <Link className="button secondary nav-button" to="/dashboard">
+              Dashboard
+            </Link>
           )}
           {auth.hasPermission('Reports_View') && (
             <Link className="button secondary nav-button" to="/reports">
@@ -129,9 +133,6 @@ export function PatientsPage() {
               Live queue
             </Link>
           )}
-          <button className="button secondary" onClick={() => void auth.signOut()}>
-            Sign out
-          </button>
         </div>
       </section>
 
@@ -139,8 +140,8 @@ export function PatientsPage() {
         <section className="panel">
           <div className="panel-heading">
             <div>
-              <h2>Register patient</h2>
-              <p className="muted">Duplicate candidates are checked before creation.</p>
+              <h2>{t('register')}</h2>
+              <p className="muted">{t('duplicateIntro')}</p>
             </div>
           </div>
 
@@ -153,48 +154,48 @@ export function PatientsPage() {
             }}
           >
             <label>
-              <span>Full name</span>
+              <span>{t('fullName')}</span>
               <input {...form.register('fullName')} />
               {form.formState.errors.fullName && (
-                <small className="field-error">{form.formState.errors.fullName.message}</small>
+                <small className="field-error">
+                  {form.formState.errors.fullName.message}
+                </small>
               )}
             </label>
 
             <label>
-              <span>Phone</span>
-              <input {...form.register('phone')} inputMode="tel" />
+              <span>{t('phone')}</span>
+              <input {...form.register('phone')} inputMode="tel" dir="ltr" />
               {form.formState.errors.phone && (
-                <small className="field-error">{form.formState.errors.phone.message}</small>
+                <small className="field-error">
+                  {form.formState.errors.phone.message}
+                </small>
               )}
             </label>
 
             <label>
-              <span>Gender</span>
+              <span>{t('gender')}</span>
               <select {...form.register('gender')}>
-                <option value="">Not specified</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
+                <option value="">{t('notSpecified')}</option>
+                <option value="Female">{t('female')}</option>
+                <option value="Male">{t('male')}</option>
               </select>
             </label>
 
             <label>
-              <span>Date of birth</span>
+              <span>{t('dateOfBirth')}</span>
               <input type="date" {...form.register('dateOfBirth')} />
             </label>
 
             <label className="full-width">
-              <span>Notes</span>
+              <span>{t('notes')}</span>
               <textarea rows={4} {...form.register('notes')} />
             </label>
 
             {duplicates.length > 0 && (
               <div className="duplicate-warning full-width" role="alert">
-                <strong>Possible duplicate patient</strong>
-                <p>
-                  {hasExactPhoneDuplicate
-                    ? 'A patient already uses this phone number. Edit the details or open the existing patient.'
-                    : 'Review these records before creating a new patient.'}
-                </p>
+                <strong>{t('possibleDuplicate')}</strong>
+                <p>{hasExactPhoneDuplicate ? t('samePhone') : t('reviewDuplicates')}</p>
                 <ul>
                   {duplicates.map((patient) => (
                     <li key={patient.id}>
@@ -213,15 +214,18 @@ export function PatientsPage() {
                       setReviewedInput(null)
                     }}
                   >
-                    Edit details
+                    {t('editDetails')}
                   </button>
                   {!hasExactPhoneDuplicate && (
                     <button
                       type="button"
                       className="button danger"
                       onClick={() => {
-                        if (!reviewedInput ||
-                            duplicateReviewKey(form.getValues()) !== duplicateReviewKey(reviewedInput)) {
+                        if (
+                          !reviewedInput ||
+                          duplicateReviewKey(form.getValues()) !==
+                            duplicateReviewKey(reviewedInput)
+                        ) {
                           setDuplicates([])
                           setReviewedInput(null)
                           return
@@ -229,7 +233,7 @@ export function PatientsPage() {
                         createMutation.mutate(reviewedInput)
                       }}
                     >
-                      Create anyway
+                      {t('createAnyway')}
                     </button>
                   )}
                 </div>
@@ -238,14 +242,12 @@ export function PatientsPage() {
 
             {duplicateMutation.isError && (
               <p className="field-error full-width" role="alert">
-                Unable to check for duplicate patients. Please retry saving when the service is available.
+                {t('duplicateError')}
               </p>
             )}
 
             {createMutation.isError && (
-              <p className="field-error full-width">
-                Unable to create patient. Please review the details and try again.
-              </p>
+              <p className="field-error full-width">{t('createError')}</p>
             )}
 
             <div className="actions full-width">
@@ -254,7 +256,7 @@ export function PatientsPage() {
                 type="submit"
                 disabled={duplicateMutation.isPending || createMutation.isPending}
               >
-                {duplicateMutation.isPending ? 'Checking…' : 'Save patient'}
+                {duplicateMutation.isPending ? t('checking') : t('save')}
               </button>
             </div>
           </form>
@@ -270,17 +272,15 @@ export function PatientsPage() {
               setSearch(event.target.value)
               setPage(1)
             }}
-            placeholder="Search by name, phone, or patient number"
-            aria-label="Search patients"
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchLabel')}
           />
         </div>
 
-        {patientsQuery.isLoading && <p className="state">Loading patients…</p>}
-        {patientsQuery.isError && (
-          <p className="state error">Unable to load patients.</p>
-        )}
+        {patientsQuery.isLoading && <p className="state">{t('loading')}</p>}
+        {patientsQuery.isError && <p className="state error">{t('loadError')}</p>}
         {patientsQuery.data && patientsQuery.data.data.length === 0 && (
-          <p className="state">No patients found.</p>
+          <p className="state">{t('empty')}</p>
         )}
 
         {patientsQuery.data && patientsQuery.data.data.length > 0 && (
@@ -289,21 +289,46 @@ export function PatientsPage() {
               <table>
                 <thead>
                   <tr>
-                    <th>Patient no.</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Date of birth</th>
-                    <th>Gender</th>
+                    <th>{t('patientNumber')}</th>
+                    <th>{t('name')}</th>
+                    <th>{t('phone')}</th>
+                    <th>{t('dateOfBirth')}</th>
+                    <th>{t('gender')}</th>
+                    <th>
+                      <span className="sr-only">{t('open')}</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {patientsQuery.data.data.map((patient) => (
                     <tr key={patient.id}>
-                      <td className="mono">{patient.patientNumber}</td>
-                      <td><Link className="patient-link" to={`/patients/${patient.id}`}><strong>{patient.fullName}</strong></Link></td>
-                      <td className="mono">{patient.phone}</td>
+                      <td className="mono" dir="ltr">
+                        {patient.patientNumber}
+                      </td>
+                      <td>
+                        <Link className="patient-link" to={`/patients/${patient.id}`}>
+                          <strong>{patient.fullName}</strong>
+                        </Link>
+                      </td>
+                      <td className="mono" dir="ltr">
+                        {patient.phone}
+                      </td>
                       <td>{patient.dateOfBirth ?? '—'}</td>
-                      <td>{patient.gender ?? '—'}</td>
+                      <td>
+                        {patient.gender === 'Female'
+                          ? t('female')
+                          : patient.gender === 'Male'
+                            ? t('male')
+                            : '—'}
+                      </td>
+                      <td>
+                        <Link
+                          className="button secondary patient-open-action"
+                          to={`/patients/${patient.id}`}
+                        >
+                          {t('open')}
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -312,7 +337,10 @@ export function PatientsPage() {
 
             <footer className="pagination">
               <span>
-                Page {patientsQuery.data.setting.currentPage} of {totalPages}
+                {t('page', {
+                  current: patientsQuery.data.setting.currentPage,
+                  total: totalPages,
+                })}
               </span>
               <div className="actions">
                 <button
@@ -320,14 +348,14 @@ export function PatientsPage() {
                   disabled={page <= 1}
                   onClick={() => setPage((value) => value - 1)}
                 >
-                  Previous
+                  {t('previous')}
                 </button>
                 <button
                   className="button secondary"
                   disabled={page >= totalPages}
                   onClick={() => setPage((value) => value + 1)}
                 >
-                  Next
+                  {t('next')}
                 </button>
               </div>
             </footer>

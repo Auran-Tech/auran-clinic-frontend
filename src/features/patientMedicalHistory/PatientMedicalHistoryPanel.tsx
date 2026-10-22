@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../auth/AuthContext'
 import {
@@ -13,6 +14,7 @@ import {
 import type { PatientMedicalHistory } from './types'
 
 export function PatientMedicalHistoryPanel({ patientId }: { patientId: string }) {
+  const { t } = useTranslation('patientMedicalHistory')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canEdit = auth.hasPermission('Patient_Edit_Basic')
@@ -102,21 +104,19 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Medical history</h2>
-          <p className="muted">
-            Current patient conditions, allergies, and medications.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading medical history…</p>}
-      {query.isError && <p className="state error">Unable to load medical history.</p>}
+      {query.isLoading && <p className="state">{t('loading')}</p>}
+      {query.isError && <p className="state error">{t('loadError')}</p>}
 
       {query.data && (
         <div className="medical-history-grid">
           <HistoryColumn
-            title="Conditions"
-            emptyText="No conditions recorded."
+            title={t('conditions')}
+            emptyText={t('noConditions')}
             items={query.data.conditions.map((item) => ({
               id: item.id,
               title: item.name,
@@ -129,14 +129,14 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
             {canEdit && (
               <div className="medical-history-form">
                 <input
-                  aria-label="Condition name"
-                  placeholder="Condition name"
+                  aria-label={t('conditionName')}
+                  placeholder={t('conditionName')}
                   value={conditionName}
                   onChange={(event) => setConditionName(event.target.value)}
                 />
                 <input
-                  aria-label="Condition notes"
-                  placeholder="Notes (optional)"
+                  aria-label={t('conditionNotes')}
+                  placeholder={t('optionalNotes')}
                   value={conditionNotes}
                   onChange={(event) => setConditionNotes(event.target.value)}
                 />
@@ -145,24 +145,23 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
                   disabled={!conditionName.trim() || conditionMutation.isPending}
                   onClick={() => conditionMutation.mutate()}
                 >
-                  {conditionMutation.isPending ? 'Adding…' : 'Add condition'}
+                  {conditionMutation.isPending ? t('adding') : t('addCondition')}
                 </button>
                 {conditionMutation.isError && (
-                  <p className="field-error">
-                    Unable to add condition. It may already be recorded.
-                  </p>
+                  <p className="field-error">{t('conditionError')}</p>
                 )}
               </div>
             )}
           </HistoryColumn>
 
           <HistoryColumn
-            title="Allergies"
-            emptyText="No allergies recorded."
+            title={t('allergies')}
+            emptyText={t('noAllergies')}
             items={query.data.allergies.map((item) => ({
               id: item.id,
               title: item.name,
-              details: [item.reaction, item.notes].filter(Boolean).join(' · ') || undefined,
+              details:
+                [item.reaction, item.notes].filter(Boolean).join(' · ') || undefined,
             }))}
             canEdit={canEdit}
             onDelete={(id) => deleteAllergyMutation.mutate(id)}
@@ -171,20 +170,20 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
             {canEdit && (
               <div className="medical-history-form">
                 <input
-                  aria-label="Allergy name"
-                  placeholder="Allergy name"
+                  aria-label={t('allergyName')}
+                  placeholder={t('allergyName')}
                   value={allergyName}
                   onChange={(event) => setAllergyName(event.target.value)}
                 />
                 <input
-                  aria-label="Allergy reaction"
-                  placeholder="Reaction (optional)"
+                  aria-label={t('allergyReaction')}
+                  placeholder={t('optionalReaction')}
                   value={allergyReaction}
                   onChange={(event) => setAllergyReaction(event.target.value)}
                 />
                 <input
-                  aria-label="Allergy notes"
-                  placeholder="Notes (optional)"
+                  aria-label={t('allergyNotes')}
+                  placeholder={t('optionalNotes')}
                   value={allergyNotes}
                   onChange={(event) => setAllergyNotes(event.target.value)}
                 />
@@ -193,20 +192,18 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
                   disabled={!allergyName.trim() || allergyMutation.isPending}
                   onClick={() => allergyMutation.mutate()}
                 >
-                  {allergyMutation.isPending ? 'Adding…' : 'Add allergy'}
+                  {allergyMutation.isPending ? t('adding') : t('addAllergy')}
                 </button>
                 {allergyMutation.isError && (
-                  <p className="field-error">
-                    Unable to add allergy. It may already be recorded.
-                  </p>
+                  <p className="field-error">{t('allergyError')}</p>
                 )}
               </div>
             )}
           </HistoryColumn>
 
           <HistoryColumn
-            title="Medications"
-            emptyText="No medications recorded."
+            title={t('medications')}
+            emptyText={t('noMedications')}
             items={query.data.medications.map((item) => ({
               id: item.id,
               title: item.name,
@@ -219,20 +216,20 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
             {canEdit && (
               <div className="medical-history-form">
                 <input
-                  aria-label="Medication name"
-                  placeholder="Medication name"
+                  aria-label={t('medicationName')}
+                  placeholder={t('medicationName')}
                   value={medicationName}
                   onChange={(event) => setMedicationName(event.target.value)}
                 />
                 <input
-                  aria-label="Medication dosage"
-                  placeholder="Dosage (optional)"
+                  aria-label={t('medicationDosage')}
+                  placeholder={t('optionalDosage')}
                   value={medicationDosage}
                   onChange={(event) => setMedicationDosage(event.target.value)}
                 />
                 <input
-                  aria-label="Medication notes"
-                  placeholder="Notes (optional)"
+                  aria-label={t('medicationNotes')}
+                  placeholder={t('optionalNotes')}
                   value={medicationNotes}
                   onChange={(event) => setMedicationNotes(event.target.value)}
                 />
@@ -241,12 +238,10 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
                   disabled={!medicationName.trim() || medicationMutation.isPending}
                   onClick={() => medicationMutation.mutate()}
                 >
-                  {medicationMutation.isPending ? 'Adding…' : 'Add medication'}
+                  {medicationMutation.isPending ? t('adding') : t('addMedication')}
                 </button>
                 {medicationMutation.isError && (
-                  <p className="field-error">
-                    Unable to add medication. It may already be recorded.
-                  </p>
+                  <p className="field-error">{t('medicationError')}</p>
                 )}
               </div>
             )}
@@ -257,7 +252,7 @@ export function PatientMedicalHistoryPanel({ patientId }: { patientId: string })
       {(deleteConditionMutation.isError ||
         deleteAllergyMutation.isError ||
         deleteMedicationMutation.isError) && (
-        <p className="field-error">Unable to remove this medical-history item.</p>
+        <p className="field-error">{t('removeError')}</p>
       )}
     </section>
   )
@@ -280,6 +275,7 @@ function HistoryColumn({
   deletePending: boolean
   children?: React.ReactNode
 }) {
+  const { t } = useTranslation('patientMedicalHistory')
   return (
     <section className="medical-history-column">
       <h3>{title}</h3>
@@ -301,7 +297,7 @@ function HistoryColumn({
                 disabled={deletePending}
                 onClick={() => onDelete(item.id)}
               >
-                Remove
+                {t('remove')}
               </button>
             )}
           </article>

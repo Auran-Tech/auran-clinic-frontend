@@ -1,0 +1,218 @@
+.auran-startup {
+  position: fixed;
+  inset: 0;
+  z-index: 1990;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 30%, #14274a 0, #0b152b 36%, #070d1c 75%);
+  color: #f1f5fb;
+  text-align: center;
+}
+.auran-startup-mark {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #438bff, #6757dd);
+  box-shadow: 0 16px 42px #315bb766;
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+.auran-startup-brand {
+  margin: 22px 0 30px;
+  font-size: 1.03rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+.auran-startup-brand span {
+  color: #9cbcff;
+}
+.auran-startup h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+.auran-startup > p:not(.auran-startup-brand) {
+  margin: 0;
+  color: #a7b8d4;
+}
+.auran-startup-progress {
+  width: min(220px, 70vw);
+  height: 3px;
+  margin-top: 34px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #294166;
+}
+.auran-startup-progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: #5c9bff;
+  animation: connection-progress 1.5s ease-in-out infinite alternate;
+}
+.connection-retry-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1995;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #050c1b9c;
+  color: #f1f5fb;
+  pointer-events: auto;
+}
+.connection-retry-layer .connection-banner {
+  width: min(100%, 360px);
+  margin: 0;
+}
+.connection-retry-layer .connection-banner.is-checking {
+  background: linear-gradient(110deg, #356ac6, #5577dc);
+}
+.connection-retry-description {
+  max-width: 360px;
+  margin: 11px 0;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #101d34e8;
+  color: #e3ebfa;
+  font-size: 0.78rem;
+  text-align: center;
+}
+.connection-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 15%, #1d3764 0, #0b162a 38%, #070d1c 78%);
+  color: #f1f5fb;
+}
+.connection-card {
+  width: min(100%, 460px);
+  padding: 38px;
+  border: 1px solid #30415e;
+  border-radius: 19px;
+  background: #121e35;
+  box-shadow: 0 26px 75px #02060fcc;
+  text-align: center;
+}
+.connection-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 47px;
+  margin: -8px -8px 30px;
+  padding: 10px 15px;
+  border-radius: 9px;
+  background: linear-gradient(110deg, #f59e0b, #fbbf24);
+  color: #fff;
+  font-size: 0.93rem;
+  font-weight: 800;
+  box-shadow: 0 5px 13px #0004;
+}
+.connection-banner.is-disconnected {
+  background: #8a2d31;
+}
+.connection-banner svg {
+  flex: 0 0 auto;
+}
+.connection-banner svg.is-spinning {
+  animation: connection-spin 1.3s linear infinite;
+}
+.connection-mark {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 19px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #438bff, #6757dd);
+  box-shadow: 0 11px 25px #315bb755;
+  font-weight: 800;
+  font-size: 1.8rem;
+}
+.connection-eyebrow {
+  margin: 0 0 12px;
+  color: #91b8f4;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+.connection-card h1 {
+  margin: 0 0 13px;
+  font-size: clamp(1.65rem, 4vw, 2.05rem);
+}
+.connection-card p#connection-body {
+  margin: 0 auto;
+  max-width: 340px;
+  color: #b7c5dd;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.connection-retry-button {
+  width: 100%;
+  min-height: 45px;
+  margin-top: 26px;
+  border: 0;
+  border-radius: 9px;
+  background: #3d7be0;
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.connection-retry-button:hover {
+  background: #5290f7;
+}
+.connection-footnote {
+  margin: 14px 0 0;
+  color: #8ca1bf;
+  font-size: 0.76rem;
+}
+.connection-language {
+  position: fixed;
+  z-index: 2010;
+  inset-block-start: 17px;
+  inset-inline-end: 18px;
+  border: 1px solid #30415e;
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: #1b2b47;
+  color: white;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+@keyframes connection-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes connection-progress {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@media (max-width: 520px) {
+  .connection-card {
+    padding: 30px 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .connection-banner svg.is-spinning,
+  .auran-startup-progress span {
+    animation: none;
+  }
+}

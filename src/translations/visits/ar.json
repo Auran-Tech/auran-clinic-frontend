@@ -1,0 +1,22 @@
+{
+  "historyTitle": "سجل الزيارات",
+  "historySubtitle": "الزيارات السابقة والحالية، من الأحدث إلى الأقدم.",
+  "historyLoading": "جارٍ تحميل سجل الزيارات…",
+  "historyError": "تعذّر تحميل سجل الزيارات.",
+  "historyEmpty": "لا توجد زيارات مسجلة لهذا المريض.",
+  "doctorPrefix": "د. {{name}}",
+  "sessions": "الجلسات",
+  "completed": "اكتملت",
+  "exited": "غادر",
+  "chiefComplaint": "الشكوى الرئيسية",
+  "diagnosis": "التشخيص",
+  "pageSummary": "صفحة {{current}} من {{total}} · {{count}} زيارة",
+  "newer": "الأحدث",
+  "older": "الأقدم",
+  "Open": "مفتوحة",
+  "Completed": "مكتملة",
+  "Cancelled": "ملغاة",
+  "NotStarted": "لم يبدأ",
+  "Draft": "مسودة",
+  "Pending": "معلّق"
+}

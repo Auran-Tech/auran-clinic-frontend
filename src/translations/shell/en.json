@@ -1,0 +1,9 @@
+{
+  "navigation": "Clinic navigation",
+  "workspace": "Clinic workspace",
+  "administration": "Administration",
+  "staff": "Staff",
+  "signOut": "Sign out",
+  "openMenu": "Open navigation",
+  "closeMenu": "Close navigation"
+}

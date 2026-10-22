@@ -1,0 +1,22 @@
+{
+  "historyTitle": "Visit history",
+  "historySubtitle": "Previous and active clinic encounters, newest first.",
+  "historyLoading": "Loading visit history…",
+  "historyError": "Unable to load visit history.",
+  "historyEmpty": "No clinic visits recorded for this patient.",
+  "doctorPrefix": "Dr. {{name}}",
+  "sessions": "Sessions",
+  "completed": "Completed",
+  "exited": "Exited",
+  "chiefComplaint": "Chief complaint",
+  "diagnosis": "Diagnosis",
+  "pageSummary": "Page {{current}} of {{total}} · {{count}} visits",
+  "newer": "Newer",
+  "older": "Older",
+  "Open": "Open",
+  "Completed": "Completed",
+  "Cancelled": "Cancelled",
+  "NotStarted": "Not started",
+  "Draft": "Draft",
+  "Pending": "Pending"
+}

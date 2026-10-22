@@ -1,0 +1,14 @@
+{
+  "loadingTitle": "Preparing your clinic workspace",
+  "loadingBody": "Connecting services and opening Auran Clinic.",
+  "checkingTitle": "Connecting to Auran",
+  "checkingBody": "Checking whether the clinic service is ready.",
+  "retryingBanner": "Retrying Connection ({{seconds}}s)",
+  "retryingTitle": "Connection interrupted",
+  "retryingBody": "We are checking the clinic service again. Your current page stays open.",
+  "disconnectedBanner": "Disconnected",
+  "disconnectedTitle": "Cannot reach the clinic service",
+  "disconnectedBody": "Check your connection or ask your administrator whether the service is running. Unsaved changes have not been sent.",
+  "retryNow": "Try connecting now",
+  "automaticCheck": "We will also check again automatically."
+}

@@ -1,6 +1,8 @@
+import './followUps.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { cancelFollowUp, completeFollowUp, getFollowUps } from './api'
 import type { FollowUpBucket } from './types'
@@ -8,6 +10,7 @@ import type { FollowUpBucket } from './types'
 const buckets: FollowUpBucket[] = ['Today', 'Upcoming', 'Overdue', 'Completed']
 
 export function FollowUpsPage() {
+  const { t } = useTranslation('followUps')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const [bucket, setBucket] = useState<FollowUpBucket>('Today')
@@ -35,7 +38,7 @@ export function FollowUpsPage() {
   if (!auth.hasPermission('FollowUp_View')) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view follow-ups.</p>
+        <p className="state error">{t('forbidden')}</p>
       </main>
     )
   }
@@ -44,49 +47,57 @@ export function FollowUpsPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Patient continuity</p>
-          <h1>Follow-ups</h1>
-          <p className="muted">Today, upcoming, overdue, and completed patient reviews.</p>
+          <p className="eyebrow">{t('eyebrow')}</p>
+          <h1>{t('title')}</h1>
+          <p className="muted">{t('subtitle')}</p>
         </div>
         <div className="actions">
           {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">Employees</Link>
+            <Link className="button secondary nav-button" to="/employees">
+              {t('employees')}
+            </Link>
           )}
           <Link className="button secondary nav-button" to="/pending-documentation">
-            Pending documentation
+            {t('pendingDocumentation')}
           </Link>
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/queue">
+            {t('liveQueue')}
+          </Link>
+          <Link className="button secondary nav-button" to="/patients">
+            {t('patients')}
+          </Link>
         </div>
       </section>
 
       <section className="panel">
-        <div className="bucket-tabs" role="tablist" aria-label="Follow-up status">
+        <div className="bucket-tabs" role="tablist" aria-label={t('statusFilter')}>
           {buckets.map((item) => (
             <button
               key={item}
               className={`button ${bucket === item ? 'primary' : 'secondary'}`}
               onClick={() => setBucket(item)}
             >
-              {item}
+              {t(item)}
             </button>
           ))}
         </div>
 
-        {query.isLoading && <p className="state">Loading follow-ups…</p>}
-        {query.isError && <p className="state error">Unable to load follow-ups.</p>}
-        {query.data?.length === 0 && <p className="state">No {bucket.toLowerCase()} follow-ups.</p>}
+        {query.isLoading && <p className="state">{t('loading')}</p>}
+        {query.isError && <p className="state error">{t('loadError')}</p>}
+        {query.data?.length === 0 && (
+          <p className="state">{t('empty', { bucket: t(bucket) })}</p>
+        )}
 
         {query.data && query.data.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Recommendation</th>
-                  <th>Recommended date</th>
-                  <th>Status</th>
+                  <th>{t('patient')}</th>
+                  <th>{t('doctor')}</th>
+                  <th>{t('recommendation')}</th>
+                  <th>{t('recommendedDate')}</th>
+                  <th>{t('status')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -94,7 +105,10 @@ export function FollowUpsPage() {
                 {query.data.map((followUp) => (
                   <tr key={followUp.id}>
                     <td>
-                      <Link className="patient-link" to={`/patients/${followUp.patientId}`}>
+                      <Link
+                        className="patient-link"
+                        to={`/patients/${followUp.patientId}`}
+                      >
                         <strong>{followUp.patientName}</strong>
                       </Link>
                       <div className="muted mono">{followUp.patientNumber}</div>
@@ -102,26 +116,27 @@ export function FollowUpsPage() {
                     <td>{followUp.doctorName}</td>
                     <td>{followUp.recommendation}</td>
                     <td>{followUp.recommendedDate ?? '—'}</td>
-                    <td>{followUp.status}</td>
+                    <td>{t(followUp.status, { defaultValue: followUp.status })}</td>
                     <td>
-                      {followUp.status === 'Open' && auth.hasPermission('FollowUp_Manage') && (
-                        <div className="actions">
-                          <button
-                            className="button secondary"
-                            disabled={completeMutation.isPending}
-                            onClick={() => completeMutation.mutate(followUp.id)}
-                          >
-                            Complete
-                          </button>
-                          <button
-                            className="button danger"
-                            disabled={cancelMutation.isPending}
-                            onClick={() => cancelMutation.mutate(followUp.id)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      )}
+                      {followUp.status === 'Open' &&
+                        auth.hasPermission('FollowUp_Manage') && (
+                          <div className="actions">
+                            <button
+                              className="button secondary"
+                              disabled={completeMutation.isPending}
+                              onClick={() => completeMutation.mutate(followUp.id)}
+                            >
+                              {t('complete')}
+                            </button>
+                            <button
+                              className="button danger"
+                              disabled={cancelMutation.isPending}
+                              onClick={() => cancelMutation.mutate(followUp.id)}
+                            >
+                              {t('cancel')}
+                            </button>
+                          </div>
+                        )}
                     </td>
                   </tr>
                 ))}

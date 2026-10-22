@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -8,20 +9,14 @@ import type {
 
 export async function getDashboardSummary() {
   const response = await api.get<BaseResponse<DashboardSummary>>('/reporting/dashboard')
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load dashboard.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load dashboard.')
 }
 
 export async function getVisitReport(query: VisitReportQuery) {
   const response = await api.get<BaseResponse<VisitReport>>('/reporting/visits', {
     params: query,
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load visit report.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load visit report.')
 }
 
 export async function exportVisitReport(query: VisitReportQuery) {

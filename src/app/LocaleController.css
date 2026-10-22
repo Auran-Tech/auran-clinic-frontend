@@ -1,0 +1,26 @@
+.locale-switch {
+  position: fixed;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  z-index: 1000;
+  border: 1px solid #d8dee3;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #17202a;
+  box-shadow: 0 8px 24px rgba(20, 35, 50, 0.08);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+.locale-switch {
+  background: #1a2942f2;
+  color: var(--auran-text);
+  border-color: var(--auran-border);
+}
+.locale-switch {
+  top: 17px;
+  inset-inline-end: 16px;
+  box-shadow: none;
+}

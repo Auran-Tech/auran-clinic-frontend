@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { ClinicalOrderAttachmentWorkspace } from './types'
@@ -7,10 +8,7 @@ export async function getClinicalOrderAttachmentWorkspace(visitId: string) {
     '/clinical-order-attachments',
     { params: { visitId } },
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load clinical order attachments.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load clinical order attachments.')
 }
 
 export async function linkClinicalOrderAttachment(input: {
@@ -22,10 +20,7 @@ export async function linkClinicalOrderAttachment(input: {
     '/clinical-order-attachments',
     input,
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to link clinical order attachment.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to link clinical order attachment.')
 }
 
 export async function unlinkClinicalOrderAttachment(linkId: string) {
@@ -33,8 +28,5 @@ export async function unlinkClinicalOrderAttachment(linkId: string) {
     '/clinical-order-attachments',
     { data: { linkId } },
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to unlink clinical order attachment.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to unlink clinical order attachment.')
 }

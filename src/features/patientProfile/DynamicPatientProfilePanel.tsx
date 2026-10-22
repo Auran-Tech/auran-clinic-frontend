@@ -1,5 +1,7 @@
+import './patientProfile.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   getPatientProfile,
@@ -36,6 +38,7 @@ const emptyDraft = (): FieldDraft => ({
 export function DynamicPatientProfilePanel({
   patientId,
 }: DynamicPatientProfilePanelProps) {
+  const { t } = useTranslation('patientProfile')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canEdit = auth.hasPermission('Patient_Edit_Basic')
@@ -87,7 +90,7 @@ export function DynamicPatientProfilePanel({
   if (configurationQuery.isLoading || profileQuery.isLoading) {
     return (
       <section className="panel">
-        <p className="state">Loading patient profile fields…</p>
+        <p className="state">{t('loading')}</p>
       </section>
     )
   }
@@ -95,7 +98,7 @@ export function DynamicPatientProfilePanel({
   if (configurationQuery.isError || profileQuery.isError) {
     return (
       <section className="panel">
-        <p className="state error">Unable to load dynamic patient profile.</p>
+        <p className="state error">{t('loadError')}</p>
       </section>
     )
   }
@@ -110,10 +113,7 @@ export function DynamicPatientProfilePanel({
     return isDraftEmpty(field, drafts[field.id] ?? emptyDraft())
   })
 
-  const updateDraft = (
-    fieldId: string,
-    updater: (draft: FieldDraft) => FieldDraft,
-  ) => {
+  const updateDraft = (fieldId: string, updater: (draft: FieldDraft) => FieldDraft) => {
     setDrafts((current) => ({
       ...current,
       [fieldId]: updater(current[fieldId] ?? emptyDraft()),
@@ -124,10 +124,8 @@ export function DynamicPatientProfilePanel({
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Extended patient profile</h2>
-          <p className="muted">
-            Clinic-configured fields for demographic and operational patient information.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -136,7 +134,7 @@ export function DynamicPatientProfilePanel({
           <section className="dynamic-profile-section" key={section.id}>
             <div className="dynamic-profile-section-heading">
               <h3>{section.name}</h3>
-              {section.isSystem && <span className="role-badge">System</span>}
+              {section.isSystem && <span className="role-badge">{t('system')}</span>}
             </div>
 
             <div className="dynamic-profile-grid">
@@ -161,24 +159,16 @@ export function DynamicPatientProfilePanel({
             disabled={saveMutation.isPending || missingRequired}
             onClick={() => saveMutation.mutate()}
           >
-            {saveMutation.isPending ? 'Saving…' : 'Save extended profile'}
+            {saveMutation.isPending ? t('saving') : t('save')}
           </button>
         </div>
       )}
 
-      {missingRequired && canEdit && (
-        <p className="field-error">Complete all required profile fields before saving.</p>
-      )}
+      {missingRequired && canEdit && <p className="field-error">{t('requiredError')}</p>}
 
-      {saveMutation.isSuccess && (
-        <p className="state">Extended patient profile saved.</p>
-      )}
+      {saveMutation.isSuccess && <p className="state">{t('saved')}</p>}
 
-      {saveMutation.isError && (
-        <p className="field-error">
-          Unable to save the extended profile. Check required values and configured options.
-        </p>
-      )}
+      {saveMutation.isError && <p className="field-error">{t('saveError')}</p>}
     </section>
   )
 }
@@ -194,6 +184,7 @@ function DynamicField({
   disabled: boolean
   onChange: (updater: (draft: FieldDraft) => FieldDraft) => void
 }) {
+  const { t } = useTranslation('patientProfile')
   const label = (
     <span>
       {field.label}
@@ -260,9 +251,9 @@ function DynamicField({
               }))
             }
           >
-            <option value="">Not specified</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
+            <option value="">{t('notSpecified')}</option>
+            <option value="true">{t('yes')}</option>
+            <option value="false">{t('no')}</option>
           </select>
         </label>
       )
@@ -293,7 +284,7 @@ function DynamicField({
               onChange((current) => ({ ...current, text: event.target.value }))
             }
           >
-            <option value="">Not specified</option>
+            <option value="">{t('notSpecified')}</option>
             {field.options.map((option) => (
               <option key={option.id} value={option.value}>
                 {option.label}
@@ -338,8 +329,8 @@ function DynamicField({
       return (
         <div className="dynamic-file-field">
           <span className="profile-label">{field.label}</span>
-          <strong>{draft.fileId ? 'File attached' : 'No file attached'}</strong>
-          <p className="muted">Managed through patient attachments in this MVP slice.</p>
+          <strong>{draft.fileId ? t('fileAttached') : t('noFile')}</strong>
+          <p className="muted">{t('fileHelp')}</p>
         </div>
       )
 
@@ -347,7 +338,7 @@ function DynamicField({
       return (
         <div>
           <span className="profile-label">{field.label}</span>
-          <strong>Unsupported field type</strong>
+          <strong>{t('unsupported')}</strong>
         </div>
       )
   }
@@ -371,8 +362,7 @@ function fromValue(value?: PatientProfileValue): FieldDraft {
   return {
     text: value.textValue ?? '',
     number: value.numberValue == null ? '' : String(value.numberValue),
-    boolean:
-      value.booleanValue == null ? '' : value.booleanValue ? 'true' : 'false',
+    boolean: value.booleanValue == null ? '' : value.booleanValue ? 'true' : 'false',
     date: value.dateValue ?? '',
     multi,
     fileId: value.fileId ?? undefined,
@@ -403,8 +393,7 @@ function toSaveValue(
     case 'Boolean':
       return {
         ...base,
-        booleanValue:
-          draft.boolean === '' ? undefined : draft.boolean === 'true',
+        booleanValue: draft.boolean === '' ? undefined : draft.boolean === 'true',
       }
 
     case 'Date':
@@ -416,10 +405,7 @@ function toSaveValue(
     case 'MultiSelect':
       return {
         ...base,
-        jsonValue:
-          draft.multi.length === 0
-            ? undefined
-            : JSON.stringify(draft.multi),
+        jsonValue: draft.multi.length === 0 ? undefined : JSON.stringify(draft.multi),
       }
 
     default:

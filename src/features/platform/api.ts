@@ -1,5 +1,8 @@
+import { requireData } from '../../lib/requireData'
 import axios from 'axios'
 import type { BaseResponse } from '../../types/api'
+import { apiBaseUrl } from '../../lib/apiConfig'
+import { reportConnectionFailure } from '../../lib/connectionSignals'
 
 // Platform credentials are intentionally never stored in the clinic auth store.
 // The platform client must never use the clinic Axios interceptors.
@@ -54,14 +57,15 @@ export interface ProvisionClinicInput {
   admin: { fullName: string; email: string; password: string }
 }
 
-const baseURL = import.meta.env.VITE_API_BASE_URL
-if (!baseURL) throw new Error('VITE_API_BASE_URL is required.')
-const client = axios.create({ baseURL, timeout: 20_000 })
+const client = axios.create({ baseURL: apiBaseUrl, timeout: 20_000 })
+client.interceptors.response.use(response => response, error => {
+  reportConnectionFailure(error)
+  return Promise.reject(error)
+})
 
 export async function platformLogin(email: string, password: string): Promise<PlatformSession> {
   const response = await client.post<BaseResponse<PlatformSession>>('/platform/auth/login', { email, password })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to sign in.')
-  return response.data.data
+  return requireData(response.data, 'Unable to sign in.')
 }
 
 function authorization(session: PlatformSession) {
@@ -70,14 +74,12 @@ function authorization(session: PlatformSession) {
 
 export async function listPlatformClinics(session: PlatformSession): Promise<PlatformClinic[]> {
   const response = await client.get<BaseResponse<PlatformClinic[]>>('/platform/clinics', authorization(session))
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load clinics.')
-  return response.data.data
+  return requireData(response.data, 'Unable to load clinics.')
 }
 
 export async function provisionPlatformClinic(session: PlatformSession, data: ProvisionClinicInput) {
   const response = await client.post<BaseResponse<PlatformClinic>>('/platform/clinics', data, authorization(session))
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to provision clinic.')
-  return response.data.data
+  return requireData(response.data, 'Unable to provision clinic.')
 }
 
 export async function setPlatformClinicStatus(session: PlatformSession, clinicId: string, isActive: boolean) {
@@ -92,21 +94,18 @@ export async function getPlatformClinicDetails(session: PlatformSession, clinicI
   const response = await client.get<BaseResponse<PlatformClinicDetails>>('/platform/clinics/details', {
     ...authorization(session), params: { clinicId },
   })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load clinic details.')
-  return response.data.data
+  return requireData(response.data, 'Unable to load clinic details.')
 }
 
 export async function updatePlatformClinic(session: PlatformSession, input: UpdatePlatformClinicInput): Promise<PlatformClinicDetails> {
   const response = await client.put<BaseResponse<PlatformClinicDetails>>('/platform/clinics', input, authorization(session))
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to update clinic.')
-  return response.data.data
+  return requireData(response.data, 'Unable to update clinic.')
 }
 
 export async function platformRefresh(refreshToken: string): Promise<PlatformSession> {
   // Refresh uses the isolated Platform actor endpoint. Never use clinic refresh.
   const response = await client.post<BaseResponse<PlatformSession>>('/platform/auth/refresh', { refreshToken })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Platform session expired.')
-  return response.data.data
+  return requireData(response.data, 'Platform session expired.')
 }
 
 export interface PlatformTimeZone { id: string; displayName: string; utcOffset: string }

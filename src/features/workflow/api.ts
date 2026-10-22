@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -7,10 +8,7 @@ import type {
 
 export async function getWorkflowConfiguration() {
   const response = await api.get<BaseResponse<WorkflowConfiguration>>('/workflow-config')
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load workflow configuration.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load workflow configuration.')
 }
 
 export async function createWorkflowStatus(input: WorkflowStatusInput) {
@@ -18,10 +16,7 @@ export async function createWorkflowStatus(input: WorkflowStatusInput) {
     '/workflow-config/statuses',
     input,
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to create workflow status.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to create workflow status.')
 }
 
 export async function updateWorkflowStatus(
@@ -32,10 +27,7 @@ export async function updateWorkflowStatus(
     '/workflow-config/statuses',
     { statusId, ...input },
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to update workflow status.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to update workflow status.')
 }
 
 export async function deleteWorkflowStatus(statusId: string) {
@@ -43,10 +35,7 @@ export async function deleteWorkflowStatus(statusId: string) {
     '/workflow-config/statuses',
     { data: { statusId } },
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to delete workflow status.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to delete workflow status.')
 }
 
 export async function replaceWorkflowTransitions(
@@ -56,8 +45,5 @@ export async function replaceWorkflowTransitions(
     '/workflow-config/transitions',
     { transitions },
   )
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to update workflow transitions.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to update workflow transitions.')
 }

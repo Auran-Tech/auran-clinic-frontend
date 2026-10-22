@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -11,11 +12,7 @@ export async function getPatientProfileConfiguration() {
     '/patient-profile/configuration',
   )
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load patient profile configuration.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to load patient profile configuration.')
 }
 
 export async function getPatientProfile(patientId: string) {
@@ -23,19 +20,11 @@ export async function getPatientProfile(patientId: string) {
     params: { patientId },
   })
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load patient profile.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to load patient profile.')
 }
 
 export async function savePatientProfile(input: SavePatientProfileInput) {
   const response = await api.put<BaseResponse<PatientProfile>>('/patient-profile', input)
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to save patient profile.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to save patient profile.')
 }

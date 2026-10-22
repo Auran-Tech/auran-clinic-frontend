@@ -1,11 +1,11 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { PatientReport, PatientReportQuery } from './patientReportTypes'
 
 export async function getPatientReport(filters: PatientReportQuery): Promise<PatientReport> {
   const response = await api.get<BaseResponse<PatientReport>>('/reporting/patients', { params: filters })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load patient report.')
-  return response.data.data
+  return requireData(response.data, 'Unable to load patient report.')
 }
 
 export async function exportPatientReportCsv(filters: PatientReportQuery) {

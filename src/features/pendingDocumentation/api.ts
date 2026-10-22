@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -21,9 +22,5 @@ export async function completePendingDocumentation(
     input,
   )
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to complete documentation.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to complete documentation.')
 }

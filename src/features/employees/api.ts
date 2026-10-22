@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -15,18 +16,12 @@ export async function getEmployees() {
 
 export async function createEmployee(input: CreateEmployeeInput) {
   const response = await api.post<BaseResponse<Employee>>('/users', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to create employee.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to create employee.')
 }
 
 export async function updateEmployee(input: UpdateEmployeeInput) {
   const response = await api.put<BaseResponse<Employee>>('/users', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to update employee.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to update employee.')
 }
 
 export async function setEmployeeRoles(userId: string, roles: string[]) {
@@ -34,10 +29,7 @@ export async function setEmployeeRoles(userId: string, roles: string[]) {
     userId,
     roles,
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to update employee roles.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to update employee roles.')
 }
 
 export async function setEmployeeStatus(userId: string, isActive: boolean) {

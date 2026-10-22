@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type {
@@ -30,9 +31,5 @@ export async function recordClinicalMeasurements(
     { visitId, values },
   )
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to record clinical measurements.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to record clinical measurements.')
 }

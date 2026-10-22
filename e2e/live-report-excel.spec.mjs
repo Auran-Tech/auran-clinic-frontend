@@ -48,7 +48,7 @@ test('Excel export downloads actual XLSX using the clinic actor and filtered rep
   await page.goto('/login')
   await page.getByLabel('Email').fill(admin.email)
   await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Enter clinic' }).click()
   await expect(page).toHaveURL(/\/patients$/)
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Dashboard & reports' })).toBeVisible()

@@ -13,7 +13,7 @@ test('live backend rejects invalid login from real browser form', async ({ page 
     response.url() === backend + '/auth/login' &&
     response.request().method() === 'POST',
   )
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Enter clinic' }).click()
   const response = await loginResponse
 
   expect(response.status()).toBe(401)

@@ -1,12 +1,12 @@
+import './pendingDocumentation.css'
+import '../clinical/clinical.css'
 import { isAxiosError } from 'axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
-import {
-  completePendingDocumentation,
-  getPendingDocumentation,
-} from './api'
+import { completePendingDocumentation, getPendingDocumentation } from './api'
 import type { PendingDocumentation } from './types'
 import { DOCUMENTATION_FIELDS } from '../documentationPolicies/api'
 
@@ -17,6 +17,7 @@ function PendingDocumentationEditor({
   item: PendingDocumentation
   onClose: () => void
 }) {
+  const { t } = useTranslation('pendingDocumentation')
   const queryClient = useQueryClient()
   const [chiefComplaint, setChiefComplaint] = useState(item.chiefComplaint ?? '')
   const [examination, setExamination] = useState(item.examination ?? '')
@@ -40,23 +41,27 @@ function PendingDocumentationEditor({
     },
   })
 
-  const missingFields = isAxiosError<{
-    error?: string
-    data?: string[]
-  }>(mutation.error) &&
+  const missingFields =
+    isAxiosError<{
+      error?: string
+      data?: string[]
+    }>(mutation.error) &&
     mutation.error.response?.data?.error === 'documentation_required_fields_missing'
-      ? mutation.error.response.data.data ?? []
+      ? (mutation.error.response.data.data ?? [])
       : []
   const clinicalFieldNames = new Map<string, string>(
-    DOCUMENTATION_FIELDS.map((field) => [field.key, field.label]),
+    DOCUMENTATION_FIELDS.map((field) => [
+      field.key,
+      t(field.key, { defaultValue: field.label }),
+    ]),
   )
 
   const hasContent = Boolean(
     chiefComplaint.trim() ||
-      examination.trim() ||
-      diagnosis.trim() ||
-      notes.trim() ||
-      treatmentPlan.trim(),
+    examination.trim() ||
+    diagnosis.trim() ||
+    notes.trim() ||
+    treatmentPlan.trim(),
   )
 
   return (
@@ -66,28 +71,46 @@ function PendingDocumentationEditor({
           <h2>{item.patientName}</h2>
           <p className="muted mono">{item.patientNumber}</p>
         </div>
-        <button className="button secondary" onClick={onClose}>Close</button>
+        <button className="button secondary" onClick={onClose}>
+          {t('close')}
+        </button>
       </div>
 
       <div className="clinical-form">
         <label>
-          <span>Chief complaint</span>
-          <textarea rows={3} value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} />
+          <span>{t('chiefComplaint')}</span>
+          <textarea
+            rows={3}
+            value={chiefComplaint}
+            onChange={(e) => setChiefComplaint(e.target.value)}
+          />
         </label>
         <label>
-          <span>Examination</span>
-          <textarea rows={4} value={examination} onChange={(e) => setExamination(e.target.value)} />
+          <span>{t('examination')}</span>
+          <textarea
+            rows={4}
+            value={examination}
+            onChange={(e) => setExamination(e.target.value)}
+          />
         </label>
         <label>
-          <span>Diagnosis</span>
-          <textarea rows={4} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
+          <span>{t('diagnosis')}</span>
+          <textarea
+            rows={4}
+            value={diagnosis}
+            onChange={(e) => setDiagnosis(e.target.value)}
+          />
         </label>
         <label>
-          <span>Treatment plan</span>
-          <textarea rows={4} value={treatmentPlan} onChange={(e) => setTreatmentPlan(e.target.value)} />
+          <span>{t('treatmentPlan')}</span>
+          <textarea
+            rows={4}
+            value={treatmentPlan}
+            onChange={(e) => setTreatmentPlan(e.target.value)}
+          />
         </label>
         <label className="full-width">
-          <span>Clinical notes</span>
+          <span>{t('clinicalNotes')}</span>
           <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </label>
       </div>
@@ -96,16 +119,18 @@ function PendingDocumentationEditor({
         <button
           className="button primary"
           disabled={!hasContent || mutation.isPending}
-          onClick={() => mutation.mutate({
-            visitId: item.visitId,
-            chiefComplaint: chiefComplaint || undefined,
-            examination: examination || undefined,
-            diagnosis: diagnosis || undefined,
-            notes: notes || undefined,
-            treatmentPlan: treatmentPlan || undefined,
-          })}
+          onClick={() =>
+            mutation.mutate({
+              visitId: item.visitId,
+              chiefComplaint: chiefComplaint || undefined,
+              examination: examination || undefined,
+              diagnosis: diagnosis || undefined,
+              notes: notes || undefined,
+              treatmentPlan: treatmentPlan || undefined,
+            })
+          }
         >
-          {mutation.isPending ? 'Completing…' : 'Complete documentation'}
+          {mutation.isPending ? t('completing') : t('completeDocumentation')}
         </button>
       </div>
 
@@ -113,7 +138,7 @@ function PendingDocumentationEditor({
         <div className="field-error" role="alert">
           {missingFields.length > 0 ? (
             <>
-              <p>Complete these required fields before finalizing this clinical note:</p>
+              <p>{t('requiredFields')}</p>
               <ul>
                 {missingFields.map((field) => (
                   <li key={field}>{clinicalFieldNames.get(field) ?? field}</li>
@@ -121,7 +146,7 @@ function PendingDocumentationEditor({
               </ul>
             </>
           ) : (
-            <p>Unable to complete this documentation.</p>
+            <p>{t('completeError')}</p>
           )}
         </div>
       )}
@@ -130,6 +155,7 @@ function PendingDocumentationEditor({
 }
 
 export function PendingDocumentationPage() {
+  const { t, i18n } = useTranslation('pendingDocumentation')
   const auth = useAuth()
   const [selected, setSelected] = useState<PendingDocumentation | null>(null)
   const [mineOnly, setMineOnly] = useState(true)
@@ -143,7 +169,7 @@ export function PendingDocumentationPage() {
   if (!auth.hasPermission('Visit_View')) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view pending documentation.</p>
+        <p className="state error">{t('forbidden')}</p>
       </main>
     )
   }
@@ -152,9 +178,9 @@ export function PendingDocumentationPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Clinical operations</p>
-          <h1>Pending documentation</h1>
-          <p className="muted">Finish Draft or Pending visit notes after the operational visit ends.</p>
+          <p className="eyebrow">{t('eyebrow')}</p>
+          <h1>{t('title')}</h1>
+          <p className="muted">{t('subtitle')}</p>
         </div>
         <div className="actions">
           {auth.session?.user.isSuperUser && (
@@ -164,32 +190,38 @@ export function PendingDocumentationPage() {
                 checked={!mineOnly}
                 onChange={(event) => setMineOnly(!event.target.checked)}
               />
-              <span>All doctors</span>
+              <span>{t('allDoctors')}</span>
             </label>
           )}
           {auth.hasPermission('FollowUp_View') && (
-            <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
+            <Link className="button secondary nav-button" to="/follow-ups">
+              {t('followUps')}
+            </Link>
           )}
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/queue">
+            {t('liveQueue')}
+          </Link>
+          <Link className="button secondary nav-button" to="/patients">
+            {t('patients')}
+          </Link>
         </div>
       </section>
 
       <section className="panel">
-        {query.isLoading && <p className="state">Loading pending documentation…</p>}
-        {query.isError && <p className="state error">Unable to load pending documentation.</p>}
-        {query.data?.length === 0 && <p className="state">No pending documentation.</p>}
+        {query.isLoading && <p className="state">{t('loading')}</p>}
+        {query.isError && <p className="state error">{t('loadError')}</p>}
+        {query.data?.length === 0 && <p className="state">{t('empty')}</p>}
 
         {query.data && query.data.length > 0 && (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Patient</th>
-                  <th>Doctor</th>
-                  <th>Visit</th>
-                  <th>Documentation</th>
-                  <th>Started</th>
+                  <th>{t('patient')}</th>
+                  <th>{t('doctor')}</th>
+                  <th>{t('visit')}</th>
+                  <th>{t('documentation')}</th>
+                  <th>{t('started')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -203,13 +235,20 @@ export function PendingDocumentationPage() {
                       <div className="muted mono">{item.patientNumber}</div>
                     </td>
                     <td>{item.doctorName}</td>
-                    <td>{item.visitStatus}</td>
-                    <td>{item.documentationStatus}</td>
-                    <td>{new Date(item.entryAtUtc).toLocaleString()}</td>
+                    <td>{t(item.visitStatus, { defaultValue: item.visitStatus })}</td>
+                    <td>
+                      {t(item.documentationStatus, {
+                        defaultValue: item.documentationStatus,
+                      })}
+                    </td>
+                    <td>{new Date(item.entryAtUtc).toLocaleString(i18n.language)}</td>
                     <td>
                       {auth.hasPermission('Visit_Edit') && (
-                        <button className="button secondary" onClick={() => setSelected(item)}>
-                          Finish note
+                        <button
+                          className="button secondary"
+                          onClick={() => setSelected(item)}
+                        >
+                          {t('finishNote')}
                         </button>
                       )}
                     </td>

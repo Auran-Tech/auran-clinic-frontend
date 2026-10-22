@@ -1,0 +1,17 @@
+{
+  "title": "Attachments",
+  "subtitle": "Images and PDFs linked to this patient.",
+  "file": "File",
+  "category": "Category",
+  "categoryExample": "e.g. Lab, Scan, Prescription",
+  "notes": "Notes",
+  "uploading": "Uploading…",
+  "upload": "Upload attachment",
+  "uploadError": "Upload failed. Use JPEG, PNG, WebP, or PDF up to 10 MB.",
+  "loading": "Loading attachments…",
+  "loadError": "Unable to load attachments.",
+  "empty": "No attachments uploaded.",
+  "uncategorized": "Uncategorized",
+  "download": "Download",
+  "delete": "Delete"
+}

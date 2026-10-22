@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { getDoctors } from '../users/api'
 import {
@@ -12,6 +13,7 @@ import {
 const VALID_CODE = /^[A-Z0-9_-]{1,64}$/
 
 export function DocumentationPolicyPanel() {
+  const { t } = useTranslation('documentationPolicies')
   const auth = useAuth()
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
@@ -53,20 +55,17 @@ export function DocumentationPolicyPanel() {
   if (!canView) return null
 
   return (
-    <section className="panel" aria-label="Specialty documentation policies">
+    <section className="panel" aria-label={t('ariaLabel')}>
       <div className="panel-heading">
         <div>
-          <h2>Specialty documentation requirements</h2>
-          <p className="muted">
-            Configure which fields must be filled before a doctor's documentation can be
-            finalized. The clinical owner must approve every specialty rule.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
       <div className="settings-grid">
         <label>
-          <span>Specialty code</span>
+          <span>{t('specialtyCode')}</span>
           <input
             value={specialtyCode}
             maxLength={64}
@@ -78,16 +77,14 @@ export function DocumentationPolicyPanel() {
           />
         </label>
       </div>
-      {!validCode && (
-        <p className="field-error">Use uppercase letters, digits, underscores or hyphens.</p>
-      )}
-      {policyQuery.isLoading && validCode && <p className="state">Loading specialty policy…</p>}
-      {policyQuery.isError && <p className="state error">Unable to read specialty rules.</p>}
+      {!validCode && <p className="field-error">{t('codeError')}</p>}
+      {policyQuery.isLoading && validCode && <p className="state">{t('loading')}</p>}
+      {policyQuery.isError && <p className="state error">{t('loadError')}</p>}
       {policyQuery.isSuccess && (
         <p className="muted">
           {policyQuery.data
-            ? `Policy version ${policyQuery.data.version}`
-            : 'No specialty policy configured. The existing basic documentation validation applies.'}
+            ? t('policyVersion', { version: policyQuery.data.version })
+            : t('noPolicy')}
         </p>
       )}
 
@@ -98,13 +95,17 @@ export function DocumentationPolicyPanel() {
               type="checkbox"
               checked={requiredFields.includes(field.key)}
               disabled={!canManage || !validCode || policyQuery.isFetching}
-              onChange={(event) => setRequiredFields((current) =>
-                event.target.checked
-                  ? [...current, field.key]
-                  : current.filter((name) => name !== field.key)
-              )}
+              onChange={(event) =>
+                setRequiredFields((current) =>
+                  event.target.checked
+                    ? [...current, field.key]
+                    : current.filter((name) => name !== field.key),
+                )
+              }
             />
-            <span>{field.label} required</span>
+            <span>
+              {t('requiredField', { field: t(field.key, { defaultValue: field.label }) })}
+            </span>
           </label>
         ))}
       </div>
@@ -114,24 +115,37 @@ export function DocumentationPolicyPanel() {
           <div className="actions">
             <button
               className="button secondary"
-              disabled={!validCode || requiredFields.length === 0 ||
-                policyQuery.isFetching || savePolicy.isPending}
+              disabled={
+                !validCode ||
+                requiredFields.length === 0 ||
+                policyQuery.isFetching ||
+                savePolicy.isPending
+              }
               onClick={() => savePolicy.mutate({ specialtyCode, requiredFields })}
             >
-              {savePolicy.isPending ? 'Saving…' : 'Save specialty requirements'}
+              {savePolicy.isPending ? t('saving') : t('save')}
             </button>
           </div>
-          {savePolicy.isSuccess && <p className="state" role="status">Specialty rules saved and audited.</p>}
-          {savePolicy.isError && <p className="state error">Unable to save specialty requirements.</p>}
+          {savePolicy.isSuccess && (
+            <p className="state" role="status">
+              {t('saved')}
+            </p>
+          )}
+          {savePolicy.isError && <p className="state error">{t('saveError')}</p>}
 
           {auth.hasPermission('Users_View') && (
             <div className="settings-grid">
               <label>
-                <span>Assign specialty to doctor</span>
-                <select value={doctorId} onChange={(event) => setDoctorId(event.target.value)}>
-                  <option value="">Select doctor</option>
+                <span>{t('assignDoctor')}</span>
+                <select
+                  value={doctorId}
+                  onChange={(event) => setDoctorId(event.target.value)}
+                >
+                  <option value="">{t('selectDoctor')}</option>
                   {(doctorsQuery.data ?? []).map((doctor) => (
-                    <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.fullName}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -141,13 +155,17 @@ export function DocumentationPolicyPanel() {
                   disabled={!doctorId || !validCode || assignDoctor.isPending}
                   onClick={() => assignDoctor.mutate({ doctorId, specialtyCode })}
                 >
-                  {assignDoctor.isPending ? 'Assigning…' : 'Assign to doctor'}
+                  {assignDoctor.isPending ? t('assigning') : t('assign')}
                 </button>
               </div>
             </div>
           )}
-          {assignDoctor.isSuccess && <p className="state" role="status">Doctor specialty saved.</p>}
-          {assignDoctor.isError && <p className="state error">Unable to assign doctor specialty.</p>}
+          {assignDoctor.isSuccess && (
+            <p className="state" role="status">
+              {t('assigned')}
+            </p>
+          )}
+          {assignDoctor.isError && <p className="state error">{t('assignError')}</p>}
         </>
       )}
     </section>

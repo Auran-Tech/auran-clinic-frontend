@@ -11,7 +11,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173/login',
-    reuseExistingServer: false,
+    reuseExistingServer: process.env.E2E_REUSE_EXISTING_SERVER === 'true',
     timeout: 30_000,
   },
 })

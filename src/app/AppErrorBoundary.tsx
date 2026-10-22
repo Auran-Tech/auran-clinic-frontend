@@ -1,3 +1,4 @@
+import './AppErrorBoundary.css'
 import { Component, type ErrorInfo, type PropsWithChildren, type ReactNode } from 'react'
 
 interface AppErrorBoundaryState {

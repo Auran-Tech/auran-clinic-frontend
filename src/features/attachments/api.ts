@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { PatientAttachment } from './types'
@@ -27,11 +28,7 @@ export async function uploadPatientAttachment(input: {
     { headers: { 'Content-Type': 'multipart/form-data' } },
   )
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to upload attachment.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to upload attachment.')
 }
 
 export async function downloadPatientAttachment(fileId: string, originalName: string) {

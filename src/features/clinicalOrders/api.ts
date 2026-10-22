@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import axios from 'axios'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
@@ -30,8 +31,5 @@ export async function getClinicalOrder(visitId: string) {
 
 export async function saveClinicalOrder(input: SaveClinicalOrderInput) {
   const response = await api.put<BaseResponse<ClinicalOrder>>('/clinical-orders', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to save clinical order.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to save clinical order.')
 }

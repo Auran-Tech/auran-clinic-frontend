@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import axios from 'axios'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
@@ -19,10 +20,7 @@ export async function getActiveVisit(patientId: string) {
 
 export async function startVisit(input: StartVisitInput) {
   const response = await api.post<BaseResponse<Visit>>('/visits/start', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to start visit.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to start visit.')
 }
 
 export async function getPatientVisitHistory(
@@ -34,9 +32,5 @@ export async function getPatientVisitHistory(
     params: { patientId, page, pageSize },
   })
 
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load visit history.')
-  }
-
-  return response.data.data
+  return requireData(response.data, 'Unable to load visit history.')
 }

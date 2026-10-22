@@ -1,0 +1,22 @@
+{
+  "title": "Clinical measurements",
+  "subtitle": "Record configured typed measurements while preserving visit history.",
+  "loadingFields": "Loading measurement fields…",
+  "fieldsError": "Unable to load clinical measurement configuration.",
+  "noFields": "No clinical measurement fields are configured.",
+  "recording": "Recording…",
+  "record": "Record measurements",
+  "recordError": "Unable to record measurements. The visit may be closed or a configured value may be invalid.",
+  "historyTitle": "Visit history",
+  "loadingHistory": "Loading measurement history…",
+  "historyError": "Unable to load measurement history.",
+  "noHistory": "No measurements recorded for this visit.",
+  "measurement": "Measurement",
+  "value": "Value",
+  "recorded": "Recorded",
+  "notRecorded": "Not recorded",
+  "yes": "Yes",
+  "no": "No",
+  "notRecordable": "Not recordable here",
+  "attachmentRequired": "Image/File clinical fields require an attachment workflow."
+}

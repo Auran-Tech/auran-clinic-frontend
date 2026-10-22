@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format:check": "prettier --check \"src/base.css\" \"src/theme.css\" \"src/app/*.css\" \"src/features/*/*.css\" src/app/ClinicShell.tsx src/features/auth/LoginPage.tsx src/features/dashboard/DashboardPage.tsx src/features/patients/PatientsPage.tsx src/features/queue/QueuePage.tsx src/features/platform/PlatformPage.tsx src/features/connectivity/ConnectionGate.tsx",
     "test": "vitest run --exclude 'e2e/**'",
     "test:watch": "vitest",
     "preview": "vite preview"
@@ -38,6 +39,7 @@
     "eslint-plugin-react-refresh": "^0.4.23",
     "globals": "^16.4.0",
     "jsdom": "^27.0.0",
+    "prettier": "^3.9.10",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.1",
     "vite": "^7.1.9",

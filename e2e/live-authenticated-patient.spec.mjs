@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test'
 
 const backend = process.env.E2E_API_BASE_URL
-const platformEmail = 'auran-ci-platform@example.invalid'
-const platformPassword = 'CI_Only_Platform_123456!'
+const platformEmail = process.env.PlatformBootstrap__Email
+const platformPassword = process.env.PlatformBootstrap__Password
 
-// These accounts exist only in an ephemeral SQL Server used by the combined-stack job.
+// Provision disposable accounts through the configured Platform test account.
 test('real clinic authentication and patient registration persist in SQL Server', async ({ page, request }) => {
-  test.skip(!backend, 'Requires hosted API and disposable SQL Server from combined-stack CI')
+  test.skip(!backend || !platformEmail || !platformPassword,
+    'Requires hosted API, Platform credentials, and disposable SQL Server')
 
   const platformLogin = await request.post(`${backend}/platform/auth/login`, {
     data: { email: platformEmail, password: platformPassword },
@@ -37,7 +38,7 @@ test('real clinic authentication and patient registration persist in SQL Server'
   await page.goto('/login')
   await page.getByLabel('Email').fill(clinicAdmin.email)
   await page.getByLabel('Password').fill(clinicAdmin.password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Enter clinic' }).click()
   await expect(page).toHaveURL(/\/patients$/)
   await expect(page.getByRole('heading', { name: 'Patients' })).toBeVisible()
 

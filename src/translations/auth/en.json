@@ -1,0 +1,19 @@
+{
+  "heroTitle": "Every clinic moment, connected to what comes next.",
+  "heroBody": "From reception to doctor, documentation and follow-up — one connected clinic experience.",
+  "journeyArrival": "Arrival",
+  "journeyQueue": "Queue",
+  "journeyVisit": "Visit",
+  "journeyFollowUp": "Follow-up",
+  "clinicOperatingSystem": "Clinic Operating System",
+  "secureAccess": "Secure clinic access",
+  "welcomeBack": "Welcome back",
+  "continueWork": "Continue where you left off in clinic operations.",
+  "email": "Email",
+  "password": "Password",
+  "signIn": "Enter clinic",
+  "signingIn": "Signing in…",
+  "invalidCredentials": "Invalid credentials or inactive clinic account.",
+  "platformAccess": "Platform administrators use the separate Platform sign in below.",
+  "platformAdmin": "Platform administration"
+}

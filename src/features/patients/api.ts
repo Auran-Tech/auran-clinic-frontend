@@ -1,3 +1,4 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse, PaginatedResponse } from '../../types/api'
 import type {
@@ -12,20 +13,14 @@ export async function getPatients(query: PatientQuery) {
   const response = await api.get<BaseResponse<PaginatedResponse<Patient>>>('/patients', {
     params: query,
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load patients.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load patients.')
 }
 
 export async function getPatient(patientId: string) {
   const response = await api.get<BaseResponse<Patient>>('/patients/detail', {
     params: { patientId },
   })
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to load patient.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to load patient.')
 }
 
 export async function findPatientDuplicates(input: CreatePatientInput) {
@@ -38,16 +33,10 @@ export async function findPatientDuplicates(input: CreatePatientInput) {
 
 export async function createPatient(input: CreatePatientInput) {
   const response = await api.post<BaseResponse<Patient>>('/patients', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to create patient.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to create patient.')
 }
 
 export async function updatePatient(input: UpdatePatientInput) {
   const response = await api.put<BaseResponse<Patient>>('/patients', input)
-  if (!response.data.data) {
-    throw new Error(response.data.message ?? 'Unable to update patient.')
-  }
-  return response.data.data
+  return requireData(response.data, 'Unable to update patient.')
 }

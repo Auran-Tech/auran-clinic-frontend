@@ -1,0 +1,83 @@
+.report-filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.report-filter-actions {
+  align-items: end;
+}
+
+.report-count {
+  margin-bottom: 12px;
+}
+
+.report-text-cell {
+  min-width: 220px;
+  max-width: 360px;
+  white-space: normal;
+}
+
+@media (max-width: 1000px) {
+  .report-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .report-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Report printing is an explicit, Reports_Export-gated user action.
+   Keep navigation, KPIs and interactive filters out of clinical printouts. */
+.report-print-context {
+  display: none;
+}
+@media print {
+  .print-report,
+  .print-report * {
+    visibility: visible !important;
+  }
+  .print-report {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print-report .print-actions,
+  .print-report .print-actions *,
+  .print-report .report-filters,
+  .print-report .report-filters * {
+    display: none !important;
+  }
+  .report-print-context {
+    display: block !important;
+    font-size: 10pt;
+    margin-bottom: 12px;
+  }
+  .print-report .table-wrap {
+    overflow: visible !important;
+  }
+  .print-report table {
+    width: 100%;
+    font-size: 9pt;
+  }
+  .print-report th,
+  .print-report td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 6px;
+  }
+  .print-report tr {
+    break-inside: avoid;
+  }
+  .print-report thead {
+    display: table-header-group;
+  }
+}

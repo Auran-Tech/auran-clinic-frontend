@@ -1,6 +1,8 @@
+import './reporting.css'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import {
@@ -16,6 +18,7 @@ import { QueueReportPanel } from './QueueReportPanel'
 import { DoctorActivityPanel } from './DoctorActivityPanel'
 
 export function ReportingPage() {
+  const { t, i18n } = useTranslation('reporting')
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = auth.hasPermission('Reports_Export')
@@ -26,13 +29,16 @@ export function ReportingPage() {
   const [visitStatus, setVisitStatus] = useState('')
   const [documentationStatus, setDocumentationStatus] = useState('')
 
-  const reportQueryParams = useMemo<VisitReportQuery>(() => ({
-    fromDate: fromDate || undefined,
-    toDate: toDate || undefined,
-    doctorId: doctorId || undefined,
-    visitStatus: visitStatus || undefined,
-    documentationStatus: documentationStatus || undefined,
-  }), [fromDate, toDate, doctorId, visitStatus, documentationStatus])
+  const reportQueryParams = useMemo<VisitReportQuery>(
+    () => ({
+      fromDate: fromDate || undefined,
+      toDate: toDate || undefined,
+      doctorId: doctorId || undefined,
+      visitStatus: visitStatus || undefined,
+      documentationStatus: documentationStatus || undefined,
+    }),
+    [fromDate, toDate, doctorId, visitStatus, documentationStatus],
+  )
 
   const xlsxExport = useMutation({ mutationFn: exportVisitReportXlsx })
   const csvExport = useMutation({ mutationFn: exportVisitReport })
@@ -59,7 +65,7 @@ export function ReportingPage() {
   if (!canView) {
     return (
       <main className="page-shell">
-        <p className="state error">You do not have permission to view reports.</p>
+        <p className="state error">{t('forbidden')}</p>
       </main>
     )
   }
@@ -70,60 +76,68 @@ export function ReportingPage() {
     <main className="page-shell">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Operations & intelligence</p>
-          <h1>Dashboard & reports</h1>
-          <p className="muted">
-            Live clinic KPIs and filterable visit-level reporting.
-          </p>
+          <p className="eyebrow">{t('eyebrow')}</p>
+          <h1>{t('title')}</h1>
+          <p className="muted">{t('subtitle')}</p>
         </div>
         <div className="actions">
           {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">Audit</Link>
+            <Link className="button secondary nav-button" to="/audit">
+              {t('audit')}
+            </Link>
           )}
           {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">Settings</Link>
+            <Link className="button secondary nav-button" to="/settings">
+              {t('settings')}
+            </Link>
           )}
-          <Link className="button secondary nav-button" to="/follow-ups">Follow-ups</Link>
-          <Link className="button secondary nav-button" to="/queue">Live queue</Link>
-          <Link className="button secondary nav-button" to="/patients">Patients</Link>
+          <Link className="button secondary nav-button" to="/follow-ups">
+            {t('followUps')}
+          </Link>
+          <Link className="button secondary nav-button" to="/queue">
+            {t('liveQueue')}
+          </Link>
+          <Link className="button secondary nav-button" to="/patients">
+            {t('patients')}
+          </Link>
         </div>
       </section>
 
-      {dashboardQuery.isLoading && <p className="state">Loading dashboard…</p>}
-      {dashboardQuery.isError && <p className="state error">Unable to load dashboard.</p>}
+      {dashboardQuery.isLoading && <p className="state">{t('loadingDashboard')}</p>}
+      {dashboardQuery.isError && <p className="state error">{t('dashboardError')}</p>}
 
       {dashboard && (
         <>
           <div className="dashboard-date">
-            Clinic local date: <strong>{dashboard.localDate}</strong>
+            {t('localDate')} <strong>{dashboard.localDate}</strong>
           </div>
           <section className="kpi-grid">
             <article className="kpi-card">
-              <span>Total patients</span>
+              <span>{t('totalPatients')}</span>
               <strong>{dashboard.totalPatients}</strong>
             </article>
             <article className="kpi-card">
-              <span>Visits today</span>
+              <span>{t('visitsToday')}</span>
               <strong>{dashboard.visitsToday}</strong>
             </article>
             <article className="kpi-card">
-              <span>Active queue</span>
+              <span>{t('activeQueue')}</span>
               <strong>{dashboard.activeQueue}</strong>
             </article>
             <article className="kpi-card">
-              <span>Completed today</span>
+              <span>{t('completedToday')}</span>
               <strong>{dashboard.completedVisitsToday}</strong>
             </article>
             <article className="kpi-card">
-              <span>Pending documentation</span>
+              <span>{t('pendingDocumentation')}</span>
               <strong>{dashboard.pendingDocumentation}</strong>
             </article>
             <article className="kpi-card">
-              <span>Follow-ups today</span>
+              <span>{t('followUpsToday')}</span>
               <strong>{dashboard.followUpsToday}</strong>
             </article>
             <article className="kpi-card kpi-attention">
-              <span>Overdue follow-ups</span>
+              <span>{t('overdueFollowUps')}</span>
               <strong>{dashboard.overdueFollowUps}</strong>
             </article>
           </section>
@@ -133,15 +147,18 @@ export function ReportingPage() {
       <section className="panel print-report">
         <div className="panel-heading">
           <div>
-            <h2>Visit report</h2>
-            <p className="muted">
-              Filter visits by local date range, doctor, visit state, and documentation state.
-            </p>
+            <h2>{t('visitReport')}</h2>
+            <p className="muted">{t('visitReportSubtitle')}</p>
           </div>
           {canExport && (
             <div className="actions print-actions">
-              <button className="button secondary" type="button" onClick={() => window.print()} disabled={!reportQuery.data || reportQuery.isFetching}>
-                Print / Save PDF
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => window.print()}
+                disabled={!reportQuery.data || reportQuery.isFetching}
+              >
+                {t('printPdf')}
               </button>
               <button
                 className="button secondary"
@@ -149,7 +166,7 @@ export function ReportingPage() {
                 disabled={csvExport.isPending}
                 onClick={() => csvExport.mutate(reportQueryParams)}
               >
-                {csvExport.isPending ? "Preparing CSV…" : "Export CSV"}
+                {csvExport.isPending ? t('preparingCsv') : t('exportCsv')}
               </button>
               <button
                 className="button secondary"
@@ -157,60 +174,83 @@ export function ReportingPage() {
                 disabled={xlsxExport.isPending}
                 onClick={() => xlsxExport.mutate(reportQueryParams)}
               >
-                {xlsxExport.isPending ? 'Preparing Excel…' : 'Export Excel (.xlsx)'}
+                {xlsxExport.isPending ? t('preparingExcel') : t('exportExcel')}
               </button>
             </div>
           )}
         </div>
 
         {xlsxExport.isError && (
-          <p role="alert" className="field-error">{reportErrorMessage(xlsxExport.error, 'Excel export failed. Please retry.')}</p>
+          <p role="alert" className="field-error">
+            {reportErrorMessage(xlsxExport.error, t('excelError'))}
+          </p>
         )}
         {csvExport.isError && (
-          <p role="alert" className="field-error">{reportErrorMessage(csvExport.error, 'CSV export failed. Please retry.')}</p>
+          <p role="alert" className="field-error">
+            {reportErrorMessage(csvExport.error, t('csvError'))}
+          </p>
         )}
         <div className="report-filters">
           <label>
-            <span>From date</span>
-            <input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
+            <span>{t('fromDate')}</span>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(event) => setFromDate(event.target.value)}
+            />
           </label>
           <label>
-            <span>To date</span>
-            <input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
+            <span>{t('toDate')}</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(event) => setToDate(event.target.value)}
+            />
           </label>
 
           {auth.hasPermission('Users_View') && (
             <label>
-              <span>Doctor</span>
-              <select value={doctorId} onChange={(event) => setDoctorId(event.target.value)}>
-                <option value="">All doctors</option>
+              <span>{t('doctor')}</span>
+              <select
+                value={doctorId}
+                onChange={(event) => setDoctorId(event.target.value)}
+              >
+                <option value="">{t('allDoctors')}</option>
                 {(employeesQuery.data ?? [])
                   .filter((employee) => employee.roles.includes('DOCTOR'))
                   .map((doctor) => (
-                    <option key={doctor.id} value={doctor.id}>{doctor.fullName}</option>
+                    <option key={doctor.id} value={doctor.id}>
+                      {doctor.fullName}
+                    </option>
                   ))}
               </select>
             </label>
           )}
 
           <label>
-            <span>Visit status</span>
-            <select value={visitStatus} onChange={(event) => setVisitStatus(event.target.value)}>
-              <option value="">All statuses</option>
-              <option value="Open">Open</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+            <span>{t('visitStatus')}</span>
+            <select
+              value={visitStatus}
+              onChange={(event) => setVisitStatus(event.target.value)}
+            >
+              <option value="">{t('allStatuses')}</option>
+              <option value="Open">{t('Open')}</option>
+              <option value="Completed">{t('Completed')}</option>
+              <option value="Cancelled">{t('Cancelled')}</option>
             </select>
           </label>
 
           <label>
-            <span>Documentation</span>
-            <select value={documentationStatus} onChange={(event) => setDocumentationStatus(event.target.value)}>
-              <option value="">All statuses</option>
-              <option value="NotStarted">Not started</option>
-              <option value="Draft">Draft</option>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
+            <span>{t('documentation')}</span>
+            <select
+              value={documentationStatus}
+              onChange={(event) => setDocumentationStatus(event.target.value)}
+            >
+              <option value="">{t('allStatuses')}</option>
+              <option value="NotStarted">{t('NotStarted')}</option>
+              <option value="Draft">{t('Draft')}</option>
+              <option value="Pending">{t('Pending')}</option>
+              <option value="Completed">{t('Completed')}</option>
             </select>
           </label>
 
@@ -225,54 +265,72 @@ export function ReportingPage() {
                 setDocumentationStatus('')
               }}
             >
-              Clear filters
+              {t('clearFilters')}
             </button>
           </div>
         </div>
 
-        {reportQuery.isLoading && <p className="state">Loading report…</p>}
+        {reportQuery.isLoading && <p className="state">{t('loadingReport')}</p>}
         {reportQuery.isError && (
           <p className="state error">
-            {reportErrorMessage(reportQuery.error, 'Unable to load report. Check the date range and filters.')}
+            {reportErrorMessage(reportQuery.error, t('reportError'))}
           </p>
         )}
 
         {reportQuery.data && (
           <>
-            <p className="report-print-context">Date range: {fromDate || "Any"} – {toDate || "Any"} | Visit status: {visitStatus || "Any"} | Documentation: {documentationStatus || "Any"}</p>
+            <p className="report-print-context">
+              {t('filterContext', {
+                from: fromDate || t('any'),
+                to: toDate || t('any'),
+                visitStatus: visitStatus
+                  ? t(visitStatus, { defaultValue: visitStatus })
+                  : t('any'),
+                documentation: documentationStatus
+                  ? t(documentationStatus, { defaultValue: documentationStatus })
+                  : t('any'),
+              })}
+            </p>
             <p className="muted report-count">
-              {reportQuery.data.totalCount} visit{reportQuery.data.totalCount === 1 ? '' : 's'}
+              {t('visitCount', { count: reportQuery.data.totalCount })}
             </p>
 
             {reportQuery.data.rows.length === 0 ? (
-              <p className="state">No visits match these filters.</p>
+              <p className="state">{t('noVisits')}</p>
             ) : (
               <div className="table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Patient</th>
-                      <th>Doctor</th>
-                      <th>Visit</th>
-                      <th>Documentation</th>
-                      <th>Entry</th>
-                      <th>Diagnosis</th>
-                      <th>Treatment plan</th>
+                      <th>{t('patient')}</th>
+                      <th>{t('doctor')}</th>
+                      <th>{t('visit')}</th>
+                      <th>{t('documentation')}</th>
+                      <th>{t('entry')}</th>
+                      <th>{t('diagnosis')}</th>
+                      <th>{t('treatmentPlan')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reportQuery.data.rows.map((row) => (
                       <tr key={row.visitId}>
                         <td>
-                          <Link className="patient-link" to={`/patients/${row.patientId}`}>
+                          <Link
+                            className="patient-link"
+                            to={`/patients/${row.patientId}`}
+                          >
                             <strong>{row.patientName}</strong>
                           </Link>
                           <div className="muted mono">{row.patientNumber}</div>
                         </td>
                         <td>{row.doctorName}</td>
-                        <td>{row.visitStatus}</td>
-                        <td>{row.documentationStatus}</td>
-                        <td>{new Date(row.entryAtUtc).toLocaleString()}</td>
+                        <td>{t(row.visitStatus, { defaultValue: row.visitStatus })}</td>
+                        <td>
+                          {t(row.documentationStatus, {
+                            defaultValue: row.documentationStatus,
+                          })}
+                        </td>
+                        <td>{new Date(row.entryAtUtc).toLocaleString(i18n.language)}</td>
                         <td className="report-text-cell">{row.diagnosis ?? '—'}</td>
                         <td className="report-text-cell">{row.treatmentPlan ?? '—'}</td>
                       </tr>

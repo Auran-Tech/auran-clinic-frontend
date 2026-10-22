@@ -1,8 +1,9 @@
+import './LocaleController.css'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export function LocaleController() {
-  const { i18n, t } = useTranslation()
+  const { i18n, t } = useTranslation('language')
   const isArabic = i18n.resolvedLanguage === 'ar'
 
   useEffect(() => {
@@ -15,10 +16,10 @@ export function LocaleController() {
     <button
       type="button"
       className="locale-switch"
-      aria-label={isArabic ? t('language.switchToEnglish') : t('language.switchToArabic')}
+      aria-label={isArabic ? t('switchToEnglish') : t('switchToArabic')}
       onClick={() => void i18n.changeLanguage(isArabic ? 'en' : 'ar')}
     >
-      {isArabic ? t('language.english') : t('language.arabic')}
+      {isArabic ? t('english') : t('arabic')}
     </button>
   )
 }

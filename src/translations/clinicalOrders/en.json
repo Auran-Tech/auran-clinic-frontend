@@ -1,0 +1,17 @@
+{
+  "title": "Clinical order / prescription",
+  "subtitle": "Sections come from the clinic configuration and are stored with this visit.",
+  "loading": "Loading clinical order…",
+  "loadError": "Unable to load clinical order configuration.",
+  "empty": "No enabled clinical-order sections are configured.",
+  "items": "Items",
+  "onePerLine": "One item per line",
+  "content": "Content",
+  "saving": "Saving…",
+  "save": "Save clinical order",
+  "saveError": "Unable to save the clinical order.",
+  "Structured": "Structured",
+  "Text": "Text",
+  "Image": "Image",
+  "File": "File"
+}

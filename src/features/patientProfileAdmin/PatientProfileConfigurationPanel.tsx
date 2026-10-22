@@ -1,5 +1,7 @@
+import '../configuration/configuration.css'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   createPatientProfileField,
@@ -28,9 +30,10 @@ const fieldTypes = [
   'File',
   'SingleSelect',
   'MultiSelect',
-]
+] as const
 
 export function PatientProfileConfigurationPanel() {
+  const { t } = useTranslation('patientProfileAdmin')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Settings_View')
@@ -64,24 +67,22 @@ export function PatientProfileConfigurationPanel() {
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Patient profile configuration</h2>
-          <p className="muted">
-            Define clinic-specific patient sections and typed fields without changing the database schema.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading patient profile configuration…</p>}
-      {query.isError && <p className="state error">Unable to load patient profile configuration.</p>}
+      {query.isLoading && <p className="state">{t('loading')}</p>}
+      {query.isError && <p className="state error">{t('loadError')}</p>}
 
       {canManage && (
         <div className="profile-config-create-row">
           <label>
-            <span>New section name</span>
+            <span>{t('newSectionName')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -100,14 +101,14 @@ export function PatientProfileConfigurationPanel() {
                 })
               }
             >
-              {createSectionMutation.isPending ? 'Adding…' : 'Add section'}
+              {createSectionMutation.isPending ? t('adding') : t('addSection')}
             </button>
           </div>
         </div>
       )}
 
       {createSectionMutation.isError && (
-        <p className="field-error">Unable to create patient profile section.</p>
+        <p className="field-error">{t('sectionCreateError')}</p>
       )}
 
       <div className="profile-config-sections">
@@ -121,9 +122,7 @@ export function PatientProfileConfigurationPanel() {
         ))}
       </div>
 
-      {query.data?.sections.length === 0 && (
-        <p className="state">No patient profile sections are configured.</p>
-      )}
+      {query.data?.sections.length === 0 && <p className="state">{t('noSections')}</p>}
     </section>
   )
 }
@@ -137,6 +136,7 @@ function SectionEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation('patientProfileAdmin')
   const [name, setName] = useState(section.name)
   const [sortOrder, setSortOrder] = useState(section.sortOrder)
   const [isEnabled, setIsEnabled] = useState(section.isEnabled)
@@ -186,8 +186,8 @@ function SectionEditor({
         <div>
           <h3>{section.name}</h3>
           <div className="role-badges">
-            {section.isSystem && <span className="role-badge">System</span>}
-            {!section.isEnabled && <span className="role-badge">Disabled</span>}
+            {section.isSystem && <span className="role-badge">{t('system')}</span>}
+            {!section.isEnabled && <span className="role-badge">{t('disabled')}</span>}
           </div>
         </div>
       </div>
@@ -195,11 +195,11 @@ function SectionEditor({
       {canManage && (
         <div className="profile-config-section-form">
           <label>
-            <span>Section name</span>
+            <span>{t('sectionName')}</span>
             <input value={name} onChange={(event) => setName(event.target.value)} />
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -214,7 +214,7 @@ function SectionEditor({
               disabled={section.isSystem}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -222,35 +222,40 @@ function SectionEditor({
               disabled={!name.trim() || sortOrder < 0 || sectionMutation.isPending}
               onClick={() => sectionMutation.mutate()}
             >
-              {sectionMutation.isPending ? 'Saving…' : 'Save section'}
+              {sectionMutation.isPending ? t('saving') : t('saveSection')}
             </button>
           </div>
         </div>
       )}
 
       {sectionMutation.isError && (
-        <p className="field-error">Unable to update this section.</p>
+        <p className="field-error">{t('sectionUpdateError')}</p>
       )}
 
       {canManage && (
         <div className="profile-config-new-field">
           <label>
-            <span>New field label</span>
+            <span>{t('newFieldLabel')}</span>
             <input
               value={fieldLabel}
               onChange={(event) => setFieldLabel(event.target.value)}
             />
           </label>
           <label>
-            <span>Field type</span>
-            <select value={fieldType} onChange={(event) => setFieldType(event.target.value)}>
+            <span>{t('fieldType')}</span>
+            <select
+              value={fieldType}
+              onChange={(event) => setFieldType(event.target.value)}
+            >
               {fieldTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type} value={type}>
+                  {t(type)}
+                </option>
               ))}
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -264,23 +269,23 @@ function SectionEditor({
               checked={fieldRequired}
               onChange={(event) => setFieldRequired(event.target.checked)}
             />
-            <span>Required</span>
+            <span>{t('required')}</span>
           </label>
           <div className="actions">
             <button
               className="button primary"
-              disabled={!fieldLabel.trim() || fieldSortOrder < 0 || fieldMutation.isPending}
+              disabled={
+                !fieldLabel.trim() || fieldSortOrder < 0 || fieldMutation.isPending
+              }
               onClick={() => fieldMutation.mutate()}
             >
-              {fieldMutation.isPending ? 'Adding…' : 'Add field'}
+              {fieldMutation.isPending ? t('adding') : t('addField')}
             </button>
           </div>
         </div>
       )}
 
-      {fieldMutation.isError && (
-        <p className="field-error">Unable to add this field.</p>
-      )}
+      {fieldMutation.isError && <p className="field-error">{t('fieldCreateError')}</p>}
 
       <div className="profile-config-fields">
         {section.fields.map((field) => (
@@ -293,9 +298,7 @@ function SectionEditor({
         ))}
       </div>
 
-      {section.fields.length === 0 && (
-        <p className="muted">No fields configured in this section.</p>
-      )}
+      {section.fields.length === 0 && <p className="muted">{t('noFields')}</p>}
     </article>
   )
 }
@@ -309,6 +312,7 @@ function FieldEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation('patientProfileAdmin')
   const [label, setLabel] = useState(field.label)
   const [fieldType, setFieldType] = useState(field.fieldType)
   const [isRequired, setIsRequired] = useState(field.isRequired)
@@ -363,10 +367,12 @@ function FieldEditor({
         <div>
           <strong>{field.label}</strong>
           <div className="role-badges">
-            <span className="role-badge">{field.fieldType}</span>
-            {field.isRequired && <span className="role-badge">Required</span>}
-            {!field.isEnabled && <span className="role-badge">Disabled</span>}
-            {field.hasValues && <span className="role-badge">Has values</span>}
+            <span className="role-badge">
+              {t(field.fieldType, { defaultValue: field.fieldType })}
+            </span>
+            {field.isRequired && <span className="role-badge">{t('required')}</span>}
+            {!field.isEnabled && <span className="role-badge">{t('disabled')}</span>}
+            {field.hasValues && <span className="role-badge">{t('hasValues')}</span>}
           </div>
         </div>
       </div>
@@ -374,23 +380,25 @@ function FieldEditor({
       {canManage && (
         <div className="profile-config-field-form">
           <label>
-            <span>Label</span>
+            <span>{t('label')}</span>
             <input value={label} onChange={(event) => setLabel(event.target.value)} />
           </label>
           <label>
-            <span>Type</span>
+            <span>{t('type')}</span>
             <select
               value={fieldType}
               disabled={field.hasValues}
               onChange={(event) => setFieldType(event.target.value)}
             >
               {fieldTypes.map((type) => (
-                <option key={type} value={type}>{type}</option>
+                <option key={type} value={type}>
+                  {t(type)}
+                </option>
               ))}
             </select>
           </label>
           <label>
-            <span>Sort order</span>
+            <span>{t('sortOrder')}</span>
             <input
               type="number"
               min="0"
@@ -404,7 +412,7 @@ function FieldEditor({
               checked={isRequired}
               onChange={(event) => setIsRequired(event.target.checked)}
             />
-            <span>Required</span>
+            <span>{t('required')}</span>
           </label>
           <label className="inline-toggle">
             <input
@@ -412,7 +420,7 @@ function FieldEditor({
               checked={isEnabled}
               onChange={(event) => setIsEnabled(event.target.checked)}
             />
-            <span>Enabled</span>
+            <span>{t('enabled')}</span>
           </label>
           <div className="actions">
             <button
@@ -420,49 +428,41 @@ function FieldEditor({
               disabled={!label.trim() || sortOrder < 0 || updateMutation.isPending}
               onClick={() => updateMutation.mutate()}
             >
-              {updateMutation.isPending ? 'Saving…' : 'Save field'}
+              {updateMutation.isPending ? t('saving') : t('saveField')}
             </button>
           </div>
         </div>
       )}
 
-      {field.hasValues && canManage && (
-        <p className="muted">
-          Field type is locked because patient values have already been recorded.
-        </p>
-      )}
+      {field.hasValues && canManage && <p className="muted">{t('typeLocked')}</p>}
 
-      {updateMutation.isError && (
-        <p className="field-error">Unable to update this field.</p>
-      )}
+      {updateMutation.isError && <p className="field-error">{t('fieldUpdateError')}</p>}
 
       {isSelect && (
         <div className="profile-config-options">
           <div className="profile-config-options-heading">
-            <strong>Options</strong>
-            {field.hasValues && (
-              <span className="muted">Values/delete are locked after patient data exists.</span>
-            )}
+            <strong>{t('options')}</strong>
+            {field.hasValues && <span className="muted">{t('optionsLocked')}</span>}
           </div>
 
           {canManage && (
             <div className="profile-config-option-form">
               <label>
-                <span>Label</span>
+                <span>{t('label')}</span>
                 <input
                   value={optionLabel}
                   onChange={(event) => setOptionLabel(event.target.value)}
                 />
               </label>
               <label>
-                <span>Value</span>
+                <span>{t('value')}</span>
                 <input
                   value={optionValue}
                   onChange={(event) => setOptionValue(event.target.value)}
                 />
               </label>
               <label>
-                <span>Order</span>
+                <span>{t('order')}</span>
                 <input
                   type="number"
                   min="0"
@@ -481,14 +481,14 @@ function FieldEditor({
                   }
                   onClick={() => createOptionMutation.mutate()}
                 >
-                  {createOptionMutation.isPending ? 'Adding…' : 'Add option'}
+                  {createOptionMutation.isPending ? t('adding') : t('addOption')}
                 </button>
               </div>
             </div>
           )}
 
           {createOptionMutation.isError && (
-            <p className="field-error">Unable to add option. Option values must be unique.</p>
+            <p className="field-error">{t('optionCreateError')}</p>
           )}
 
           <div className="profile-config-option-list">
@@ -519,6 +519,7 @@ function OptionEditor({
   canManage: boolean
   onConfiguration: (configuration: PatientProfileAdminConfiguration) => void
 }) {
+  const { t } = useTranslation('patientProfileAdmin')
   const [label, setLabel] = useState(option.label)
   const [value, setValue] = useState(option.value)
   const [sortOrder, setSortOrder] = useState(option.sortOrder)
@@ -556,18 +557,18 @@ function OptionEditor({
   return (
     <div className="profile-config-option-editor">
       <input
-        aria-label="Option label"
+        aria-label={t('optionLabel')}
         value={label}
         onChange={(event) => setLabel(event.target.value)}
       />
       <input
-        aria-label="Option value"
+        aria-label={t('optionValue')}
         value={value}
         disabled={fieldHasValues}
         onChange={(event) => setValue(event.target.value)}
       />
       <input
-        aria-label="Option sort order"
+        aria-label={t('optionSortOrder')}
         type="number"
         min="0"
         value={sortOrder}
@@ -576,23 +577,23 @@ function OptionEditor({
       <div className="actions">
         <button
           className="button secondary"
-          disabled={!label.trim() || !value.trim() || sortOrder < 0 || updateMutation.isPending}
+          disabled={
+            !label.trim() || !value.trim() || sortOrder < 0 || updateMutation.isPending
+          }
           onClick={() => updateMutation.mutate()}
         >
-          Save
+          {t('save')}
         </button>
         <button
           className="button danger"
           disabled={fieldHasValues || deleteMutation.isPending}
           onClick={() => deleteMutation.mutate()}
         >
-          Delete
+          {t('delete')}
         </button>
       </div>
       {(updateMutation.isError || deleteMutation.isError) && (
-        <p className="field-error full-width">
-          Unable to change this option. Existing patient values may protect it.
-        </p>
+        <p className="field-error full-width">{t('optionUpdateError')}</p>
       )}
     </div>
   )

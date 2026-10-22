@@ -47,7 +47,7 @@ test('queue report enforces clinic actor and delivers CSV via browser', async ({
   await page.goto('/login')
   await page.getByLabel('Email').fill(admin.email)
   await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Enter clinic' }).click()
   await expect(page).toHaveURL(/\/patients$/)
   await page.goto('/reports')
   await expect(page.getByRole('heading', { name: 'Clinic queue report' })).toBeVisible()

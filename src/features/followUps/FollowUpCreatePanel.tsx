@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { createFollowUp } from './api'
 
 export function FollowUpCreatePanel({ visitId }: { visitId: string }) {
+  const { t } = useTranslation('followUps')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const [recommendation, setRecommendation] = useState('')
@@ -25,31 +27,31 @@ export function FollowUpCreatePanel({ visitId }: { visitId: string }) {
   const days = afterDays ? Number(afterDays) : undefined
   const canSubmit = Boolean(
     recommendation.trim() &&
-      (recommendedDate || (days && Number.isFinite(days) && days > 0)),
+    (recommendedDate || (days && Number.isFinite(days) && days > 0)),
   )
 
   return (
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Follow-up recommendation</h2>
-          <p className="muted">Schedule the patient's next review after this visit.</p>
+          <h2>{t('createTitle')}</h2>
+          <p className="muted">{t('createSubtitle')}</p>
         </div>
       </div>
 
       <div className="follow-up-create">
         <label className="full-width">
-          <span>Recommendation</span>
+          <span>{t('recommendation')}</span>
           <textarea
             rows={3}
             value={recommendation}
             onChange={(event) => setRecommendation(event.target.value)}
-            placeholder="What should be reviewed at follow-up?"
+            placeholder={t('recommendationPlaceholder')}
           />
         </label>
 
         <label>
-          <span>Recommended date</span>
+          <span>{t('recommendedDate')}</span>
           <input
             type="date"
             value={recommendedDate}
@@ -58,13 +60,13 @@ export function FollowUpCreatePanel({ visitId }: { visitId: string }) {
         </label>
 
         <label>
-          <span>Or after days</span>
+          <span>{t('orAfterDays')}</span>
           <input
             type="number"
             min="1"
             value={afterDays}
             onChange={(event) => setAfterDays(event.target.value)}
-            placeholder="e.g. 7"
+            placeholder={t('daysExample')}
           />
         </label>
 
@@ -72,19 +74,21 @@ export function FollowUpCreatePanel({ visitId }: { visitId: string }) {
           <button
             className="button primary"
             disabled={!canSubmit || mutation.isPending}
-            onClick={() => mutation.mutate({
-              visitId,
-              recommendation: recommendation.trim(),
-              recommendedDate: recommendedDate || undefined,
-              recommendedAfterDays: days,
-            })}
+            onClick={() =>
+              mutation.mutate({
+                visitId,
+                recommendation: recommendation.trim(),
+                recommendedDate: recommendedDate || undefined,
+                recommendedAfterDays: days,
+              })
+            }
           >
-            {mutation.isPending ? 'Scheduling…' : 'Schedule follow-up'}
+            {mutation.isPending ? t('scheduling') : t('schedule')}
           </button>
         </div>
 
         {mutation.isError && (
-          <p className="field-error full-width">Unable to schedule follow-up.</p>
+          <p className="field-error full-width">{t('scheduleError')}</p>
         )}
       </div>
     </section>

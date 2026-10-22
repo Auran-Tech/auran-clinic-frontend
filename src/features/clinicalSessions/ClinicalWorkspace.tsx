@@ -1,5 +1,8 @@
+import './clinicalSessions.css'
+import '../clinical/clinical.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { ClinicalOrderEditor } from '../clinicalOrders/ClinicalOrderEditor'
 import { ClinicalOrderAttachmentsPanel } from '../clinicalOrderAttachments/ClinicalOrderAttachmentsPanel'
@@ -17,6 +20,7 @@ interface ClinicalWorkspaceProps {
 }
 
 export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
+  const { t, i18n } = useTranslation('clinicalSessions')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canEdit = auth.hasPermission('Visit_Edit')
@@ -54,14 +58,15 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
   })
 
   const saveMutation = useMutation({
-    mutationFn: () => saveClinicalDocumentation({
-      visitId,
-      chiefComplaint: chiefComplaint || undefined,
-      examination: examination || undefined,
-      diagnosis: diagnosis || undefined,
-      notes: notes || undefined,
-      treatmentPlan: treatmentPlan || undefined,
-    }),
+    mutationFn: () =>
+      saveClinicalDocumentation({
+        visitId,
+        chiefComplaint: chiefComplaint || undefined,
+        examination: examination || undefined,
+        diagnosis: diagnosis || undefined,
+        notes: notes || undefined,
+        treatmentPlan: treatmentPlan || undefined,
+      }),
     onSuccess: (session) => {
       queryClient.setQueryData(['clinical-session', visitId], session)
     },
@@ -81,109 +86,136 @@ export function ClinicalWorkspace({ visitId }: ClinicalWorkspaceProps) {
 
   return (
     <>
-    <section className="panel">
-      <div className="panel-heading">
-        <div>
-          <h2>Clinical workspace</h2>
-          <p className="muted">Start a doctor session, document the visit, and complete the session.</p>
-        </div>
-      </div>
-
-      {sessionQuery.isLoading && <p className="state">Loading clinical session…</p>}
-
-      {!sessionQuery.isLoading && !sessionQuery.data && (
-        <div className="clinical-empty">
-          <p className="muted">No active clinical session.</p>
-          {canEdit && (
-            <button
-              className="button primary"
-              disabled={startMutation.isPending}
-              onClick={() => startMutation.mutate()}
-            >
-              {startMutation.isPending ? 'Starting…' : 'Start clinical session'}
-            </button>
-          )}
-          {startMutation.isError && (
-            <p className="field-error">
-              Unable to start the session. Only the assigned doctor or a Clinic Super User can start it.
-            </p>
-          )}
-        </div>
-      )}
-
-      {sessionQuery.data && (
-        <>
-          <div className="visit-status-card clinical-session-meta">
-            <div>
-              <span className="profile-label">Session started</span>
-              <strong>{new Date(sessionQuery.data.startedAtUtc).toLocaleString()}</strong>
-            </div>
-            <div>
-              <span className="profile-label">Documentation</span>
-              <strong>{sessionQuery.data.documentationStatus}</strong>
-            </div>
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <h2>{t('title')}</h2>
+            <p className="muted">{t('subtitle')}</p>
           </div>
+        </div>
 
-          {documentationCompleted && (
-            <p className="state" role="status">
-              Clinical documentation has been finalized and is read-only. End the active session when finished.
-            </p>
-          )}
+        {sessionQuery.isLoading && <p className="state">{t('loading')}</p>}
 
-          <div className="clinical-form">
-            <label>
-              <span>Chief complaint</span>
-              <textarea rows={3} value={chiefComplaint} onChange={(e) => setChiefComplaint(e.target.value)} disabled={!canEditDraft} />
-            </label>
-            <label>
-              <span>Examination</span>
-              <textarea rows={4} value={examination} onChange={(e) => setExamination(e.target.value)} disabled={!canEditDraft} />
-            </label>
-            <label>
-              <span>Diagnosis</span>
-              <textarea rows={4} value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} disabled={!canEditDraft} />
-            </label>
-            <label>
-              <span>Treatment plan</span>
-              <textarea rows={4} value={treatmentPlan} onChange={(e) => setTreatmentPlan(e.target.value)} disabled={!canEditDraft} />
-            </label>
-            <label className="full-width">
-              <span>Clinical notes</span>
-              <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!canEditDraft} />
-            </label>
-          </div>
-
-          {canEdit && (
-            <div className="actions clinical-actions">
-              {!documentationCompleted && (
-                <button
-                  className="button secondary"
-                  disabled={saveMutation.isPending}
-                  onClick={() => saveMutation.mutate()}
-                >
-                  {saveMutation.isPending ? 'Saving…' : 'Save draft'}
-                </button>
-              )}
+        {!sessionQuery.isLoading && !sessionQuery.data && (
+          <div className="clinical-empty">
+            <p className="muted">{t('empty')}</p>
+            {canEdit && (
               <button
                 className="button primary"
-                disabled={endMutation.isPending}
-                onClick={() => endMutation.mutate()}
+                disabled={startMutation.isPending}
+                onClick={() => startMutation.mutate()}
               >
-                {endMutation.isPending ? 'Ending…' : 'End session'}
+                {startMutation.isPending ? t('starting') : t('start')}
               </button>
-            </div>
-          )}
+            )}
+            {startMutation.isError && <p className="field-error">{t('startError')}</p>}
+          </div>
+        )}
 
-          {(saveMutation.isError || endMutation.isError) && (
-            <p className="field-error">Unable to update the clinical session.</p>
-          )}
-        </>
-      )}
-    </section>
-    <ClinicalMeasurementsPanel visitId={visitId} />
-    <ClinicalOrderEditor visitId={visitId} />
-    <ClinicalOrderAttachmentsPanel visitId={visitId} />
-    <FollowUpCreatePanel visitId={visitId} />
+        {sessionQuery.data && (
+          <>
+            <div className="visit-status-card clinical-session-meta">
+              <div>
+                <span className="profile-label">{t('sessionStarted')}</span>
+                <strong>
+                  {new Date(sessionQuery.data.startedAtUtc).toLocaleString(i18n.language)}
+                </strong>
+              </div>
+              <div>
+                <span className="profile-label">{t('documentation')}</span>
+                <strong>
+                  {t(sessionQuery.data.documentationStatus, {
+                    defaultValue: sessionQuery.data.documentationStatus,
+                  })}
+                </strong>
+              </div>
+            </div>
+
+            {documentationCompleted && (
+              <p className="state" role="status">
+                {t('completedNotice')}
+              </p>
+            )}
+
+            <div className="clinical-form">
+              <label>
+                <span>{t('chiefComplaint')}</span>
+                <textarea
+                  rows={3}
+                  value={chiefComplaint}
+                  onChange={(e) => setChiefComplaint(e.target.value)}
+                  disabled={!canEditDraft}
+                />
+              </label>
+              <label>
+                <span>{t('examination')}</span>
+                <textarea
+                  rows={4}
+                  value={examination}
+                  onChange={(e) => setExamination(e.target.value)}
+                  disabled={!canEditDraft}
+                />
+              </label>
+              <label>
+                <span>{t('diagnosis')}</span>
+                <textarea
+                  rows={4}
+                  value={diagnosis}
+                  onChange={(e) => setDiagnosis(e.target.value)}
+                  disabled={!canEditDraft}
+                />
+              </label>
+              <label>
+                <span>{t('treatmentPlan')}</span>
+                <textarea
+                  rows={4}
+                  value={treatmentPlan}
+                  onChange={(e) => setTreatmentPlan(e.target.value)}
+                  disabled={!canEditDraft}
+                />
+              </label>
+              <label className="full-width">
+                <span>{t('clinicalNotes')}</span>
+                <textarea
+                  rows={5}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  disabled={!canEditDraft}
+                />
+              </label>
+            </div>
+
+            {canEdit && (
+              <div className="actions clinical-actions">
+                {!documentationCompleted && (
+                  <button
+                    className="button secondary"
+                    disabled={saveMutation.isPending}
+                    onClick={() => saveMutation.mutate()}
+                  >
+                    {saveMutation.isPending ? t('saving') : t('saveDraft')}
+                  </button>
+                )}
+                <button
+                  className="button primary"
+                  disabled={endMutation.isPending}
+                  onClick={() => endMutation.mutate()}
+                >
+                  {endMutation.isPending ? t('ending') : t('endSession')}
+                </button>
+              </div>
+            )}
+
+            {(saveMutation.isError || endMutation.isError) && (
+              <p className="field-error">{t('updateError')}</p>
+            )}
+          </>
+        )}
+      </section>
+      <ClinicalMeasurementsPanel visitId={visitId} />
+      <ClinicalOrderEditor visitId={visitId} />
+      <ClinicalOrderAttachmentsPanel visitId={visitId} />
+      <FollowUpCreatePanel visitId={visitId} />
     </>
   )
 }

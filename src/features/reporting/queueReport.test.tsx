@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import '../../i18n'
 import { QueueReportPanel } from './QueueReportPanel'
 
 const mocks = vi.hoisted(() => ({

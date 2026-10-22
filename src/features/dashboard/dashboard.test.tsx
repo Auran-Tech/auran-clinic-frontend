@@ -4,10 +4,12 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DashboardPage } from './DashboardPage'
+import '../../i18n'
 
 const mocks = vi.hoisted(() => ({
   permissions: new Set<string>(),
   getDashboardSummary: vi.fn(),
+  getActiveQueue: vi.fn(),
 }))
 
 vi.mock('../auth/AuthContext', () => ({
@@ -20,6 +22,7 @@ vi.mock('../auth/AuthContext', () => ({
 vi.mock('../reporting/api', () => ({
   getDashboardSummary: mocks.getDashboardSummary,
 }))
+vi.mock('../queue/api', () => ({ getActiveQueue: mocks.getActiveQueue }))
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -35,6 +38,8 @@ describe('DashboardPage permissions', () => {
   beforeEach(() => {
     mocks.permissions.clear()
     mocks.getDashboardSummary.mockReset()
+    mocks.getActiveQueue.mockReset()
+    mocks.getActiveQueue.mockResolvedValue([])
     mocks.getDashboardSummary.mockResolvedValue({
       localDate: '2026-10-15',
       totalPatients: 10,
@@ -69,5 +74,15 @@ describe('DashboardPage permissions', () => {
     renderPage()
     expect(await screen.findByText('Active queue')).toBeTruthy()
     expect(screen.queryByText('Total patients')).toBeNull()
+  })
+
+  it('shows real queue stages and current arrivals when queue access is granted', async () => {
+    mocks.permissions.add('Reports_View')
+    mocks.permissions.add('Queue_View')
+    mocks.getActiveQueue.mockResolvedValue([{ queueEntryId: 'entry-1', patientId: 'patient-1', patientName: 'Demo Patient', patientNumber: 'PT-1', doctorId: 'doctor-1', doctorName: 'Demo Doctor', workflowStatusId: 'waiting', workflowStatusName: 'Waiting', workflowStatusColor: '#3b82f6' }])
+    renderPage()
+    expect(await screen.findByText('Demo Patient')).toBeTruthy()
+    expect(screen.getByText('Demo Doctor')).toBeTruthy()
+    expect(screen.getByText('Queue distribution')).toBeTruthy()
   })
 })

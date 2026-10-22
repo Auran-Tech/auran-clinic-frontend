@@ -1,11 +1,11 @@
+import { requireData } from '../../lib/requireData'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { DoctorActivityQuery, DoctorActivityReport } from './doctorActivityTypes'
 
 export async function getDoctorActivity(filters: DoctorActivityQuery): Promise<DoctorActivityReport> {
   const response = await api.get<BaseResponse<DoctorActivityReport>>('/reporting/doctors', { params: filters })
-  if (!response.data.data) throw new Error(response.data.message ?? 'Unable to load doctor activity.')
-  return response.data.data
+  return requireData(response.data, 'Unable to load doctor activity.')
 }
 
 export async function exportDoctorActivityCsv(filters: DoctorActivityQuery) {

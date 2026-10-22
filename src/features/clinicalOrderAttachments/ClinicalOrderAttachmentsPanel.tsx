@@ -1,17 +1,17 @@
+import './clinicalOrderAttachments.css'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import {
   getClinicalOrderAttachmentWorkspace,
   linkClinicalOrderAttachment,
   unlinkClinicalOrderAttachment,
 } from './api'
-import type {
-  ClinicalOrderAttachmentFile,
-  ClinicalOrderAttachmentSection,
-} from './types'
+import type { ClinicalOrderAttachmentFile, ClinicalOrderAttachmentSection } from './types'
 
 export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) {
+  const { t } = useTranslation('clinicalOrderAttachments')
   const auth = useAuth()
   const queryClient = useQueryClient()
   const canView = auth.hasPermission('Visit_View') && auth.hasPermission('Files_View')
@@ -34,7 +34,9 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
 
     const alreadyLinked = new Set(
       query.data.links
-        .filter((link) => link.sectionDefinitionId === selectedSection.sectionDefinitionId)
+        .filter(
+          (link) => link.sectionDefinitionId === selectedSection.sectionDefinitionId,
+        )
         .map((link) => link.fileId),
     )
 
@@ -70,24 +72,22 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
     <section className="panel">
       <div className="panel-heading">
         <div>
-          <h2>Clinical order files & images</h2>
-          <p className="muted">
-            Link existing patient uploads into configured Image/File order sections.
-          </p>
+          <h2>{t('title')}</h2>
+          <p className="muted">{t('subtitle')}</p>
         </div>
       </div>
 
-      {query.isLoading && <p className="state">Loading order attachments…</p>}
-      {query.isError && <p className="state error">Unable to load order attachments.</p>}
+      {query.isLoading && <p className="state">{t('loading')}</p>}
+      {query.isError && <p className="state error">{t('loadError')}</p>}
 
       {query.data && query.data.sections.length === 0 && (
-        <p className="state">No Image/File clinical-order sections are configured.</p>
+        <p className="state">{t('noSections')}</p>
       )}
 
       {query.data && query.data.sections.length > 0 && canEdit && (
         <div className="order-attachment-link-form">
           <label>
-            <span>Order section</span>
+            <span>{t('orderSection')}</span>
             <select
               value={sectionId}
               onChange={(event) => {
@@ -95,27 +95,28 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
                 setFileId('')
               }}
             >
-              <option value="">Select section</option>
+              <option value="">{t('selectSection')}</option>
               {query.data.sections.map((section) => (
                 <option
                   key={section.sectionDefinitionId}
                   value={section.sectionDefinitionId}
                 >
-                  {section.name} ({section.sectionType})
+                  {section.name} (
+                  {t(section.sectionType, { defaultValue: section.sectionType })})
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            <span>Patient attachment</span>
+            <span>{t('patientAttachment')}</span>
             <select
               value={fileId}
               disabled={!selectedSection}
               onChange={(event) => setFileId(event.target.value)}
             >
               <option value="">
-                {selectedSection ? 'Select file' : 'Select a section first'}
+                {selectedSection ? t('selectFile') : t('selectSectionFirst')}
               </option>
               {eligibleFiles.map((file) => (
                 <option key={file.fileId} value={file.fileId}>
@@ -131,23 +132,17 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
               disabled={!sectionId || !fileId || linkMutation.isPending}
               onClick={() => linkMutation.mutate()}
             >
-              {linkMutation.isPending ? 'Linking…' : 'Link attachment'}
+              {linkMutation.isPending ? t('linking') : t('link')}
             </button>
           </div>
         </div>
       )}
 
       {selectedSection && canEdit && eligibleFiles.length === 0 && (
-        <p className="muted">
-          No additional eligible patient uploads are available for this section.
-        </p>
+        <p className="muted">{t('noEligible')}</p>
       )}
 
-      {linkMutation.isError && (
-        <p className="field-error">
-          Unable to link this file. Image sections only accept images, and duplicate links are not allowed.
-        </p>
-      )}
+      {linkMutation.isError && <p className="field-error">{t('linkError')}</p>}
 
       {query.data && (
         <div className="order-attachment-sections">
@@ -160,14 +155,18 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
               <div className="order-attachment-section" key={section.sectionDefinitionId}>
                 <div className="order-attachment-section-heading">
                   <div>
-                    <span className="profile-label">{section.sectionType}</span>
+                    <span className="profile-label">
+                      {t(section.sectionType, { defaultValue: section.sectionType })}
+                    </span>
                     <h3>{section.name}</h3>
                   </div>
-                  <span className="role-badge">{links.length} linked</span>
+                  <span className="role-badge">
+                    {t('linkedCount', { count: links.length })}
+                  </span>
                 </div>
 
                 {links.length === 0 ? (
-                  <p className="muted">No files linked to this section.</p>
+                  <p className="muted">{t('noFiles')}</p>
                 ) : (
                   <div className="order-attachment-list">
                     {links.map((link) => (
@@ -185,7 +184,7 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
                             disabled={unlinkMutation.isPending}
                             onClick={() => unlinkMutation.mutate(link.linkId)}
                           >
-                            Unlink
+                            {t('unlink')}
                           </button>
                         )}
                       </article>
@@ -199,16 +198,10 @@ export function ClinicalOrderAttachmentsPanel({ visitId }: { visitId: string }) 
       )}
 
       {query.data && query.data.files.length === 0 && (
-        <p className="muted">
-          Upload patient attachments first, then link them into the clinical order.
-        </p>
+        <p className="muted">{t('uploadFirst')}</p>
       )}
 
-      {unlinkMutation.isError && (
-        <p className="field-error">
-          Unable to unlink this file. The clinical visit may already be closed.
-        </p>
-      )}
+      {unlinkMutation.isError && <p className="field-error">{t('unlinkError')}</p>}
     </section>
   )
 }

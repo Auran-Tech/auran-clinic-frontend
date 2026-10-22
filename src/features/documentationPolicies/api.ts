@@ -1,5 +1,6 @@
 import { isAxiosError } from 'axios'
 import { api } from '../../lib/api'
+import { requireData } from '../../lib/requireData'
 import type { BaseResponse } from '../../types/api'
 
 export const DOCUMENTATION_FIELDS = [
@@ -35,8 +36,7 @@ export async function saveSpecialtyDocumentationPolicy(input: {
   const response = await api.put<BaseResponse<SpecialtyDocumentationPolicy>>(
     '/documentation-policies', input,
   )
-  if (!response.data.data) throw new Error('Unable to save documentation policy.')
-  return response.data.data
+  return requireData(response.data, 'Unable to save documentation policy.')
 }
 
 export async function assignDoctorDocumentationSpecialty(input: {

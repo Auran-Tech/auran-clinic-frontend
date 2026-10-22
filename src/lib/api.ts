@@ -3,16 +3,18 @@ import { clearSession, readSession, writeSession } from '../features/auth/storag
 import type { BaseResponse } from '../types/api'
 import type { AuthSession } from '../features/auth/types'
 import { isSameSession, SessionChangedError } from './sessionGuards'
+import { apiBaseUrl } from './apiConfig'
+import {
+  isTransientConnectionFailure,
+  reportConnectionFailure,
+} from './connectionSignals'
+import { requireData } from './requireData'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL
-
-if (!baseURL) {
-  throw new Error('VITE_API_BASE_URL is required.')
-}
+export const apiRequestTimeoutMs = 20_000
 
 export const api = axios.create({
-  baseURL,
-  timeout: 20_000,
+  baseURL: apiBaseUrl,
+  timeout: apiRequestTimeoutMs,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -40,20 +42,28 @@ async function rotateSession() {
   if (!refreshPromise) {
     const expectedRefreshToken = session.refreshToken
     const pending = axios
-      .post<BaseResponse<AuthSession>>(`${baseURL}/auth/refresh`, {
-        refreshToken: expectedRefreshToken,
-      })
+      .post<BaseResponse<AuthSession>>(
+        `${apiBaseUrl}/auth/refresh`,
+        {
+          refreshToken: expectedRefreshToken,
+        },
+        {
+          timeout: apiRequestTimeoutMs,
+        },
+      )
       .then((response) => {
         // A logout or another login may have happened while refresh was in flight.
         // Never resurrect the old identity or overwrite the replacement session.
         if (!isSameSession(readSession(), expectedRefreshToken)) {
           throw new SessionChangedError()
         }
-        if (!response.data.data) {
-          throw new Error(response.data.message ?? 'Session refresh failed.')
-        }
-        writeSession(response.data.data)
-        return response.data.data
+        const refreshed = requireData(response.data, 'Session refresh failed.')
+        writeSession(refreshed)
+        return refreshed
+      })
+      .catch((error) => {
+        reportConnectionFailure(error)
+        throw error
       })
       .finally(() => {
         if (refreshPromise === pending) refreshPromise = null
@@ -67,7 +77,9 @@ async function rotateSession() {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
+    reportConnectionFailure(error)
+    const original = error.config as
+      (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
 
     if (error.response?.status !== 401 || !original || original._retry) {
       return Promise.reject(error)
@@ -92,7 +104,10 @@ api.interceptors.response.use(
       original.headers.Authorization = `Bearer ${session.accessToken}`
       return api(original)
     } catch (refreshError) {
-      if (isSameSession(readSession(), expectedRefreshToken)) {
+      if (
+        !isTransientConnectionFailure(refreshError) &&
+        isSameSession(readSession(), expectedRefreshToken)
+      ) {
         clearSession()
         window.dispatchEvent(new Event('auran:session-expired'))
       }
