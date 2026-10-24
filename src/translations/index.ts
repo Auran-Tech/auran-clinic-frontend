@@ -36,6 +36,8 @@ import workflowEn from './workflow/en.json'
 import workflowAr from './workflow/ar.json'
 import settingsEn from './settings/en.json'
 import settingsAr from './settings/ar.json'
+import profileEn from './profile/en.json'
+import profileAr from './profile/ar.json'
 import employeesEn from './employees/en.json'
 import employeesAr from './employees/ar.json'
 import clinicalSessionsEn from './clinicalSessions/en.json'
@@ -76,6 +78,7 @@ export const resources = {
     documentationPolicies: documentationPoliciesEn,
     workflow: workflowEn,
     settings: settingsEn,
+    profile: profileEn,
     employees: employeesEn,
     clinicalSessions: clinicalSessionsEn,
     patientMedicalHistory: patientMedicalHistoryEn,
@@ -106,6 +109,7 @@ export const resources = {
     documentationPolicies: documentationPoliciesAr,
     workflow: workflowAr,
     settings: settingsAr,
+    profile: profileAr,
     employees: employeesAr,
     clinicalSessions: clinicalSessionsAr,
     patientMedicalHistory: patientMedicalHistoryAr,
@@ -138,6 +142,7 @@ export const namespaces = [
   'documentationPolicies',
   'workflow',
   'settings',
+  'profile',
   'employees',
   'clinicalSessions',
   'patientMedicalHistory',

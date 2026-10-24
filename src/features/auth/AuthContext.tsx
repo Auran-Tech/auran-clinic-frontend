@@ -15,17 +15,25 @@ interface AuthContextValue {
   session: AuthSession | null
   setSession: (session: AuthSession) => void
   signOut: () => Promise<void>
+  endSession: () => void
   hasPermission: (permission: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [sessionState, setSessionState] = useState<AuthSession | null>(() => readSession())
+  const [sessionState, setSessionState] = useState<AuthSession | null>(() =>
+    readSession(),
+  )
 
   const setSession = useCallback((session: AuthSession) => {
     writeSession(session)
     setSessionState(session)
+  }, [])
+
+  const endSession = useCallback(() => {
+    clearSession()
+    setSessionState(null)
   }, [])
 
   const signOut = useCallback(async () => {
@@ -35,32 +43,37 @@ export function AuthProvider({ children }: PropsWithChildren) {
         await logoutRequest(refreshToken)
       }
     } finally {
-      clearSession()
-      setSessionState(null)
+      endSession()
     }
-  }, [sessionState?.refreshToken])
+  }, [endSession, sessionState?.refreshToken])
 
   useEffect(() => {
     const handleExpired = () => {
-      clearSession()
-      setSessionState(null)
+      endSession()
     }
     window.addEventListener('auran:session-expired', handleExpired)
     return () => window.removeEventListener('auran:session-expired', handleExpired)
-  }, [])
+  }, [endSession])
 
   const hasPermission = useCallback(
     (permission: string) =>
-      Boolean(sessionState?.user.isSuperUser || sessionState?.user.permissions.includes(permission)),
+      Boolean(
+        sessionState?.user.isSuperUser ||
+        sessionState?.user.permissions.includes(permission),
+      ),
     [sessionState],
   )
 
-  const value = useMemo<AuthContextValue>(() => ({
-    session: sessionState,
-    setSession,
-    signOut,
-    hasPermission,
-  }), [sessionState, setSession, signOut, hasPermission])
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      session: sessionState,
+      setSession,
+      signOut,
+      endSession,
+      hasPermission,
+    }),
+    [sessionState, setSession, signOut, endSession, hasPermission],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -223,3 +223,9 @@
   border-color: #836334;
   color: #fff2d3;
 }
+
+html[data-theme='light'] .duplicate-warning {
+  color: #7c4b0a;
+  background: #fff9e8;
+  border-color: #f0d48f;
+}

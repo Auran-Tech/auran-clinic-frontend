@@ -5,18 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#070d1c" />
     <title>Auran Clinic</title>
+    <!-- Theme is read here before React starts so the loading screen uses the saved theme. -->
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem('auran.theme') === 'light' ? 'light' : 'dark'
+      } catch {
+        document.documentElement.dataset.theme = 'dark'
+      }
+    </script>
     <style>
-      body{margin:0;background:#070d1c;color:#f1f5fb;font-family:Inter,system-ui,Arial,sans-serif}
-      .boot-screen{position:fixed;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;background:radial-gradient(circle at 50% 30%,#14274a 0,#0b152b 36%,#070d1c 75%)}
-      .boot-mark{display:grid;place-items:center;width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#438bff,#6757dd);box-shadow:0 16px 42px #315bb766;font-size:2.2rem;font-weight:800}
-      .boot-screen strong{margin-top:22px;letter-spacing:.18em}.boot-screen p{color:#a7b8d4}
-      .boot-progress{width:220px;height:3px;margin-top:20px;border-radius:9px;background:#294166;overflow:hidden}.boot-progress:before{content:"";display:block;width:42%;height:100%;background:#5c9bff;animation:boot-move 1.5s ease-in-out infinite alternate}
-      @keyframes boot-move{from{transform:translateX(-110%)}to{transform:translateX(250%)}}
-      @media(prefers-reduced-motion:reduce){.boot-progress:before{animation:none}}
+      body {
+        margin: 0;
+        background: #070d1c;
+        color: #f1f5fb;
+        font-family: Inter, system-ui, Arial, sans-serif;
+      }
+      .boot-screen {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        text-align: center;
+        background: radial-gradient(
+          circle at 50% 30%,
+          #14274a 0,
+          #0b152b 36%,
+          #070d1c 75%
+        );
+      }
+      .boot-mark {
+        display: grid;
+        place-items: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #438bff, #6757dd);
+        box-shadow: 0 16px 42px #315bb766;
+        font-size: 2.2rem;
+        font-weight: 800;
+      }
+      .boot-screen strong {
+        margin-top: 22px;
+        letter-spacing: 0.18em;
+      }
+      .boot-screen p {
+        color: #a7b8d4;
+      }
+      .boot-progress {
+        width: 220px;
+        height: 3px;
+        margin-top: 20px;
+        border-radius: 9px;
+        background: #294166;
+        overflow: hidden;
+      }
+      .boot-progress:before {
+        content: '';
+        display: block;
+        width: 42%;
+        height: 100%;
+        background: #5c9bff;
+        animation: boot-move 1.5s ease-in-out infinite alternate;
+      }
+      html[data-theme='light'] body {
+        background: #e4e7ee;
+        color: #0f172a;
+      }
+      html[data-theme='light'] .boot-screen {
+        background: radial-gradient(circle at 50% 30%, #fff 0, #f2f5fa 54%, #e4e7ee 100%);
+      }
+      html[data-theme='light'] .boot-screen p {
+        color: #64748b;
+      }
+      @keyframes boot-move {
+        from {
+          transform: translateX(-110%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-progress:before {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body>
-    <div id="root"><div class="boot-screen" role="status"><div class="boot-mark" aria-hidden="true">A</div><strong>AURAN CLINIC</strong><p>Preparing your clinic workspace…</p><div class="boot-progress" aria-hidden="true"></div></div></div>
+    <div id="root">
+      <div class="boot-screen" role="status">
+        <div class="boot-mark" aria-hidden="true">A</div>
+        <strong>AURAN CLINIC</strong>
+        <p>Preparing your clinic workspace…</p>
+        <div class="boot-progress" aria-hidden="true"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

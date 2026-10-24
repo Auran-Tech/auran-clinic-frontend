@@ -184,3 +184,17 @@
     margin-inline-start: 0;
   }
 }
+
+html[data-theme='light'] .queue-lane header b {
+  color: #1e3a5f;
+  background: #e7eef8;
+}
+
+html[data-theme='light'] .queue-board-card {
+  background: #f7f9fd;
+  border-color: #dce5ef;
+}
+
+html[data-theme='light'] .queue-board-patient a {
+  color: #1e3a5f;
+}

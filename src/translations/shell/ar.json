@@ -1,9 +1,23 @@
 {
   "navigation": "التنقل في العيادة",
-  "workspace": "مساحة عمل العيادة",
+  "workspace": "الرئيسية",
   "administration": "الإدارة",
   "staff": "فريق العمل",
+  "superUser": "مستخدم مميز",
   "signOut": "تسجيل الخروج",
   "openMenu": "فتح القائمة",
-  "closeMenu": "إغلاق القائمة"
+  "closeMenu": "إغلاق القائمة",
+  "clinicManagement": "إدارة العيادة",
+  "clinical": "العيادة",
+  "management": "الإدارة",
+  "system": "النظام",
+  "toggleSidebar": "تبديل القائمة الجانبية",
+  "searchPatients": "ابحث عن مريض...",
+  "accountMenu": "قائمة الحساب",
+  "currentClinic": "العيادة الحالية",
+  "notifications": "الإشعارات",
+  "noNotifications": "لا توجد إشعارات",
+  "language": "اللغة",
+  "darkMode": "الوضع الداكن",
+  "profileSettings": "إعدادات الملف الشخصي"
 }

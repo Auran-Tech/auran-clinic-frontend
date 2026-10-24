@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { RefreshCcw } from 'lucide-react'
 import {
   connectionFailureEvent,
   connectionRestoredEvent,
@@ -95,20 +96,7 @@ export function ConnectionGate({ children }: PropsWithChildren) {
           <div
             className={`connection-banner${snapshot.phase === 'checking' ? ' is-checking' : ''}`}
           >
-            <svg
-              className="is-spinning"
-              viewBox="0 0 24 24"
-              width="19"
-              height="19"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5M4 13a8 8 0 0 0 14 5l2-2m0 5v-5h-5" />
-            </svg>
+            <RefreshCcw className="is-spinning" size={19} aria-hidden="true" />
             <span>
               {snapshot.phase === 'retrying'
                 ? t('connectivity:retryingBanner', { seconds: snapshot.seconds })
@@ -132,19 +120,7 @@ export function ConnectionGate({ children }: PropsWithChildren) {
         >
           <section className="connection-card">
             <div className="connection-banner is-disconnected" role="status">
-              <svg
-                viewBox="0 0 24 24"
-                width="19"
-                height="19"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5M4 13a8 8 0 0 0 14 5l2-2m0 5v-5h-5" />
-              </svg>
+              <RefreshCcw size={19} aria-hidden="true" />
               <span>{t('connectivity:disconnectedBanner')}</span>
             </div>
             <div className="connection-mark" aria-hidden="true">

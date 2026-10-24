@@ -9,6 +9,7 @@ import {
   reportConnectionFailure,
 } from './connectionSignals'
 import { requireData } from './requireData'
+import { getLanguagePreference } from './preferences'
 
 export const apiRequestTimeoutMs = 20_000
 
@@ -22,8 +23,7 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const session = readSession()
-  const language = localStorage.getItem('auran.language')
-  config.headers['Accept-Language'] = language === 'ar' ? 'ar' : 'en'
+  config.headers['Accept-Language'] = getLanguagePreference()
 
   if (session?.accessToken) {
     config.headers.Authorization = `Bearer ${session.accessToken}`

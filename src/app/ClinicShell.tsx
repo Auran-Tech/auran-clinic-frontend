@@ -1,81 +1,57 @@
 import './ClinicShell.css'
-import { useState, type PropsWithChildren } from 'react'
+import { useEffect, useRef, useState, type PropsWithChildren } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import {
+  Bell,
+  Building2,
+  ChartNoAxesColumn,
+  ChevronDown,
+  ClipboardList,
+  Clock3,
+  FileText,
+  LayoutDashboard,
+  ListTodo,
+  Menu,
+  Moon,
+  Search,
+  Settings,
+  UserRoundPlus,
+  UsersRound,
+  UserRound,
+  X,
+} from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext'
 import { getClinicSettings } from '../features/settings/api'
+import { getActiveQueue } from '../features/queue/api'
+import { LocaleController } from './LocaleController'
+import { useTheme } from './themeState'
 import type { resources } from '../translations'
+import { useProfilePhoto } from '../features/profile/useProfilePhoto'
 
 interface NavItem {
   to: string
   label: keyof typeof resources.en.common
   permission: string
-  icon: keyof typeof iconPaths
+  icon: keyof typeof navIcons
 }
 
-const iconPaths = {
-  dashboard: (
-    <>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </>
-  ),
-  patients: (
-    <>
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3 20v-2a6 6 0 0 1 12 0v2" />
-      <path d="M17 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5" />
-    </>
-  ),
-  queue: (
-    <>
-      <path d="M8 6h13M8 12h13M8 18h13" />
-      <circle cx="4" cy="6" r="1" />
-      <circle cx="4" cy="12" r="1" />
-      <circle cx="4" cy="18" r="1" />
-    </>
-  ),
-  pending: (
-    <>
-      <path d="M6 3h9l4 4v14H6z" />
-      <path d="M14 3v5h5M9 12h7M9 16h7" />
-    </>
-  ),
-  followUps: (
-    <>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 2" />
-    </>
-  ),
-  reports: (
-    <>
-      <path d="M4 20V9h4v11M10 20V4h4v16M16 20v-7h4v7M3 20h18" />
-    </>
-  ),
-  employees: (
-    <>
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3 20v-2a6 6 0 0 1 12 0v2M16 8h5M18.5 5.5v5" />
-    </>
-  ),
-  settings: (
-    <>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M10 2h4l.5 2.2 2 .8 1.9-1.2 2.8 2.8L20 8.5l.8 2L23 11v4l-2.2.5-.8 2 1.2 1.9-2.8 2.8-1.9-1.2-2 .8L14 23h-4l-.5-2.2-2-.8-1.9 1.2-2.8-2.8L4 16.5l-.8-2L1 14v-4l2.2-.5.8-2-1.2-1.9 2.8-2.8L7.5 5l2-.8z" />
-    </>
-  ),
-  audit: (
-    <>
-      <rect x="4" y="3" width="16" height="18" rx="2" />
-      <path d="M8 8h8M8 12h8M8 16h5" />
-    </>
-  ),
+const navIcons = {
+  dashboard: LayoutDashboard,
+  patients: UsersRound,
+  queue: ListTodo,
+  pending: FileText,
+  followUps: Clock3,
+  reports: ChartNoAxesColumn,
+  employees: UserRoundPlus,
+  settings: Settings,
+  audit: ClipboardList,
 }
-
-const sections: { title: 'workspace' | 'administration'; items: NavItem[] }[] = [
+const sections: {
+  title: 'workspace' | 'clinical' | 'management' | 'system'
+  items: NavItem[]
+}[] = [
   {
     title: 'workspace',
     items: [
@@ -85,6 +61,11 @@ const sections: { title: 'workspace' | 'administration'; items: NavItem[] }[] = 
         permission: 'Reports_View',
         icon: 'dashboard',
       },
+    ],
+  },
+  {
+    title: 'clinical',
+    items: [
       {
         to: '/patients',
         label: 'patients',
@@ -104,18 +85,23 @@ const sections: { title: 'workspace' | 'administration'; items: NavItem[] }[] = 
         permission: 'FollowUp_View',
         icon: 'followUps',
       },
-      { to: '/reports', label: 'reports', permission: 'Reports_View', icon: 'reports' },
     ],
   },
   {
-    title: 'administration',
+    title: 'management',
     items: [
+      { to: '/reports', label: 'reports', permission: 'Reports_View', icon: 'reports' },
       {
         to: '/employees',
         label: 'employees',
         permission: 'Users_View',
         icon: 'employees',
       },
+    ],
+  },
+  {
+    title: 'system',
+    items: [
       {
         to: '/settings',
         label: 'settings',
@@ -129,25 +115,53 @@ const sections: { title: 'workspace' | 'administration'; items: NavItem[] }[] = 
 
 export function ClinicShell({ children }: PropsWithChildren) {
   const auth = useAuth()
+  const { theme, setTheme } = useTheme()
   const { t } = useTranslation(['shell', 'common'])
-  const location = useLocation()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [quickSearch, setQuickSearch] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
+  const accountMenuRef = useRef<HTMLDetailsElement>(null)
+  const isCompact =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(max-width: 760px)').matches
   const user = auth.session!.user
+  const { url: profilePhotoUrl } = useProfilePhoto(user.userId)
   const clinicSettings = useQuery({
     queryKey: ['clinic-settings', user.clinicId],
     queryFn: getClinicSettings,
     enabled: auth.hasPermission('Settings_View'),
     staleTime: 300_000,
   })
-  const currentPage = sections
-    .flatMap((section) => section.items)
-    .find(
-      (item) =>
-        location.pathname === item.to || location.pathname.startsWith(item.to + '/'),
-    )
+  const queue = useQuery({
+    queryKey: ['active-queue'],
+    queryFn: getActiveQueue,
+    enabled: auth.hasPermission('Queue_View'),
+    refetchInterval: 30_000,
+  })
+  const clinicName = clinicSettings.data?.clinicName || 'Auran Clinic'
+  const initials = user.fullName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('')
+
+  useEffect(() => {
+    function focusSearch(event: KeyboardEvent) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        searchRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', focusSearch)
+    return () => window.removeEventListener('keydown', focusSearch)
+  }, [])
 
   return (
-    <div className="clinic-layout">
+    <div className={`clinic-layout${sidebarCollapsed ? ' is-collapsed' : ''}`}>
       {menuOpen && (
         <button
           className="clinic-nav-scrim"
@@ -156,29 +170,33 @@ export function ClinicShell({ children }: PropsWithChildren) {
         />
       )}
       <aside
+        id="clinic-navigation"
         className={`clinic-sidebar${menuOpen ? ' is-open' : ''}`}
         aria-label={t('shell:navigation')}
       >
-        <NavLink
-          to="/dashboard"
-          className="sidebar-brand"
-          onClick={() => setMenuOpen(false)}
-        >
-          <span className="brand-mark" aria-hidden="true">
-            A
-          </span>
-          <span className="sidebar-brand-text">
-            AURAN <small>CLINIC</small>
-          </span>
-        </NavLink>
-        <div className="sidebar-clinic">
-          <span className="sidebar-clinic-avatar" aria-hidden="true">
-            ✦
-          </span>
-          <span>
-            <strong>{clinicSettings.data?.clinicName || 'Auran Clinic'}</strong>
-            <small>{t('shell:workspace')}</small>
-          </span>
+        <div className="sidebar-brand">
+          <NavLink
+            to="/dashboard"
+            className="sidebar-brand-link"
+            onClick={() => setMenuOpen(false)}
+            title={clinicName}
+          >
+            <span className="brand-mark" aria-hidden="true">
+              A
+            </span>
+            <span className="sidebar-brand-text">
+              <strong>{clinicName}</strong>
+              <small>{t('shell:clinicManagement')}</small>
+            </span>
+          </NavLink>
+          <button
+            className="mobile-sidebar-close"
+            type="button"
+            aria-label={t('shell:closeMenu')}
+            onClick={() => setMenuOpen(false)}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
         </div>
         <nav className="clinic-nav">
           {sections.map((section) => {
@@ -189,70 +207,151 @@ export function ClinicShell({ children }: PropsWithChildren) {
             return (
               <div className="clinic-nav-section" key={section.title}>
                 <p className="clinic-nav-heading">{t(`shell:${section.title}`)}</p>
-                {visible.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `clinic-nav-link${isActive ? ' active' : ''}`
-                    }
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <svg
-                      className="clinic-nav-icon"
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                {visible.map((item) => {
+                  const Icon = navIcons[item.icon]
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      title={t(`common:${item.label}`)}
+                      className={({ isActive }) =>
+                        `clinic-nav-link${isActive ? ' active' : ''}`
+                      }
+                      onClick={() => setMenuOpen(false)}
                     >
-                      {iconPaths[item.icon]}
-                    </svg>
-                    <span>{t(`common:${item.label}`)}</span>
-                  </NavLink>
-                ))}
+                      <Icon
+                        className="clinic-nav-icon"
+                        aria-hidden="true"
+                        strokeWidth={1.7}
+                      />
+                      <span className="clinic-nav-label">
+                        {t(`common:${item.label}`)}
+                      </span>
+                      {item.icon === 'queue' && !!queue.data?.length && (
+                        <span className="clinic-nav-count">{queue.data.length}</span>
+                      )}
+                    </NavLink>
+                  )
+                })}
               </div>
             )
           })}
         </nav>
-        <div className="sidebar-user">
-          <span className="sidebar-user-avatar" aria-hidden="true">
-            {user.fullName.slice(0, 1).toUpperCase()}
-          </span>
-          <span>
-            <strong>{user.fullName}</strong>
-            <small>{user.roles.join(', ') || t('shell:staff')}</small>
-          </span>
-        </div>
       </aside>
       <div className="clinic-main">
         <header className="clinic-topbar">
-          <button
-            className="sidebar-toggle"
-            type="button"
-            aria-label={t('shell:openMenu')}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((value) => !value)}
-          >
-            ☰
-          </button>
-          <div className="topbar-context">
-            <span>{t('shell:workspace')}</span>
-            <strong>
-              {currentPage ? t(`common:${currentPage.label}`) : t('common:patients')}
-            </strong>
-          </div>
-          <div className="topbar-actions">
-            <span className="topbar-user">{user.fullName}</span>
+          <div className="topbar-start">
             <button
-              className="topbar-signout"
+              className="sidebar-toggle"
               type="button"
-              onClick={() => void auth.signOut()}
+              aria-label={t('shell:toggleSidebar')}
+              aria-controls="clinic-navigation"
+              aria-expanded={isCompact ? menuOpen : !sidebarCollapsed}
+              onClick={() => {
+                if (isCompact) {
+                  setMenuOpen((value) => !value)
+                } else {
+                  setSidebarCollapsed((value) => !value)
+                }
+              }}
             >
-              {t('shell:signOut')}
+              <Menu aria-hidden="true" size={18} />
             </button>
+          </div>
+          {auth.hasPermission('Patient_View') && (
+            <form
+              className="topbar-search"
+              role="search"
+              onSubmit={(event) => {
+                event.preventDefault()
+                navigate(`/patients?search=${encodeURIComponent(quickSearch.trim())}`)
+              }}
+            >
+              <Search aria-hidden="true" size={16} />
+              <input
+                ref={searchRef}
+                aria-label={t('shell:searchPatients')}
+                placeholder={t('shell:searchPatients')}
+                value={quickSearch}
+                onChange={(event) => setQuickSearch(event.target.value)}
+              />
+              <kbd>Ctrl K</kbd>
+            </form>
+          )}
+          <div className="topbar-actions">
+            <details className="topbar-location">
+              <summary aria-label={t('shell:currentClinic')} title={clinicName}>
+                <Building2 aria-hidden="true" size={16} />
+                <span className="topbar-location-name">{clinicName}</span>
+                <ChevronDown className="topbar-chevron" aria-hidden="true" size={20} />
+              </summary>
+              <div className="topbar-dropdown topbar-location-menu">
+                <strong>{t('shell:currentClinic')}</strong>
+                <span>{clinicName}</span>
+              </div>
+            </details>
+            <details className="topbar-notifications">
+              <summary aria-label={t('shell:notifications')}>
+                <Bell aria-hidden="true" size={18} />
+              </summary>
+              <div className="topbar-dropdown topbar-notifications-menu">
+                <strong>{t('shell:notifications')}</strong>
+                <p>{t('shell:noNotifications')}</p>
+              </div>
+            </details>
+            <details ref={accountMenuRef} className="topbar-account">
+              <summary aria-label={t('shell:accountMenu')}>
+                <span className="topbar-avatar" aria-hidden="true">
+                  {profilePhotoUrl ? <img src={profilePhotoUrl} alt="" /> : initials}
+                </span>
+                <span className="topbar-account-copy">
+                  <strong>{user.fullName}</strong>
+                  <small>
+                    {user.isSuperUser
+                      ? t('shell:superUser')
+                      : user.roles.join(', ') || t('shell:staff')}
+                  </small>
+                </span>
+                <ChevronDown className="topbar-chevron" aria-hidden="true" size={20} />
+              </summary>
+              <div className="topbar-dropdown topbar-account-menu">
+                <div className="topbar-account-heading">
+                  <span className="topbar-avatar" aria-hidden="true">
+                    {profilePhotoUrl ? <img src={profilePhotoUrl} alt="" /> : initials}
+                  </span>
+                  <span>
+                    <strong>{user.fullName}</strong>
+                    <small>{user.email || user.roles.join(', ')}</small>
+                  </span>
+                </div>
+                <Link
+                  className="topbar-profile-link"
+                  to="/profile"
+                  onClick={() => accountMenuRef.current?.removeAttribute('open')}
+                >
+                  <UserRound size={16} aria-hidden="true" />
+                  {t('shell:profileSettings')}
+                </Link>
+                <div className="topbar-language-row">
+                  <span>{t('shell:language')}</span>
+                  <LocaleController mode="segmented" />
+                </div>
+                <button
+                  type="button"
+                  className="topbar-theme-row"
+                  role="switch"
+                  aria-checked={theme === 'dark'}
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                >
+                  <Moon size={16} aria-hidden="true" />
+                  <span>{t('shell:darkMode')}</span>
+                  <span className="topbar-theme-track" aria-hidden="true" />
+                </button>
+                <button type="button" onClick={() => void auth.signOut()}>
+                  {t('shell:signOut')}
+                </button>
+              </div>
+            </details>
           </div>
         </header>
         <div className="clinic-content">{children}</div>

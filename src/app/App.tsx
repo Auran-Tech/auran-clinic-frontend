@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { LocaleController } from './LocaleController'
 import { LoginPage } from '../features/auth/LoginPage'
 import { ProtectedRoute } from '../features/auth/ProtectedRoute'
 import { PatientDetailsPage } from '../features/patients/PatientDetailsPage'
@@ -12,86 +13,108 @@ import { ReportingPage } from '../features/reporting/ReportingPage'
 import { AuditPage } from '../features/audit/AuditPage'
 import { DashboardPage } from '../features/dashboard/DashboardPage'
 import { PlatformPage } from '../features/platform/PlatformPage'
+import { ProfilePage } from '../features/profile/ProfilePage'
 
 export function App() {
+  const location = useLocation()
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/platform" element={<PlatformPage />} />
-      <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-      <Route
-        path="/patients"
-        element={
-          <ProtectedRoute>
-            <PatientsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/patients/:patientId"
-        element={
-          <ProtectedRoute>
-            <PatientDetailsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/queue"
-        element={
-          <ProtectedRoute>
-            <QueuePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/pending-documentation"
-        element={
-          <ProtectedRoute>
-            <PendingDocumentationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/follow-ups"
-        element={
-          <ProtectedRoute>
-            <FollowUpsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/employees"
-        element={
-          <ProtectedRoute>
-            <EmployeesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reports"
-        element={
-          <ProtectedRoute>
-            <ReportingPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/audit"
-        element={
-          <ProtectedRoute>
-            <AuditPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/patients" replace />} />
-    </Routes>
+    <>
+      {(location.pathname === '/login' || location.pathname === '/platform') && (
+        <LocaleController />
+      )}
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/platform" element={<PlatformPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patients"
+          element={
+            <ProtectedRoute>
+              <PatientsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patients/:patientId"
+          element={
+            <ProtectedRoute>
+              <PatientDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/queue"
+          element={
+            <ProtectedRoute>
+              <QueuePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pending-documentation"
+          element={
+            <ProtectedRoute>
+              <PendingDocumentationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/follow-ups"
+          element={
+            <ProtectedRoute>
+              <FollowUpsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/employees"
+          element={
+            <ProtectedRoute>
+              <EmployeesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <ReportingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audit"
+          element={
+            <ProtectedRoute>
+              <AuditPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/patients" replace />} />
+      </Routes>
+    </>
   )
 }

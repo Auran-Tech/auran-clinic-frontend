@@ -1,8 +1,8 @@
 import './patients.css'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { useForm } from 'react-hook-form'
@@ -15,11 +15,18 @@ export function PatientsPage() {
   const { t } = useTranslation('patients')
   const queryClient = useQueryClient()
   const auth = useAuth()
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const routeSearch = searchParams.get('search') ?? ''
+  const [search, setSearch] = useState(routeSearch)
   const [page, setPage] = useState(1)
   const [duplicates, setDuplicates] = useState<PatientDuplicateCandidate[]>([])
   const [reviewedInput, setReviewedInput] = useState<CreatePatientInput | null>(null)
   const [showForm, setShowForm] = useState(false)
+
+  useEffect(() => {
+    setSearch(routeSearch)
+    setPage(1)
+  }, [routeSearch])
 
   const patientsQuery = useQuery({
     queryKey: ['patients', search, page],

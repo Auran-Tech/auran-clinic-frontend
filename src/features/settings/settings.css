@@ -43,3 +43,8 @@ html[dir='rtl'] .settings-save-bar {
   color: var(--auran-text);
   border-color: var(--auran-border);
 }
+
+html[data-theme='light'] .settings-save-bar {
+  background: #fffffff2;
+  box-shadow: 0 18px 40px #0f172a1c;
+}

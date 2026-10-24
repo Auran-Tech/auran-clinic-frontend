@@ -192,6 +192,35 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+html[data-theme='light'] .auran-startup,
+html[data-theme='light'] .connection-cover {
+  color: var(--auran-text);
+  background: radial-gradient(circle at 50% 30%, #fff 0, #f2f5fa 54%, #e4e7ee 100%);
+}
+
+html[data-theme='light'] .auran-startup > p:not(.auran-startup-brand),
+html[data-theme='light'] .connection-card p#connection-body,
+html[data-theme='light'] .connection-footnote {
+  color: var(--auran-muted);
+}
+
+html[data-theme='light'] .connection-card {
+  background: #fff;
+  border-color: var(--auran-border);
+  box-shadow: 0 26px 75px #0f172a22;
+}
+
+html[data-theme='light'] .connection-retry-layer {
+  background: #0f172a55;
+}
+
+html[data-theme='light'] .connection-retry-description,
+html[data-theme='light'] .connection-language {
+  color: #1e3a5f;
+  background: #fff;
+  border-color: var(--auran-border);
+}
 @keyframes connection-spin {
   to {
     transform: rotate(360deg);

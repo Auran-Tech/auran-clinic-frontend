@@ -1,16 +1,32 @@
 import './LocaleController.css'
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-export function LocaleController() {
+export function LocaleController({ mode = 'switch' }: { mode?: 'switch' | 'segmented' }) {
   const { i18n, t } = useTranslation('language')
   const isArabic = i18n.resolvedLanguage === 'ar'
 
-  useEffect(() => {
-    document.documentElement.lang = isArabic ? 'ar' : 'en'
-    document.documentElement.dir = isArabic ? 'rtl' : 'ltr'
-    localStorage.setItem('auran.language', isArabic ? 'ar' : 'en')
-  }, [isArabic])
+  if (mode === 'segmented') {
+    return (
+      <div className="locale-segmented" role="group" aria-label={t('language')}>
+        <button
+          type="button"
+          className={isArabic ? 'active' : ''}
+          aria-pressed={isArabic}
+          onClick={() => void i18n.changeLanguage('ar')}
+        >
+          AR
+        </button>
+        <button
+          type="button"
+          className={isArabic ? '' : 'active'}
+          aria-pressed={!isArabic}
+          onClick={() => void i18n.changeLanguage('en')}
+        >
+          EN
+        </button>
+      </div>
+    )
+  }
 
   return (
     <button

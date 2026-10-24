@@ -1,9 +1,23 @@
 {
   "navigation": "Clinic navigation",
-  "workspace": "Clinic workspace",
+  "workspace": "Workspace",
   "administration": "Administration",
   "staff": "Staff",
+  "superUser": "Super User",
   "signOut": "Sign out",
   "openMenu": "Open navigation",
-  "closeMenu": "Close navigation"
+  "closeMenu": "Close navigation",
+  "clinicManagement": "Clinic Management",
+  "clinical": "Clinical",
+  "management": "Management",
+  "system": "System",
+  "toggleSidebar": "Toggle sidebar",
+  "searchPatients": "Search patients...",
+  "accountMenu": "Account menu",
+  "currentClinic": "Current clinic",
+  "notifications": "Notifications",
+  "noNotifications": "No notifications",
+  "language": "Language",
+  "darkMode": "Dark mode",
+  "profileSettings": "Profile settings"
 }
