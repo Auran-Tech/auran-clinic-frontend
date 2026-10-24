@@ -12,7 +12,9 @@ For the complete local Docker test stack, see the sibling backend repository's `
 
 ### Synthetic local demo data
 
-For a disposable local clinic, set `AURAN_DEMO_EMAIL` and `AURAN_DEMO_PASSWORD` to its administrator credentials, then run `node scripts/seed-local-demo.mjs --confirm-local`. The script accepts only a local HTTP API (`AURAN_DEMO_API_BASE` defaults to `http://127.0.0.1:5085/api`). It uses the real API to add eight clearly named fictional patients, two demo doctors, a simple waiting/exit workflow when the clinic has no workflow, and a few visits and a follow-up. It preserves an existing workflow and can be rerun without duplicating its records. Do not use real patient details or run this against a shared clinic.
+For a disposable local clinic, set `AURAN_DEMO_EMAIL` and `AURAN_DEMO_PASSWORD` to its administrator credentials, then run `node scripts/seed-local-demo.mjs --confirm-local`. The script accepts only a local HTTP API (`AURAN_DEMO_API_BASE` defaults to `http://127.0.0.1:5085/api`). It uses the real API to add 20 clearly named fictional patients, three demo doctors, current visits, follow-ups, and draft/pending documentation. It extends only a starter workflow made of demo status codes and preserves other workflows. Re-running it does not duplicate records. Do not use real patient details or run this against a shared clinic.
+
+For the dashboard's seven-day chart, run `pwsh -File ../auran-clinic-backend/scripts/seed-dashboard-history.ps1 -ConfirmLocal` with the same environment variables. This adds 36 deterministic, completed historical visit fixtures directly to the local Docker SQL database. It requires the clinic timezone to be `Africa/Cairo`, checks the administrator identity, and refreshes its own rows on later runs. These rows are for dashboard/reporting display; use the API-created visits to test clinical workflows.
 
 - React 19
 - TypeScript

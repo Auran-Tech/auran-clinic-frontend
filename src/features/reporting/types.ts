@@ -4,9 +4,11 @@ export interface DashboardSummary {
   visitsToday: number
   activeQueue: number
   completedVisitsToday: number
+  completedVisitsStartedToday: number
   pendingDocumentation: number
   followUpsToday: number
   overdueFollowUps: number
+  weeklyVisits: { localDate: string; count: number }[]
 }
 
 export interface VisitReportRow {
