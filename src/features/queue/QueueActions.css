@@ -1,0 +1,64 @@
+.queue-actions {
+  min-width: 0;
+}
+
+.queue-actions.is-open {
+  flex: 1 0 100%;
+}
+
+.queue-action-toggle,
+.queue-profile-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 27px;
+  padding: 5px 8px;
+  border: 1px solid var(--auran-border);
+  border-radius: 8px;
+  color: var(--auran-text);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.69rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.queue-action-toggle:hover,
+.queue-profile-link:hover {
+  border-color: var(--auran-blue);
+  color: var(--auran-blue);
+}
+
+.queue-action-menu {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 7px;
+  padding: 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-text);
+  background: var(--auran-surface-soft);
+}
+
+.queue-action-menu .p-dropdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.queue-action-menu .button {
+  min-height: 30px;
+  font-size: 0.73rem;
+}
+
+.queue-action-menu small,
+.queue-view-only {
+  color: var(--auran-muted);
+  font-size: 0.7rem;
+}
+
+.queue-action-menu .queue-final-warning {
+  color: #fbbf24;
+}

@@ -90,30 +90,29 @@
   border-radius: 17px;
 }
 
-.patients-search {
+.patients-filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 37px;
+}
+
+.patients-filter-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: min(340px, 100%);
-  padding: 0 10px;
-  border: 1px solid var(--auran-border);
-  border-radius: 12px;
-  color: var(--auran-muted);
-  background: color-mix(in srgb, var(--auran-bg) 70%, var(--auran-surface));
+  margin-inline-start: auto;
 }
 
-.patients-search input {
-  width: 100%;
-  height: 36px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.78rem;
-}
-
-.patients-search input:focus {
-  outline: none;
+.patients-filter-button span {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--auran-blue);
+  font-size: 0.7rem;
 }
 
 .patients-count {
@@ -177,6 +176,23 @@
   color: var(--auran-muted);
   font-size: 0.77rem;
   font-weight: 700;
+}
+
+.patients-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.patients-sort-button:hover,
+.patients-sort-button:focus-visible {
+  color: var(--auran-blue);
 }
 
 .patients-table td {
@@ -258,12 +274,9 @@
   white-space: nowrap;
 }
 
-.patients-pagination select {
+.patients-pagination .patients-page-size.p-dropdown {
   width: 92px;
-  height: 35px;
-  padding: 5px 9px;
-  border-radius: 9px;
-  font-size: 0.76rem;
+  min-height: 35px;
 }
 
 .patients-page-buttons {
@@ -296,10 +309,6 @@ html[dir='ltr'] .patients-page-buttons svg {
   .patients-toolbar {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .patients-search {
-    width: 100%;
   }
 
   .patients-register-button {

@@ -1,0 +1,105 @@
+.auran-prime-field.p-inputtext,
+.auran-prime-field.p-inputtextarea,
+.auran-prime-field.p-dropdown {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-text);
+  background: var(--auran-surface-soft);
+  font-family: inherit;
+  font-size: 0.81rem;
+}
+
+.auran-prime-field.p-inputtext,
+.auran-prime-field.p-inputtextarea {
+  padding: 9px 11px;
+}
+
+.auran-prime-field.p-dropdown .p-dropdown-label {
+  color: var(--auran-text);
+  font-size: 0.81rem;
+}
+
+.auran-prime-field.p-dropdown .p-dropdown-label.p-placeholder {
+  color: var(--auran-muted);
+}
+
+.auran-prime-field.p-dropdown .p-dropdown-trigger {
+  width: 34px;
+  color: var(--auran-muted);
+}
+
+.auran-prime-field.p-dropdown.p-focus,
+.auran-prime-field.p-inputtext:focus,
+.auran-prime-field.p-inputtextarea:focus {
+  border-color: var(--auran-blue);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--auran-blue) 25%, transparent);
+}
+
+.auran-prime-panel.p-dropdown-panel {
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-text);
+  background: var(--auran-surface);
+}
+
+.auran-prime-panel .p-dropdown-item {
+  color: var(--auran-text);
+  font-size: 0.8rem;
+}
+
+.auran-prime-panel .p-dropdown-item:hover,
+.auran-prime-panel .p-dropdown-item.p-highlight {
+  color: var(--auran-text);
+  background: var(--auran-surface-soft);
+}
+
+.auran-prime-panel .p-dropdown-filter {
+  width: 100%;
+  color: var(--auran-text);
+  background: var(--auran-surface-soft);
+}
+
+.auran-filter-dialog.p-dialog {
+  width: min(500px, calc(100vw - 28px));
+  border: 1px solid var(--auran-border);
+  border-radius: 18px;
+  color: var(--auran-text);
+  background: var(--auran-surface);
+}
+
+.auran-filter-dialog .p-dialog-header,
+.auran-filter-dialog .p-dialog-content,
+.auran-filter-dialog .p-dialog-footer {
+  color: var(--auran-text);
+  background: var(--auran-surface);
+}
+
+.auran-filter-dialog .p-dialog-header {
+  border-radius: 18px 18px 0 0;
+}
+
+.auran-filter-dialog .p-dialog-footer {
+  border-radius: 0 0 18px 18px;
+}
+
+.auran-filter-fields {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.auran-filter-fields label {
+  display: grid;
+  gap: 7px;
+  color: var(--auran-text);
+  font-size: 0.81rem;
+  font-weight: 700;
+}
+
+.auran-filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

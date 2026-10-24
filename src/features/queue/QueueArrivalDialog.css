@@ -1,0 +1,115 @@
+.queue-arrival-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #020817d6;
+  backdrop-filter: blur(5px);
+}
+
+.queue-arrival-dialog {
+  width: min(600px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  border: 1px solid var(--auran-border);
+  border-radius: 20px;
+  color: var(--auran-text);
+  background: var(--auran-surface);
+  box-shadow: 0 25px 80px #0008;
+}
+
+.queue-arrival-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border-bottom: 1px solid var(--auran-border);
+}
+
+.queue-arrival-header h2 {
+  margin: 0 0 5px;
+  font-size: 1.1rem;
+}
+
+.queue-arrival-header p {
+  margin: 0;
+  color: var(--auran-muted);
+  font-size: 0.75rem;
+}
+
+.queue-arrival-header button {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.queue-arrival-fields {
+  display: grid;
+  gap: 16px;
+  padding: 20px 18px;
+}
+
+.queue-arrival-fields label {
+  display: grid;
+  gap: 7px;
+  font-size: 0.81rem;
+  font-weight: 700;
+}
+
+.queue-arrival-fields .p-inputtext,
+.queue-arrival-fields .p-dropdown {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+.queue-arrival-fields small {
+  color: var(--auran-muted);
+  font-weight: 400;
+}
+
+.queue-arrival-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-muted);
+  background: var(--auran-surface-soft);
+}
+
+.queue-arrival-search .p-inputtext {
+  padding-inline: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.queue-arrival-search .p-inputtext:focus {
+  outline: none;
+}
+
+.queue-arrival-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--auran-border);
+}
+
+.queue-arrival-footer button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

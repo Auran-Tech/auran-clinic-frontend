@@ -2,19 +2,22 @@ import './patients.css'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { useAuth } from '../auth/AuthContext'
 import { getPatient, updatePatient } from './api'
-import { getDoctors } from '../users/api'
-import { getActiveVisit, startVisit } from '../visits/api'
+import { getActiveVisit, getVisitDoctors, startVisit } from '../visits/api'
 import { ClinicalWorkspace } from '../clinicalSessions/ClinicalWorkspace'
 import { PatientAttachmentsPanel } from '../attachments/PatientAttachmentsPanel'
 import { DynamicPatientProfilePanel } from '../patientProfile/DynamicPatientProfilePanel'
 import { PatientMedicalHistoryPanel } from '../patientMedicalHistory/PatientMedicalHistoryPanel'
 import { PatientVisitHistoryPanel } from '../visits/PatientVisitHistoryPanel'
 import { patientSchema, type PatientFormValues } from './schema'
+import { PATIENT_GENDER } from './listOptions'
 
 export function PatientDetailsPage() {
   const { t, i18n } = useTranslation('patients')
@@ -41,8 +44,8 @@ export function PatientDetailsPage() {
   })
 
   const doctorsQuery = useQuery({
-    queryKey: ['doctors'],
-    queryFn: getDoctors,
+    queryKey: ['visit-doctors'],
+    queryFn: getVisitDoctors,
     enabled: auth.hasPermission('Visit_Start'),
   })
 
@@ -109,6 +112,11 @@ export function PatientDetailsPage() {
   const patient = patientQuery.data
   const canEdit = auth.hasPermission('Patient_Edit_Basic')
   const canStartVisit = auth.hasPermission('Visit_Start')
+  const genderOptions = [
+    { label: t('notSpecified'), value: '' },
+    { label: t('female'), value: PATIENT_GENDER.female },
+    { label: t('male'), value: PATIENT_GENDER.male },
+  ]
 
   return (
     <main className="page-shell">
@@ -167,17 +175,21 @@ export function PatientDetailsPage() {
           <div className="checkin-form">
             <label>
               <span>{t('doctor')}</span>
-              <select
+              <Dropdown
+                className="auran-prime-field"
+                panelClassName="auran-prime-panel"
                 value={selectedDoctorId}
-                onChange={(event) => setSelectedDoctorId(event.target.value)}
-              >
-                <option value="">{t('selectDoctor')}</option>
-                {(doctorsQuery.data ?? []).map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.fullName}
-                  </option>
-                ))}
-              </select>
+                options={(doctorsQuery.data ?? []).map((doctor) => ({
+                  label: doctor.fullName,
+                  value: doctor.id,
+                }))}
+                optionLabel="label"
+                optionValue="value"
+                placeholder={t('selectDoctor')}
+                filter
+                aria-label={t('doctor')}
+                onChange={(event) => setSelectedDoctorId(event.value as string)}
+              />
             </label>
 
             {doctorsQuery.isError && <p className="field-error">{t('doctorsError')}</p>}
@@ -231,7 +243,7 @@ export function PatientDetailsPage() {
           >
             <label>
               <span>{t('fullName')}</span>
-              <input {...form.register('fullName')} />
+              <InputText {...form.register('fullName')} className="auran-prime-field" />
               {form.formState.errors.fullName && (
                 <small className="field-error">
                   {form.formState.errors.fullName.message}
@@ -241,7 +253,11 @@ export function PatientDetailsPage() {
 
             <label>
               <span>{t('phone')}</span>
-              <input {...form.register('phone')} inputMode="tel" />
+              <InputText
+                {...form.register('phone')}
+                className="auran-prime-field"
+                inputMode="tel"
+              />
               {form.formState.errors.phone && (
                 <small className="field-error">
                   {form.formState.errors.phone.message}
@@ -249,23 +265,43 @@ export function PatientDetailsPage() {
               )}
             </label>
 
-            <label>
+            <label htmlFor="patient-profile-gender">
               <span>{t('gender')}</span>
-              <select {...form.register('gender')}>
-                <option value="">{t('notSpecified')}</option>
-                <option value="Female">{t('female')}</option>
-                <option value="Male">{t('male')}</option>
-              </select>
+              <Controller
+                name="gender"
+                control={form.control}
+                render={({ field }) => (
+                  <Dropdown
+                    inputId="patient-profile-gender"
+                    className="auran-prime-field"
+                    panelClassName="auran-prime-panel"
+                    value={field.value}
+                    options={genderOptions}
+                    optionLabel="label"
+                    optionValue="value"
+                    filter
+                    onChange={(event) => field.onChange(event.value)}
+                  />
+                )}
+              />
             </label>
 
             <label>
               <span>{t('dateOfBirth')}</span>
-              <input type="date" {...form.register('dateOfBirth')} />
+              <InputText
+                type="date"
+                className="auran-prime-field"
+                {...form.register('dateOfBirth')}
+              />
             </label>
 
             <label className="full-width">
               <span>{t('notes')}</span>
-              <textarea rows={4} {...form.register('notes')} />
+              <InputTextarea
+                rows={4}
+                className="auran-prime-field"
+                {...form.register('notes')}
+              />
             </label>
 
             {updateMutation.isError && (

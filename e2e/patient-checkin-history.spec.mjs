@@ -24,8 +24,8 @@ test('authorized receptionist checks in a patient and sees history', async ({ pa
     if (path.includes('/patient-profile/configuration')) data = { sections: [] }
     if (path.endsWith('/patient-profile')) data = { values: [] }
     if (path.endsWith('/patient-medical-history')) data = { conditions: [], allergies: [], medications: [] }
-    if (path.endsWith('/users')) data = [
-      { id: 'doctor-1', fullName: 'Demo Doctor', isActive: true, roles: ['DOCTOR'] },
+    if (path.endsWith('/visits/doctors')) data = [
+      { id: 'doctor-1', fullName: 'Demo Doctor' },
     ]
     if (path.endsWith('/visits/start')) {
       expect(route.request().postDataJSON()).toEqual({ patientId, doctorId: 'doctor-1' })
@@ -49,7 +49,8 @@ test('authorized receptionist checks in a patient and sees history', async ({ pa
 
   await page.goto('/patients/' + patientId)
   await expect(page.getByRole('heading', { name: 'Demo Patient' })).toBeVisible()
-  await page.getByLabel('Doctor').selectOption('doctor-1')
+  await page.locator('.checkin-form .p-dropdown').click()
+  await page.getByRole('option', { name: 'Demo Doctor' }).click()
   const checkInResponse = page.waitForResponse(response => response.url().endsWith('/visits/start') && response.status() === 200)
   await page.getByRole('button', { name: 'Check in patient' }).click()
   await checkInResponse

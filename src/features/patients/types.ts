@@ -27,8 +27,13 @@ export interface CreatePatientInput {
   notes?: string
 }
 
+import type { PATIENT_GENDER, PATIENT_SORT_FIELD } from './listOptions'
+
 export interface PatientQuery {
   search?: string
+  gender?: (typeof PATIENT_GENDER)[keyof typeof PATIENT_GENDER]
+  sortBy?: (typeof PATIENT_SORT_FIELD)[keyof typeof PATIENT_SORT_FIELD]
+  descending?: boolean
   page?: number
   pageSize?: number
 }

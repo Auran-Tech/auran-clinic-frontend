@@ -4,6 +4,16 @@ import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
 import type { PatientVisitHistory, StartVisitInput, Visit } from './types'
 
+export interface VisitDoctorOption {
+  id: string
+  fullName: string
+}
+
+export async function getVisitDoctors() {
+  const response = await api.get<BaseResponse<VisitDoctorOption[]>>('/visits/doctors')
+  return requireData(response.data, 'Unable to load available doctors.')
+}
+
 export async function getActiveVisit(patientId: string) {
   try {
     const response = await api.get<BaseResponse<Visit>>('/visits/active', {
@@ -23,11 +33,7 @@ export async function startVisit(input: StartVisitInput) {
   return requireData(response.data, 'Unable to start visit.')
 }
 
-export async function getPatientVisitHistory(
-  patientId: string,
-  page = 1,
-  pageSize = 10,
-) {
+export async function getPatientVisitHistory(patientId: string, page = 1, pageSize = 10) {
   const response = await api.get<BaseResponse<PatientVisitHistory>>('/visits/history', {
     params: { patientId, page, pageSize },
   })

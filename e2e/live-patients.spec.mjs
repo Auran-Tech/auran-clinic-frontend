@@ -20,10 +20,38 @@ test('Patients list, search, edit link, and registration dialog use the live cli
   await expect(page.getByText('Showing 6–10 of 20')).toBeVisible()
   await expect(page.locator('.patients-table tbody tr')).toHaveCount(5)
 
-  await page.getByRole('textbox', { name: 'Search patients', exact: true }).fill('01000001001')
+  await page.getByRole('button', { name: 'Filters' }).click()
+  const filters = page.getByRole('dialog', { name: 'Filters' })
+  await filters
+    .getByRole('textbox', { name: 'Search patients', exact: true })
+    .fill('01000001001')
+  await filters.getByRole('button', { name: 'Apply filters' }).click()
   await expect(page.locator('.patients-table tbody tr')).toHaveCount(1)
   await expect(page.getByText('Showing 1–1 of 1')).toBeVisible()
-  await page.getByRole('link', { name: 'Edit' }).click()
+
+  await page.locator('.patients-toolbar').getByRole('button', { name: 'Clear' }).click()
+  await page.getByRole('button', { name: 'Filters', exact: true }).click()
+  await filters.locator('.p-dropdown').first().click()
+  await page.getByRole('option', { name: 'Female' }).click()
+  await filters.getByRole('button', { name: 'Apply filters' }).click()
+  const sortedResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url())
+    return (
+      url.pathname.endsWith('/patients') &&
+      url.searchParams.get('gender') === 'Female' &&
+      url.searchParams.get('sortBy') === 'name' &&
+      url.searchParams.get('descending') === 'true' &&
+      response.status() === 200
+    )
+  })
+  await page.getByRole('button', { name: 'Name' }).click()
+  await page.getByRole('button', { name: 'Name' }).click()
+  await sortedResponse
+  await expect(page.locator('.patients-table tbody tr').first()).toContainText('Female')
+
+  await page.locator('.patients-toolbar').getByRole('button', { name: 'Clear' }).click()
+
+  await page.getByRole('link', { name: 'Edit' }).first().click()
   await expect(page).toHaveURL(/\/patients\/[^/]+\?edit=1$/)
   await expect(page.getByRole('button', { name: 'Cancel edit' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Save changes' })).toBeVisible()
