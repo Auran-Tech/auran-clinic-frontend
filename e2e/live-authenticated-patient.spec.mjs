@@ -44,7 +44,7 @@ test('real clinic authentication and patient registration persist in SQL Server'
 
   const patientName = `Browser Integration Patient ${id}`
   const phone = `012${String(Date.now()).slice(-8)}`
-  await page.getByRole('button', { name: 'Add patient' }).click()
+  await page.getByRole('button', { name: 'Register patient' }).click()
   await page.getByLabel('Full name').fill(patientName)
   await page.getByLabel('Phone').fill(phone)
 
@@ -52,7 +52,7 @@ test('real clinic authentication and patient registration persist in SQL Server'
     response.url() === `${backend}/patients` &&
     response.request().method() === 'POST',
   )
-  await page.getByRole('button', { name: 'Save patient' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Register patient' }).click()
   const created = await saveResponse
   expect(created.status(), await created.text()).toBe(201)
   const patient = (await created.json()).data

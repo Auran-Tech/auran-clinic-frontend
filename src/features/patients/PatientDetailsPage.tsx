@@ -1,9 +1,9 @@
 import './patients.css'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { getPatient, updatePatient } from './api'
@@ -19,9 +19,13 @@ import { patientSchema, type PatientFormValues } from './schema'
 export function PatientDetailsPage() {
   const { t, i18n } = useTranslation('patients')
   const { patientId } = useParams()
+  const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
   const auth = useAuth()
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(
+    () => searchParams.get('edit') === '1' && auth.hasPermission('Patient_Edit_Basic'),
+  )
+  const editFormRef = useRef<HTMLElement>(null)
   const [selectedDoctorId, setSelectedDoctorId] = useState('')
 
   const patientQuery = useQuery({
@@ -56,6 +60,12 @@ export function PatientDetailsPage() {
       notes: patientQuery.data.notes ?? '',
     })
   }, [form, patientQuery.data])
+
+  useEffect(() => {
+    if (editing && patientQuery.data) {
+      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [editing, patientQuery.data])
 
   const startVisitMutation = useMutation({
     mutationFn: startVisit,
@@ -206,7 +216,7 @@ export function PatientDetailsPage() {
       <PatientAttachmentsPanel patientId={patient.id} />
 
       {editing ? (
-        <section className="panel">
+        <section className="panel" ref={editFormRef}>
           <form
             className="patient-form"
             onSubmit={form.handleSubmit((values) =>
