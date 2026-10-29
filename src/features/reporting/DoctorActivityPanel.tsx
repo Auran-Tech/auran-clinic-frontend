@@ -1,34 +1,42 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import { exportDoctorActivityCsv, getDoctorActivity } from './doctorActivityApi'
 import type { DoctorActivityQuery } from './doctorActivityTypes'
 import { reportErrorMessage } from './reportErrors'
+import { ReportFilterDialog } from './ReportFilterDialog'
+import { useReportFilters } from './useReportFilters'
+
+const emptyFilters = { fromDate: '', toDate: '', doctorId: '' }
 
 export function DoctorActivityPanel() {
   const { t } = useTranslation('reporting')
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = canView && auth.hasPermission('Reports_Export')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [doctorId, setDoctorId] = useState('')
-  const validRange = !fromDate || !toDate || fromDate <= toDate
+  const filterState = useReportFilters(emptyFilters)
+  const { applied, draft } = filterState
+  const invalidDraftRange = Boolean(
+    draft.fromDate && draft.toDate && draft.fromDate > draft.toDate,
+  )
+  const filterCount = Object.values(applied).filter(Boolean).length
   const filters = useMemo<DoctorActivityQuery>(
     () => ({
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined,
-      doctorId: doctorId || undefined,
+      fromDate: applied.fromDate || undefined,
+      toDate: applied.toDate || undefined,
+      doctorId: applied.doctorId || undefined,
     }),
-    [fromDate, toDate, doctorId],
+    [applied],
   )
 
   const report = useQuery({
     queryKey: ['doctor-activity-report', filters],
     queryFn: () => getDoctorActivity(filters),
-    enabled: canView && validRange,
+    enabled: canView,
   })
   const employees = useQuery({
     queryKey: ['employees', 'doctor-activity-report'],
@@ -50,60 +58,61 @@ export function DoctorActivityPanel() {
           <button
             className="button secondary"
             type="button"
-            disabled={!validRange || csv.isPending || report.isError || !report.data}
+            disabled={csv.isPending || report.isError || !report.data}
             onClick={() => csv.mutate(filters)}
           >
             {csv.isPending ? t('preparingCsv') : t('exportDoctors')}
           </button>
         )}
       </div>
-      <div className="report-filters">
+      <ReportFilterDialog
+        count={filterCount}
+        open={filterState.open}
+        onOpen={filterState.openDialog}
+        onHide={() => filterState.setOpen(false)}
+        onApply={filterState.apply}
+        onClear={filterState.clear}
+        error={invalidDraftRange ? t('activityDateError') : undefined}
+      >
         <label>
           <span>{t('activityFrom')}</span>
-          <input
+          <InputText
             type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            className="auran-prime-field"
+            value={draft.fromDate}
+            onChange={(event) => filterState.update('fromDate', event.target.value)}
           />
         </label>
         <label>
           <span>{t('activityTo')}</span>
-          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <InputText
+            type="date"
+            className="auran-prime-field"
+            value={draft.toDate}
+            onChange={(event) => filterState.update('toDate', event.target.value)}
+          />
         </label>
         {auth.hasPermission('Users_View') && (
           <label>
             <span>{t('activityDoctor')}</span>
-            <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
-              <option value="">{t('allDoctors')}</option>
-              {(employees.data ?? [])
-                .filter((employee) => employee.roles.includes('DOCTOR'))
-                .map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.fullName}
-                  </option>
-                ))}
-            </select>
+            <Dropdown
+              className="auran-prime-field"
+              panelClassName="auran-prime-panel"
+              value={draft.doctorId}
+              options={[
+                { label: t('allDoctors'), value: '' },
+                ...(employees.data ?? [])
+                  .filter((employee) => employee.roles.includes('DOCTOR'))
+                  .map((doctor) => ({ label: doctor.fullName, value: doctor.id })),
+              ]}
+              optionLabel="label"
+              optionValue="value"
+              filter
+              onChange={(event) => filterState.update('doctorId', event.value)}
+            />
           </label>
         )}
-        <div className="actions report-filter-actions">
-          <button
-            type="button"
-            className="button secondary"
-            onClick={() => {
-              setFromDate('')
-              setToDate('')
-              setDoctorId('')
-            }}
-          >
-            {t('clearActivity')}
-          </button>
-        </div>
-      </div>
-      {!validRange && (
-        <p role="alert" className="field-error">
-          {t('activityDateError')}
-        </p>
-      )}
+      </ReportFilterDialog>
       {report.isLoading && (
         <p className="state" role="status">
           {t('loadingActivity')}
@@ -119,7 +128,7 @@ export function DoctorActivityPanel() {
           {reportErrorMessage(csv.error, t('activityExportError'))}
         </p>
       )}
-      {validRange && report.data && (
+      {report.data && (
         <>
           <p className="muted report-count">
             {t('doctorCount', { count: report.data.totalCount })}

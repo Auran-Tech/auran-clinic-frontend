@@ -1,37 +1,54 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import { exportQueueReportCsv, getQueueReport } from './queueReportApi'
 import type { QueueReportQuery } from './queueReportTypes'
 import { reportErrorMessage } from './reportErrors'
+import { ReportFilterDialog } from './ReportFilterDialog'
+import { useReportFilters } from './useReportFilters'
+
+const emptyFilters = {
+  fromDate: '',
+  toDate: '',
+  doctorId: '',
+  workflowStatusId: '',
+  selectedStatusName: '',
+}
 
 export function QueueReportPanel() {
   const { t } = useTranslation('reporting')
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = canView && auth.hasPermission('Reports_Export')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [doctorId, setDoctorId] = useState('')
-  const [workflowStatusId, setWorkflowStatusId] = useState('')
-  const [selectedStatusName, setSelectedStatusName] = useState('')
-  const validRange = !fromDate || !toDate || fromDate <= toDate
+  const filterState = useReportFilters(emptyFilters)
+  const { applied, draft } = filterState
+  const invalidDraftRange = Boolean(
+    draft.fromDate && draft.toDate && draft.fromDate > draft.toDate,
+  )
+  const filterCount = [
+    applied.fromDate,
+    applied.toDate,
+    applied.doctorId,
+    applied.workflowStatusId,
+  ].filter(Boolean).length
   const filters = useMemo<QueueReportQuery>(
     () => ({
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined,
-      doctorId: doctorId || undefined,
-      workflowStatusId: workflowStatusId || undefined,
+      fromDate: applied.fromDate || undefined,
+      toDate: applied.toDate || undefined,
+      doctorId: applied.doctorId || undefined,
+      workflowStatusId: applied.workflowStatusId || undefined,
     }),
-    [fromDate, toDate, doctorId, workflowStatusId],
+    [applied],
   )
   const preview = useQuery({
     queryKey: ['queue-report', filters],
     queryFn: () => getQueueReport(filters),
-    enabled: canView && validRange,
+    enabled: canView,
   })
   const employees = useQuery({
     queryKey: ['employees', 'queue-report'],
@@ -60,85 +77,93 @@ export function QueueReportPanel() {
           <button
             className="button secondary"
             type="button"
-            disabled={
-              !validRange || preview.isError || !preview.data || download.isPending
-            }
+            disabled={preview.isError || !preview.data || download.isPending}
             onClick={() => download.mutate(filters)}
           >
             {download.isPending ? t('preparingCsv') : t('exportQueue')}
           </button>
         )}
       </div>
-      <div className="report-filters">
+      <ReportFilterDialog
+        count={filterCount}
+        open={filterState.open}
+        onOpen={filterState.openDialog}
+        onHide={() => filterState.setOpen(false)}
+        onApply={filterState.apply}
+        onClear={filterState.clear}
+        error={invalidDraftRange ? t('queueDateError') : undefined}
+      >
         <label>
           <span>{t('queueFrom')}</span>
-          <input
+          <InputText
             type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            className="auran-prime-field"
+            value={draft.fromDate}
+            onChange={(event) => filterState.update('fromDate', event.target.value)}
           />
         </label>
         <label>
           <span>{t('queueTo')}</span>
-          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <InputText
+            type="date"
+            className="auran-prime-field"
+            value={draft.toDate}
+            onChange={(event) => filterState.update('toDate', event.target.value)}
+          />
         </label>
         {auth.hasPermission('Users_View') && (
           <label>
             <span>{t('queueDoctor')}</span>
-            <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)}>
-              <option value="">{t('allDoctors')}</option>
-              {(employees.data ?? [])
-                .filter((employee) => employee.roles.includes('DOCTOR'))
-                .map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.fullName}
-                  </option>
-                ))}
-            </select>
+            <Dropdown
+              className="auran-prime-field"
+              panelClassName="auran-prime-panel"
+              value={draft.doctorId}
+              options={[
+                { label: t('allDoctors'), value: '' },
+                ...(employees.data ?? [])
+                  .filter((employee) => employee.roles.includes('DOCTOR'))
+                  .map((doctor) => ({ label: doctor.fullName, value: doctor.id })),
+              ]}
+              optionLabel="label"
+              optionValue="value"
+              filter
+              onChange={(event) => filterState.update('doctorId', event.value)}
+            />
           </label>
         )}
         <label>
           <span>{t('workflowStatus')}</span>
-          <select
-            value={workflowStatusId}
-            onChange={(e) => {
-              setWorkflowStatusId(e.target.value)
-              setSelectedStatusName(e.target.selectedOptions[0]?.textContent ?? '')
+          <Dropdown
+            className="auran-prime-field"
+            panelClassName="auran-prime-panel"
+            value={draft.workflowStatusId}
+            options={[
+              { label: t('allStatuses'), value: '' },
+              ...(draft.workflowStatusId &&
+              !statuses.some((status) => status.id === draft.workflowStatusId)
+                ? [
+                    {
+                      label: draft.selectedStatusName,
+                      value: draft.workflowStatusId,
+                    },
+                  ]
+                : []),
+              ...statuses.map((status) => ({ label: status.name, value: status.id })),
+            ]}
+            optionLabel="label"
+            optionValue="value"
+            filter
+            onChange={(event) => {
+              const id = event.value as string
+              filterState.update('workflowStatusId', id)
+              filterState.update(
+                'selectedStatusName',
+                statuses.find((status) => status.id === id)?.name ?? '',
+              )
             }}
-          >
-            <option value="">{t('allStatuses')}</option>
-            {workflowStatusId &&
-              !statuses.some((status) => status.id === workflowStatusId) && (
-                <option value={workflowStatusId}>{selectedStatusName}</option>
-              )}
-            {statuses.map((status) => (
-              <option key={status.id} value={status.id}>
-                {status.name}
-              </option>
-            ))}
-          </select>
+          />
         </label>
-        <div className="actions report-filter-actions">
-          <button
-            className="button secondary"
-            type="button"
-            onClick={() => {
-              setFromDate('')
-              setToDate('')
-              setDoctorId('')
-              setWorkflowStatusId('')
-              setSelectedStatusName('')
-            }}
-          >
-            {t('clearQueue')}
-          </button>
-        </div>
-      </div>
-      {!validRange && (
-        <p role="alert" className="field-error">
-          {t('queueDateError')}
-        </p>
-      )}
+      </ReportFilterDialog>
       {preview.isLoading && (
         <p role="status" className="state">
           {t('loadingQueue')}
@@ -154,7 +179,7 @@ export function QueueReportPanel() {
           {reportErrorMessage(download.error, t('queueExportError'))}
         </p>
       )}
-      {validRange && preview.data && (
+      {preview.data && (
         <>
           <p className="muted report-count">
             {t('queueCount', { count: preview.data.totalCount })}

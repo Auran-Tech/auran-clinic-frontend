@@ -1,34 +1,42 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
 import { useAuth } from '../auth/AuthContext'
 import { exportPatientReportCsv, getPatientReport } from './patientReportApi'
 import { reportErrorMessage } from './reportErrors'
 import type { PatientReportQuery } from './patientReportTypes'
+import { ReportFilterDialog } from './ReportFilterDialog'
+import { useReportFilters } from './useReportFilters'
+
+const emptyFilters = { fromDate: '', toDate: '', gender: '' }
 
 export function PatientReportPanel() {
   const { t, i18n } = useTranslation('reporting')
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = canView && auth.hasPermission('Reports_Export')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [gender, setGender] = useState('')
+  const filterState = useReportFilters(emptyFilters)
+  const { applied, draft } = filterState
   const filters = useMemo<PatientReportQuery>(
     () => ({
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined,
-      gender: gender.trim() || undefined,
+      fromDate: applied.fromDate || undefined,
+      toDate: applied.toDate || undefined,
+      gender: applied.gender || undefined,
     }),
-    [fromDate, toDate, gender],
+    [applied],
   )
-  const validRange = !fromDate || !toDate || fromDate <= toDate
+  const invalidDraftRange = Boolean(
+    draft.fromDate && draft.toDate && draft.fromDate > draft.toDate,
+  )
+  const filterCount = Object.values(applied).filter(Boolean).length
 
   const preview = useQuery({
     queryKey: ['patients-report', filters],
     queryFn: () => getPatientReport(filters),
-    enabled: canView && validRange,
+    enabled: canView,
   })
   const download = useMutation({ mutationFn: exportPatientReportCsv })
 
@@ -45,56 +53,59 @@ export function PatientReportPanel() {
           <button
             className="button secondary"
             type="button"
-            disabled={
-              !validRange || download.isPending || preview.isError || !preview.data
-            }
+            disabled={download.isPending || preview.isError || !preview.data}
             onClick={() => download.mutate(filters)}
           >
             {download.isPending ? t('preparingCsv') : t('exportPatients')}
           </button>
         )}
       </div>
-      <div className="report-filters">
+      <ReportFilterDialog
+        count={filterCount}
+        open={filterState.open}
+        onOpen={filterState.openDialog}
+        onHide={() => filterState.setOpen(false)}
+        onApply={filterState.apply}
+        onClear={filterState.clear}
+        error={invalidDraftRange ? t('patientDateError') : undefined}
+      >
         <label>
           <span>{t('registeredFrom')}</span>
-          <input
+          <InputText
             type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
+            className="auran-prime-field"
+            value={draft.fromDate}
+            onChange={(event) => filterState.update('fromDate', event.target.value)}
           />
         </label>
         <label>
           <span>{t('registeredTo')}</span>
-          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <InputText
+            type="date"
+            className="auran-prime-field"
+            value={draft.toDate}
+            onChange={(event) => filterState.update('toDate', event.target.value)}
+          />
         </label>
         <label>
           <span>{t('gender')}</span>
-          <input
-            maxLength={32}
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            placeholder={t('allGenders')}
+          <Dropdown
+            className="auran-prime-field"
+            panelClassName="auran-prime-panel"
+            value={draft.gender}
+            options={[
+              { label: t('allGenders'), value: '' },
+              { label: t('female'), value: 'Female' },
+              { label: t('male'), value: 'Male' },
+              { label: t('unspecified'), value: 'Unspecified' },
+            ]}
+            optionLabel="label"
+            optionValue="value"
+            filter
+            onChange={(event) => filterState.update('gender', event.value)}
           />
         </label>
-        <div className="actions report-filter-actions">
-          <button
-            className="button secondary"
-            type="button"
-            onClick={() => {
-              setFromDate('')
-              setToDate('')
-              setGender('')
-            }}
-          >
-            {t('clearFilters')}
-          </button>
-        </div>
-      </div>
-      {!validRange && (
-        <p role="alert" className="field-error">
-          {t('patientDateError')}
-        </p>
-      )}
+      </ReportFilterDialog>
       {preview.isLoading && (
         <p role="status" className="state">
           {t('loadingPatients')}
@@ -110,7 +121,7 @@ export function PatientReportPanel() {
           {reportErrorMessage(download.error, t('patientsExportError'))}
         </p>
       )}
-      {validRange && preview.data && (
+      {preview.data && (
         <>
           <p className="muted report-count">
             {t('patientCount', { count: preview.data.totalCount })}
