@@ -7,6 +7,7 @@
   --auran-text: #f1f5fb;
   --auran-muted: #a4b2cb;
   --auran-blue: #4c8dff;
+  --auran-page-panel: #0e1930;
   color: var(--auran-text);
   background: var(--auran-bg);
 }
@@ -20,6 +21,7 @@ html[data-theme='light'] {
   --auran-text: #0f172a;
   --auran-muted: #64748b;
   --auran-blue: #2563eb;
+  --auran-page-panel: #edf2f8;
 }
 
 html[data-theme='light'] body {
@@ -144,6 +146,16 @@ tbody tr:hover {
 .button.secondary:hover,
 .secondary:hover {
   background: #31486b;
+}
+.button:not(:disabled) {
+  transition:
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.button:not(:disabled):hover {
+  box-shadow: 0 5px 14px #0002;
+  transform: translateY(-1px);
 }
 .back-link {
   color: #9dbdf2;

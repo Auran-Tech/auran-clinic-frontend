@@ -1,8 +1,19 @@
 import './employees.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { ListFilter, Plus } from 'lucide-react'
+import { Dialog } from 'primereact/dialog'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
+import { Password } from 'primereact/password'
+import { Checkbox } from 'primereact/checkbox'
+import {
+  DataTable,
+  TablePagination,
+  type DataTableColumn,
+} from '../../components/ui/DataTable'
 import { useAuth } from '../auth/AuthContext'
 import {
   createEmployee,
@@ -16,6 +27,8 @@ import {
 
 export function EmployeesPage() {
   const { t, i18n } = useTranslation('employees')
+  const location = useLocation()
+  const navigate = useNavigate()
   const auth = useAuth()
   const queryClient = useQueryClient()
 
@@ -44,6 +57,18 @@ export function EmployeesPage() {
   })
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const rolesOpen = location.pathname === '/roles' || !canViewUsers
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all')
+  const [draftSearch, setDraftSearch] = useState('')
+  const [draftStatus, setDraftStatus] = useState<'all' | 'active' | 'inactive'>('all')
+  const [sort, setSort] = useState<'nameAsc' | 'nameDesc' | 'emailAsc' | 'emailDesc'>(
+    'nameAsc',
+  )
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const selectedEmployee = useMemo(
     () => employeesQuery.data?.find((employee) => employee.id === selectedId) ?? null,
     [employeesQuery.data, selectedId],
@@ -78,6 +103,7 @@ export function EmployeesPage() {
       setCreatePassword('')
       setCreateSuperUser(false)
       setCreateRoles([])
+      setCreateOpen(false)
       await queryClient.invalidateQueries({ queryKey: ['employees'] })
     },
   })
@@ -118,6 +144,52 @@ export function EmployeesPage() {
     return map
   }, [permissionsQuery.data, i18n.language])
 
+  const filteredEmployees = useMemo(() => {
+    const term = search.trim().toLocaleLowerCase()
+    const list = (employeesQuery.data ?? []).filter((employee) => {
+      const matchesSearch =
+        !term ||
+        [employee.fullName, employee.email, employee.roles.join(' ')]
+          .join(' ')
+          .toLocaleLowerCase()
+          .includes(term)
+      const matchesStatus =
+        status === 'all' || employee.isActive === (status === 'active')
+      return matchesSearch && matchesStatus
+    })
+    const field = sort.startsWith('name') ? 'fullName' : 'email'
+    const direction = sort.endsWith('Desc') ? -1 : 1
+    return list.sort(
+      (a, b) => direction * (a[field] ?? '').localeCompare(b[field] ?? '', i18n.language),
+    )
+  }, [employeesQuery.data, i18n.language, search, sort, status])
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const visibleEmployees = filteredEmployees.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  )
+  const filterCount = Number(Boolean(search.trim())) + Number(status !== 'all')
+  const columns: DataTableColumn[] = [
+    {
+      key: 'name',
+      label: t('employee'),
+      sortDirection:
+        sort === 'nameAsc' ? 'ascending' : sort === 'nameDesc' ? 'descending' : 'none',
+      onSort: () => setSort(sort === 'nameAsc' ? 'nameDesc' : 'nameAsc'),
+    },
+    {
+      key: 'email',
+      label: t('email'),
+      sortDirection:
+        sort === 'emailAsc' ? 'ascending' : sort === 'emailDesc' ? 'descending' : 'none',
+      onSort: () => setSort(sort === 'emailAsc' ? 'emailDesc' : 'emailAsc'),
+    },
+    { key: 'roles', label: t('roles') },
+    { key: 'status', label: t('status') },
+    { key: 'actions', label: t('actions') },
+  ]
+
   if (!canViewUsers && !canViewRbac) {
     return (
       <main className="page-shell">
@@ -137,324 +209,482 @@ export function EmployeesPage() {
   }
 
   return (
-    <main className="page-shell">
+    <main className="page-shell employees-page">
       <section className="page-header">
         <div>
           <p className="eyebrow">{t('eyebrow')}</p>
-          <h1>{t('title')}</h1>
-          <p className="muted">{t('subtitle')}</p>
+          <h1>{rolesOpen ? t('matrixTitle') : t('employeesTitle')}</h1>
+          <p className="muted">{rolesOpen ? t('matrixSubtitle') : t('subtitle')}</p>
         </div>
-        <div className="actions">
-          {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">
-              {t('audit')}
-            </Link>
-          )}
-          {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">
-              {t('settings')}
-            </Link>
-          )}
-          <Link className="button secondary nav-button" to="/follow-ups">
-            {t('followUps')}
-          </Link>
-          <Link className="button secondary nav-button" to="/queue">
-            {t('liveQueue')}
-          </Link>
-          <Link className="button secondary nav-button" to="/patients">
-            {t('patients')}
-          </Link>
-        </div>
+        {!rolesOpen && canManageUsers && canManageRbac && (
+          <button
+            className="button primary"
+            type="button"
+            onClick={() => setCreateOpen(true)}
+          >
+            <Plus size={16} aria-hidden="true" />
+            {t('addUser')}
+          </button>
+        )}
       </section>
 
+      <div className="employees-view-tabs" role="tablist" aria-label={t('title')}>
+        {canViewUsers && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!rolesOpen}
+            className={rolesOpen ? 'button secondary' : 'button primary'}
+            onClick={() => navigate('/employees')}
+          >
+            {t('listTitle')}
+          </button>
+        )}
+        {canViewRbac && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={rolesOpen}
+            className={rolesOpen ? 'button primary' : 'button secondary'}
+            onClick={() => navigate('/roles')}
+          >
+            {t('matrixTitle')}
+          </button>
+        )}
+      </div>
+
       {canManageUsers && canManageRbac && (
-        <section className="panel">
-          <div className="panel-heading">
-            <div>
-              <h2>{t('createTitle')}</h2>
-              <p className="muted">{t('createSubtitle')}</p>
-            </div>
-          </div>
-
-          <div className="employee-form">
-            <label>
-              <span>{t('fullName')}</span>
-              <input
-                value={createName}
-                onChange={(event) => setCreateName(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>{t('email')}</span>
-              <input
-                type="email"
-                value={createEmail}
-                onChange={(event) => setCreateEmail(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>{t('phone')}</span>
-              <input
-                value={createPhone}
-                onChange={(event) => setCreatePhone(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>{t('temporaryPassword')}</span>
-              <input
-                type="password"
-                value={createPassword}
-                onChange={(event) => setCreatePassword(event.target.value)}
-              />
-            </label>
-
-            {auth.session?.user.isSuperUser && (
-              <label className="inline-toggle full-width">
-                <input
-                  type="checkbox"
-                  checked={createSuperUser}
-                  onChange={(event) => setCreateSuperUser(event.target.checked)}
-                />
-                <span>{t('createSuperUser')}</span>
-              </label>
-            )}
-
-            <div className="full-width">
-              <span className="form-section-label">{t('systemRoles')}</span>
-              <div className="role-choice-grid">
-                {(rolesQuery.data ?? []).map((role) => (
-                  <label className="role-choice" key={role.code}>
-                    <input
-                      type="checkbox"
-                      checked={createRoles.includes(role.code)}
-                      onChange={() => toggleRole(role.code, createRoles, setCreateRoles)}
-                    />
-                    <span>
-                      <strong>{role.name}</strong>
-                      <small>{role.code}</small>
-                    </span>
-                  </label>
-                ))}
+        <Dialog
+          header={t('createTitle')}
+          visible={createOpen}
+          modal
+          className="employees-dialog"
+          onHide={() => setCreateOpen(false)}
+        >
+          <section className="panel">
+            <div className="panel-heading">
+              <div>
+                <h2>{t('createTitle')}</h2>
+                <p className="muted">{t('createSubtitle')}</p>
               </div>
             </div>
 
-            <div className="actions full-width">
-              <button
-                className="button primary"
-                disabled={
-                  createMutation.isPending ||
-                  !createName.trim() ||
-                  !createEmail.trim() ||
-                  !createPassword ||
-                  (!createSuperUser && createRoles.length === 0)
-                }
-                onClick={() =>
-                  createMutation.mutate({
-                    fullName: createName.trim(),
-                    email: createEmail.trim(),
-                    password: createPassword,
-                    phone: createPhone.trim() || undefined,
-                    isSuperUser: createSuperUser,
-                    roles: createRoles,
-                  })
-                }
-              >
-                {createMutation.isPending ? t('creating') : t('create')}
-              </button>
-            </div>
+            <div className="employee-form">
+              <label>
+                <span>{t('fullName')}</span>
+                <InputText
+                  className="auran-prime-field"
+                  value={createName}
+                  onChange={(event) => setCreateName(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>{t('email')}</span>
+                <InputText
+                  className="auran-prime-field"
+                  type="email"
+                  value={createEmail}
+                  onChange={(event) => setCreateEmail(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>{t('phone')}</span>
+                <InputText
+                  className="auran-prime-field"
+                  value={createPhone}
+                  onChange={(event) => setCreatePhone(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>{t('temporaryPassword')}</span>
+                <Password
+                  className="auran-prime-field"
+                  inputClassName="auran-prime-field"
+                  feedback={false}
+                  toggleMask
+                  value={createPassword}
+                  onChange={(event) => setCreatePassword(event.target.value)}
+                />
+              </label>
 
-            {createMutation.isError && (
-              <p className="field-error full-width">{t('createError')}</p>
-            )}
-          </div>
-        </section>
+              {auth.session?.user.isSuperUser && (
+                <label className="inline-toggle full-width">
+                  <Checkbox
+                    inputId="employee-create-super-user"
+                    checked={createSuperUser}
+                    onChange={(event) => setCreateSuperUser(Boolean(event.checked))}
+                  />
+                  <span>{t('createSuperUser')}</span>
+                </label>
+              )}
+
+              <div className="full-width">
+                <span className="form-section-label">{t('systemRoles')}</span>
+                <div className="role-choice-grid">
+                  {(rolesQuery.data ?? []).map((role) => (
+                    <label className="role-choice" key={role.code}>
+                      <Checkbox
+                        inputId={`employee-create-role-${role.code}`}
+                        checked={createRoles.includes(role.code)}
+                        onChange={() =>
+                          toggleRole(role.code, createRoles, setCreateRoles)
+                        }
+                      />
+                      <span>
+                        <strong>{role.name}</strong>
+                        <small>{role.code}</small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="actions full-width">
+                <button
+                  className="button primary"
+                  disabled={
+                    createMutation.isPending ||
+                    !createName.trim() ||
+                    !createEmail.trim() ||
+                    !createPassword ||
+                    (!createSuperUser && createRoles.length === 0)
+                  }
+                  onClick={() =>
+                    createMutation.mutate({
+                      fullName: createName.trim(),
+                      email: createEmail.trim(),
+                      password: createPassword,
+                      phone: createPhone.trim() || undefined,
+                      isSuperUser: createSuperUser,
+                      roles: createRoles,
+                    })
+                  }
+                >
+                  {createMutation.isPending ? t('creating') : t('create')}
+                </button>
+              </div>
+
+              {createMutation.isError && (
+                <p className="field-error full-width">{t('createError')}</p>
+              )}
+            </div>
+          </section>
+        </Dialog>
       )}
 
-      {canViewUsers && (
+      {canViewUsers && !rolesOpen && (
         <section className="panel">
           <div className="panel-heading">
             <div>
               <h2>{t('listTitle')}</h2>
               <p className="muted">{t('listSubtitle')}</p>
             </div>
+            <div className="employees-list-actions">
+              <span className="employees-count">
+                {filteredEmployees.length} {t('users')}
+              </span>
+              {filterCount > 0 && (
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => {
+                    setSearch('')
+                    setStatus('all')
+                    setPage(1)
+                  }}
+                >
+                  {t('clearFilters')}
+                </button>
+              )}
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => {
+                  setDraftSearch(search)
+                  setDraftStatus(status)
+                  setFiltersOpen(true)
+                }}
+              >
+                <ListFilter size={16} aria-hidden="true" />
+                {t('filters')}
+                {filterCount ? ` (${filterCount})` : ''}
+              </button>
+            </div>
           </div>
 
           {employeesQuery.isLoading && <p className="state">{t('loading')}</p>}
           {employeesQuery.isError && <p className="state error">{t('loadError')}</p>}
 
-          {employeesQuery.data && employeesQuery.data.length > 0 && (
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t('employee')}</th>
-                    <th>{t('roles')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('superUser')}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {employeesQuery.data.map((employee) => (
-                    <tr key={employee.id}>
-                      <td>
-                        <strong>{employee.fullName}</strong>
-                        <div className="muted">{employee.email ?? '—'}</div>
-                      </td>
-                      <td>
-                        <div className="role-badges">
-                          {employee.roles.map((role) => (
-                            <span className="role-badge" key={role}>
-                              {role}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{employee.isActive ? t('active') : t('inactive')}</td>
-                      <td>{employee.isSuperUser ? t('yes') : t('no')}</td>
-                      <td>
-                        <button
-                          className="button secondary"
-                          onClick={() =>
-                            setSelectedId(selectedId === employee.id ? null : employee.id)
-                          }
-                        >
-                          {selectedId === employee.id ? t('close') : t('manage')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {employeesQuery.isSuccess && filteredEmployees.length === 0 && (
+            <p className="state">{t('empty')}</p>
+          )}
+          {visibleEmployees.length > 0 && (
+            <DataTable columns={columns}>
+              {visibleEmployees.map((employee) => (
+                <tr key={employee.id}>
+                  <td>
+                    <strong>{employee.fullName}</strong>
+                    {employee.isSuperUser && (
+                      <span className="role-badge">{t('superUser')}</span>
+                    )}
+                  </td>
+                  <td dir="ltr">{employee.email ?? '—'}</td>
+                  <td>
+                    <div className="role-badges">
+                      {employee.roles.map((role) => (
+                        <span className="role-badge" key={role}>
+                          {role}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      className={`employees-status ${employee.isActive ? 'is-active' : 'is-inactive'}`}
+                    >
+                      {employee.isActive ? t('active') : t('inactive')}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={() => setSelectedId(employee.id)}
+                    >
+                      {t('manage')}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </DataTable>
+          )}
+          {employeesQuery.isSuccess && filteredEmployees.length > 0 && (
+            <TablePagination
+              page={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredEmployees.length}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size)
+                setPage(1)
+              }}
+              labels={{
+                rowsPerPage: t('rowsPerPage'),
+                previous: t('previousPage'),
+                next: t('nextPage'),
+                page: t('pageNumber', { page: currentPage, total: totalPages }),
+                showing: t('showingRows', {
+                  first: (currentPage - 1) * pageSize + 1,
+                  last: Math.min(currentPage * pageSize, filteredEmployees.length),
+                  total: filteredEmployees.length,
+                }),
+              }}
+            />
           )}
         </section>
       )}
+
+      <Dialog
+        header={t('filters')}
+        visible={filtersOpen}
+        modal
+        className="employees-filter-dialog"
+        onHide={() => setFiltersOpen(false)}
+      >
+        <div className="employees-filter-fields">
+          <label>
+            <span>{t('search')}</span>
+            <InputText
+              className="auran-prime-field"
+              value={draftSearch}
+              placeholder={t('searchPlaceholder')}
+              onChange={(event) => setDraftSearch(event.target.value)}
+            />
+          </label>
+          <label>
+            <span>{t('status')}</span>
+            <Dropdown
+              className="auran-prime-field"
+              value={draftStatus}
+              options={[
+                { label: t('allStatuses'), value: 'all' },
+                { label: t('active'), value: 'active' },
+                { label: t('inactive'), value: 'inactive' },
+              ]}
+              optionLabel="label"
+              optionValue="value"
+              filter
+              panelClassName="auran-prime-panel"
+              onChange={(event) => setDraftStatus(event.value)}
+            />
+          </label>
+          <div className="employees-filter-actions">
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => {
+                setSearch('')
+                setStatus('all')
+                setPage(1)
+                setFiltersOpen(false)
+              }}
+            >
+              {t('clearFilters')}
+            </button>
+            <button
+              className="button primary"
+              type="button"
+              onClick={() => {
+                setSearch(draftSearch)
+                setStatus(draftStatus)
+                setPage(1)
+                setFiltersOpen(false)
+              }}
+            >
+              {t('applyFilters')}
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {selectedEmployee && (
-        <section className="panel employee-manager">
-          <div className="panel-heading">
-            <div>
-              <h2>{t('manageTitle', { name: selectedEmployee.fullName })}</h2>
-              <p className="muted">
-                {selectedEmployee.isSuperUser
-                  ? t('protectedSuperUser')
-                  : t('clinicEmployee')}
-              </p>
-            </div>
-          </div>
-
-          {canManageUsers && (
-            <div className="employee-form">
-              <label>
-                <span>{t('fullName')}</span>
-                <input
-                  value={editName}
-                  onChange={(event) => setEditName(event.target.value)}
-                />
-              </label>
-              <label>
-                <span>{t('email')}</span>
-                <input
-                  type="email"
-                  value={editEmail}
-                  onChange={(event) => setEditEmail(event.target.value)}
-                />
-              </label>
-              <label>
-                <span>{t('phone')}</span>
-                <input
-                  value={editPhone}
-                  onChange={(event) => setEditPhone(event.target.value)}
-                />
-              </label>
-              <div className="actions">
-                <button
-                  className="button secondary"
-                  disabled={
-                    updateMutation.isPending || !editName.trim() || !editEmail.trim()
-                  }
-                  onClick={() =>
-                    updateMutation.mutate({
-                      userId: selectedEmployee.id,
-                      fullName: editName.trim(),
-                      email: editEmail.trim(),
-                      phone: editPhone.trim() || undefined,
-                    })
-                  }
-                >
-                  {updateMutation.isPending ? t('saving') : t('saveProfile')}
-                </button>
+        <Dialog
+          header={t('manageTitle', { name: selectedEmployee.fullName })}
+          visible
+          modal
+          className="employees-dialog"
+          onHide={() => setSelectedId(null)}
+        >
+          <section className="panel employee-manager">
+            <div className="panel-heading">
+              <div>
+                <h2>{t('manageTitle', { name: selectedEmployee.fullName })}</h2>
+                <p className="muted">
+                  {selectedEmployee.isSuperUser
+                    ? t('protectedSuperUser')
+                    : t('clinicEmployee')}
+                </p>
               </div>
             </div>
-          )}
 
-          {canManageRbac && !selectedEmployee.isSuperUser && (
-            <div className="employee-section">
-              <span className="form-section-label">{t('assignedRoles')}</span>
-              <div className="role-choice-grid">
-                {(rolesQuery.data ?? []).map((role) => (
-                  <label className="role-choice" key={role.code}>
-                    <input
-                      type="checkbox"
-                      checked={editRoles.includes(role.code)}
-                      onChange={() => toggleRole(role.code, editRoles, setEditRoles)}
-                    />
-                    <span>
-                      <strong>{role.name}</strong>
-                      <small>{role.code}</small>
-                    </span>
-                  </label>
-                ))}
+            {canManageUsers && (
+              <div className="employee-form">
+                <label>
+                  <span>{t('fullName')}</span>
+                  <InputText
+                    className="auran-prime-field"
+                    value={editName}
+                    onChange={(event) => setEditName(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>{t('email')}</span>
+                  <InputText
+                    className="auran-prime-field"
+                    type="email"
+                    value={editEmail}
+                    onChange={(event) => setEditEmail(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>{t('phone')}</span>
+                  <InputText
+                    className="auran-prime-field"
+                    value={editPhone}
+                    onChange={(event) => setEditPhone(event.target.value)}
+                  />
+                </label>
+                <div className="actions">
+                  <button
+                    className="button secondary"
+                    disabled={
+                      updateMutation.isPending || !editName.trim() || !editEmail.trim()
+                    }
+                    onClick={() =>
+                      updateMutation.mutate({
+                        userId: selectedEmployee.id,
+                        fullName: editName.trim(),
+                        email: editEmail.trim(),
+                        phone: editPhone.trim() || undefined,
+                      })
+                    }
+                  >
+                    {updateMutation.isPending ? t('saving') : t('saveProfile')}
+                  </button>
+                </div>
               </div>
-              <div className="actions">
-                <button
-                  className="button secondary"
-                  disabled={rolesMutation.isPending || editRoles.length === 0}
-                  onClick={() =>
-                    rolesMutation.mutate({
-                      userId: selectedEmployee.id,
-                      roles: editRoles,
-                    })
-                  }
-                >
-                  {rolesMutation.isPending ? t('savingRoles') : t('saveRoles')}
-                </button>
-              </div>
-            </div>
-          )}
+            )}
 
-          {canManageStatus && (
-            <div className="employee-section">
-              <span className="form-section-label">{t('accountStatus')}</span>
-              <div className="actions">
-                <button
-                  className={`button ${selectedEmployee.isActive ? 'danger' : 'secondary'}`}
-                  disabled={statusMutation.isPending}
-                  onClick={() =>
-                    statusMutation.mutate({
-                      userId: selectedEmployee.id,
-                      isActive: !selectedEmployee.isActive,
-                    })
-                  }
-                >
-                  {statusMutation.isPending
-                    ? t('updating')
-                    : selectedEmployee.isActive
-                      ? t('deactivate')
-                      : t('activate')}
-                </button>
+            {canManageRbac && !selectedEmployee.isSuperUser && (
+              <div className="employee-section">
+                <span className="form-section-label">{t('assignedRoles')}</span>
+                <div className="role-choice-grid">
+                  {(rolesQuery.data ?? []).map((role) => (
+                    <label className="role-choice" key={role.code}>
+                      <Checkbox
+                        inputId={`employee-edit-role-${role.code}`}
+                        checked={editRoles.includes(role.code)}
+                        onChange={() => toggleRole(role.code, editRoles, setEditRoles)}
+                      />
+                      <span>
+                        <strong>{role.name}</strong>
+                        <small>{role.code}</small>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="actions">
+                  <button
+                    className="button secondary"
+                    disabled={rolesMutation.isPending || editRoles.length === 0}
+                    onClick={() =>
+                      rolesMutation.mutate({
+                        userId: selectedEmployee.id,
+                        roles: editRoles,
+                      })
+                    }
+                  >
+                    {rolesMutation.isPending ? t('savingRoles') : t('saveRoles')}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {(updateMutation.isError ||
-            rolesMutation.isError ||
-            statusMutation.isError) && <p className="field-error">{t('changeError')}</p>}
-        </section>
+            {canManageStatus && (
+              <div className="employee-section">
+                <span className="form-section-label">{t('accountStatus')}</span>
+                <div className="actions">
+                  <button
+                    className={`button ${selectedEmployee.isActive ? 'danger' : 'secondary'}`}
+                    disabled={statusMutation.isPending}
+                    onClick={() =>
+                      statusMutation.mutate({
+                        userId: selectedEmployee.id,
+                        isActive: !selectedEmployee.isActive,
+                      })
+                    }
+                  >
+                    {statusMutation.isPending
+                      ? t('updating')
+                      : selectedEmployee.isActive
+                        ? t('deactivate')
+                        : t('activate')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {(updateMutation.isError ||
+              rolesMutation.isError ||
+              statusMutation.isError) && (
+              <p className="field-error">{t('changeError')}</p>
+            )}
+          </section>
+        </Dialog>
       )}
 
-      {canViewRbac && (
+      {canViewRbac && rolesOpen && (
         <section className="panel">
           <div className="panel-heading">
             <div>

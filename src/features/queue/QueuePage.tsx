@@ -4,9 +4,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
   Clock3,
   Layers3,
   List,
@@ -20,12 +17,13 @@ import {
 import { Dialog } from 'primereact/dialog'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
+import { DataTable, type DataTableColumn } from '../../components/ui/DataTable'
 import { useAuth } from '../auth/AuthContext'
 import { getWorkflowConfiguration } from '../workflow/api'
 import { getQueueTransitions, getSortedQueue } from './api'
 import { QueueActions } from './QueueActions'
 import { QueueArrivalDialog } from './QueueArrivalDialog'
-import { QueueKpiCard } from './QueueKpiCard'
+import { KpiCard } from '../../components/ui/KpiCard'
 import { stageLabel } from './stageLabel'
 import type { QueueEntry } from './types'
 import type { QueueTransitionOption } from './types'
@@ -285,12 +283,6 @@ export function QueuePage() {
     }))
   }
 
-  function sortIcon(ascending: QueueSortChoice, descending: QueueSortChoice) {
-    if (filters.sort === ascending) return <ArrowUp size={13} aria-hidden="true" />
-    if (filters.sort === descending) return <ArrowDown size={13} aria-hidden="true" />
-    return <ArrowUpDown size={13} aria-hidden="true" />
-  }
-
   function beginDrag(event: DragEvent<HTMLElement>, entry: QueueEntry) {
     if (!canMove) return
     event.dataTransfer.effectAllowed = 'move'
@@ -346,6 +338,53 @@ export function QueuePage() {
     }
   }
 
+  function sortDirection(
+    ascending: QueueSortChoice,
+    descending: QueueSortChoice,
+  ): DataTableColumn['sortDirection'] {
+    return filters.sort === ascending
+      ? 'ascending'
+      : filters.sort === descending
+        ? 'descending'
+        : 'none'
+  }
+
+  const columns: DataTableColumn[] = [
+    {
+      key: 'patient',
+      label: t('patient'),
+      sortDirection: sortDirection(QUEUE_SORT_CHOICE.nameAsc, QUEUE_SORT_CHOICE.nameDesc),
+      onSort: () => sortByHeader(QUEUE_SORT_CHOICE.nameAsc, QUEUE_SORT_CHOICE.nameDesc),
+    },
+    {
+      key: 'stage',
+      label: t('stage'),
+      sortDirection: sortDirection(QUEUE_SORT_CHOICE.stage, QUEUE_SORT_CHOICE.stageDesc),
+      onSort: () => sortByHeader(QUEUE_SORT_CHOICE.stage, QUEUE_SORT_CHOICE.stageDesc),
+    },
+    {
+      key: 'waiting',
+      label: t('waiting'),
+      sortDirection: sortDirection(
+        QUEUE_SORT_CHOICE.longestWait,
+        QUEUE_SORT_CHOICE.newestArrival,
+      ),
+      onSort: () =>
+        sortByHeader(QUEUE_SORT_CHOICE.longestWait, QUEUE_SORT_CHOICE.newestArrival),
+    },
+    {
+      key: 'doctor',
+      label: t('doctor'),
+      sortDirection: sortDirection(
+        QUEUE_SORT_CHOICE.doctorAsc,
+        QUEUE_SORT_CHOICE.doctorDesc,
+      ),
+      onSort: () =>
+        sortByHeader(QUEUE_SORT_CHOICE.doctorAsc, QUEUE_SORT_CHOICE.doctorDesc),
+    },
+    { key: 'workflow', label: t('workflow') },
+  ]
+
   return (
     <main className="page-shell queue-page">
       <header className="queue-header">
@@ -378,28 +417,28 @@ export function QueuePage() {
         aria-label={t('summary')}
         aria-busy={queueQuery.isLoading}
       >
-        <QueueKpiCard
+        <KpiCard
           label={t('inFlow')}
           value={queueQuery.data ? activeEntries.length : '—'}
           detail={t('inFlowDetail')}
           icon={UsersRound}
           tone="blue"
         />
-        <QueueKpiCard
+        <KpiCard
           label={t('averageWait')}
           value={queueQuery.data ? formatWait(activeWait) : '—'}
           detail={t('averageWaitDetail')}
           icon={Clock3}
           tone="amber"
         />
-        <QueueKpiCard
+        <KpiCard
           label={t('activeStages')}
           value={queueQuery.data ? occupiedStages : '—'}
           detail={t('activeStagesDetail')}
           icon={Layers3}
           tone="violet"
         />
-        <QueueKpiCard
+        <KpiCard
           label={t('assignedDoctors')}
           value={queueQuery.data ? assignedDoctors : '—'}
           detail={t('assignedDoctorsDetail')}
@@ -553,119 +592,15 @@ export function QueuePage() {
 
       {queueQuery.data && visible.length > 0 && view === 'list' && (
         <section className="queue-list">
-          <div className="queue-list-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th
-                    aria-sort={
-                      filters.sort === QUEUE_SORT_CHOICE.nameAsc
-                        ? 'ascending'
-                        : filters.sort === QUEUE_SORT_CHOICE.nameDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="queue-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          QUEUE_SORT_CHOICE.nameAsc,
-                          QUEUE_SORT_CHOICE.nameDesc,
-                        )
-                      }
-                    >
-                      {t('patient')}
-                      {sortIcon(QUEUE_SORT_CHOICE.nameAsc, QUEUE_SORT_CHOICE.nameDesc)}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === QUEUE_SORT_CHOICE.stage
-                        ? 'ascending'
-                        : filters.sort === QUEUE_SORT_CHOICE.stageDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="queue-sort-button"
-                      onClick={() =>
-                        sortByHeader(QUEUE_SORT_CHOICE.stage, QUEUE_SORT_CHOICE.stageDesc)
-                      }
-                    >
-                      {t('stage')}
-                      {sortIcon(QUEUE_SORT_CHOICE.stage, QUEUE_SORT_CHOICE.stageDesc)}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === QUEUE_SORT_CHOICE.longestWait
-                        ? 'ascending'
-                        : filters.sort === QUEUE_SORT_CHOICE.newestArrival
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="queue-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          QUEUE_SORT_CHOICE.longestWait,
-                          QUEUE_SORT_CHOICE.newestArrival,
-                        )
-                      }
-                    >
-                      {t('waiting')}
-                      {sortIcon(
-                        QUEUE_SORT_CHOICE.longestWait,
-                        QUEUE_SORT_CHOICE.newestArrival,
-                      )}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === QUEUE_SORT_CHOICE.doctorAsc
-                        ? 'ascending'
-                        : filters.sort === QUEUE_SORT_CHOICE.doctorDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="queue-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          QUEUE_SORT_CHOICE.doctorAsc,
-                          QUEUE_SORT_CHOICE.doctorDesc,
-                        )
-                      }
-                    >
-                      {t('doctor')}
-                      {sortIcon(
-                        QUEUE_SORT_CHOICE.doctorAsc,
-                        QUEUE_SORT_CHOICE.doctorDesc,
-                      )}
-                    </button>
-                  </th>
-                  <th>{t('workflow')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((entry) => (
-                  <QueueRow
-                    key={entry.queueEntryId}
-                    entry={entry}
-                    waitLabel={waitLabel}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={columns}
+            wrapClassName="queue-list-wrap"
+            className="queue-list-table"
+          >
+            {visible.map((entry) => (
+              <QueueRow key={entry.queueEntryId} entry={entry} waitLabel={waitLabel} />
+            ))}
+          </DataTable>
         </section>
       )}
       <Dialog

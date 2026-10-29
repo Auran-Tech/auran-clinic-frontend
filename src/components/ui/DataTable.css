@@ -1,0 +1,114 @@
+.auran-data-table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.auran-data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.auran-data-table th,
+.auran-data-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--auran-border);
+  text-align: start;
+}
+
+.auran-data-table th {
+  color: var(--auran-muted);
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.auran-data-table td {
+  color: var(--auran-text);
+  font-size: 0.78rem;
+}
+
+.auran-data-table th button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.auran-data-table th button:hover,
+.auran-data-table th button:focus-visible {
+  color: var(--auran-blue);
+}
+
+.auran-table-pagination,
+.auran-table-page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auran-table-pagination {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  color: var(--auran-muted);
+  font-size: 0.76rem;
+}
+
+.auran-table-pagination label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auran-table-page-size.p-dropdown {
+  width: 74px;
+}
+
+.auran-table-page-buttons {
+  margin-inline-start: auto;
+}
+
+.auran-table-page-buttons button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--auran-border);
+  border-radius: 8px;
+  color: var(--auran-text);
+  background: var(--auran-surface-soft);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.auran-table-page-buttons button:hover:not(:disabled) {
+  border-color: var(--auran-blue);
+  background: color-mix(in srgb, var(--auran-blue) 13%, var(--auran-surface-soft));
+}
+
+.auran-table-page-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+html[dir='ltr'] .auran-table-page-buttons svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 600px) {
+  .auran-table-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .auran-table-page-buttons {
+    margin-inline-start: 0;
+  }
+}

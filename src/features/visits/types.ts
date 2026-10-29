@@ -43,3 +43,42 @@ export interface PatientVisitHistory {
     setting: PaginationInfo
   }
 }
+
+export interface ClinicVisitListQuery {
+  page: number
+  pageSize: number
+  search?: string
+  doctorId?: string
+  status?: 'Open' | 'Completed' | 'Cancelled'
+  documentationStatus?: 'NotStarted' | 'Draft' | 'Pending' | 'Completed'
+  fromUtc?: string
+  toUtc?: string
+  sortBy: 'entryAtUtc' | 'patientName' | 'doctorName' | 'status'
+  descending: boolean
+}
+
+export interface ClinicVisitListItem {
+  visitId: string
+  patientId: string
+  patientNumber: string
+  patientName: string
+  doctorId: string
+  doctorName: string
+  status: string
+  documentationStatus: string
+  entryAtUtc: string
+  completedAtUtc?: string | null
+  exitAtUtc?: string | null
+}
+
+export interface ClinicVisitList {
+  visits: {
+    data: ClinicVisitListItem[]
+    setting: PaginationInfo
+  }
+  summary: {
+    active: number
+    completed: number
+    pendingDocumentation: number
+  }
+}

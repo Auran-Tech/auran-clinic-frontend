@@ -1,270 +1,477 @@
 import './pendingDocumentation.css'
-import '../clinical/clinical.css'
-import { isAxiosError } from 'axios'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { Dialog } from 'primereact/dialog'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
+import {
+  ClipboardPenLine,
+  FileClock,
+  FilePenLine,
+  ListFilter,
+  UserRound,
+  UsersRound,
+} from 'lucide-react'
+import { KpiCard } from '../../components/ui/KpiCard'
+import {
+  DataTable,
+  TablePagination,
+  type DataTableColumn,
+} from '../../components/ui/DataTable'
 import { useAuth } from '../auth/AuthContext'
-import { completePendingDocumentation, getPendingDocumentation } from './api'
+import { PendingDocumentationEditor } from './PendingDocumentationEditor'
+import { getPendingDocumentation } from './api'
 import type { PendingDocumentation } from './types'
-import { DOCUMENTATION_FIELDS } from '../documentationPolicies/api'
 
-function PendingDocumentationEditor({
-  item,
-  onClose,
-}: {
-  item: PendingDocumentation
-  onClose: () => void
-}) {
-  const { t } = useTranslation('pendingDocumentation')
-  const queryClient = useQueryClient()
-  const [chiefComplaint, setChiefComplaint] = useState(item.chiefComplaint ?? '')
-  const [examination, setExamination] = useState(item.examination ?? '')
-  const [diagnosis, setDiagnosis] = useState(item.diagnosis ?? '')
-  const [notes, setNotes] = useState(item.notes ?? '')
-  const [treatmentPlan, setTreatmentPlan] = useState(item.treatmentPlan ?? '')
+type SortField = 'patientName' | 'doctorName' | 'documentationStatus' | 'entryAtUtc'
 
-  useEffect(() => {
-    setChiefComplaint(item.chiefComplaint ?? '')
-    setExamination(item.examination ?? '')
-    setDiagnosis(item.diagnosis ?? '')
-    setNotes(item.notes ?? '')
-    setTreatmentPlan(item.treatmentPlan ?? '')
-  }, [item])
+interface Filters {
+  search: string
+  doctorId: string
+  documentationStatus: string
+}
 
-  const mutation = useMutation({
-    mutationFn: completePendingDocumentation,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['pending-documentation'] })
-      onClose()
-    },
-  })
-
-  const missingFields =
-    isAxiosError<{
-      error?: string
-      data?: string[]
-    }>(mutation.error) &&
-    mutation.error.response?.data?.error === 'documentation_required_fields_missing'
-      ? (mutation.error.response.data.data ?? [])
-      : []
-  const clinicalFieldNames = new Map<string, string>(
-    DOCUMENTATION_FIELDS.map((field) => [
-      field.key,
-      t(field.key, { defaultValue: field.label }),
-    ]),
-  )
-
-  const hasContent = Boolean(
-    chiefComplaint.trim() ||
-    examination.trim() ||
-    diagnosis.trim() ||
-    notes.trim() ||
-    treatmentPlan.trim(),
-  )
-
-  return (
-    <section className="pending-editor">
-      <div className="panel-heading">
-        <div>
-          <h2>{item.patientName}</h2>
-          <p className="muted mono">{item.patientNumber}</p>
-        </div>
-        <button className="button secondary" onClick={onClose}>
-          {t('close')}
-        </button>
-      </div>
-
-      <div className="clinical-form">
-        <label>
-          <span>{t('chiefComplaint')}</span>
-          <textarea
-            rows={3}
-            value={chiefComplaint}
-            onChange={(e) => setChiefComplaint(e.target.value)}
-          />
-        </label>
-        <label>
-          <span>{t('examination')}</span>
-          <textarea
-            rows={4}
-            value={examination}
-            onChange={(e) => setExamination(e.target.value)}
-          />
-        </label>
-        <label>
-          <span>{t('diagnosis')}</span>
-          <textarea
-            rows={4}
-            value={diagnosis}
-            onChange={(e) => setDiagnosis(e.target.value)}
-          />
-        </label>
-        <label>
-          <span>{t('treatmentPlan')}</span>
-          <textarea
-            rows={4}
-            value={treatmentPlan}
-            onChange={(e) => setTreatmentPlan(e.target.value)}
-          />
-        </label>
-        <label className="full-width">
-          <span>{t('clinicalNotes')}</span>
-          <textarea rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </label>
-      </div>
-
-      <div className="actions clinical-actions">
-        <button
-          className="button primary"
-          disabled={!hasContent || mutation.isPending}
-          onClick={() =>
-            mutation.mutate({
-              visitId: item.visitId,
-              chiefComplaint: chiefComplaint || undefined,
-              examination: examination || undefined,
-              diagnosis: diagnosis || undefined,
-              notes: notes || undefined,
-              treatmentPlan: treatmentPlan || undefined,
-            })
-          }
-        >
-          {mutation.isPending ? t('completing') : t('completeDocumentation')}
-        </button>
-      </div>
-
-      {mutation.isError && (
-        <div className="field-error" role="alert">
-          {missingFields.length > 0 ? (
-            <>
-              <p>{t('requiredFields')}</p>
-              <ul>
-                {missingFields.map((field) => (
-                  <li key={field}>{clinicalFieldNames.get(field) ?? field}</li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p>{t('completeError')}</p>
-          )}
-        </div>
-      )}
-    </section>
-  )
+const emptyFilters: Filters = {
+  search: '',
+  doctorId: '',
+  documentationStatus: '',
 }
 
 export function PendingDocumentationPage() {
   const { t, i18n } = useTranslation('pendingDocumentation')
   const auth = useAuth()
+  const isSuperUser = Boolean(auth.session?.user.isSuperUser)
+  const canView = auth.hasPermission('Visit_View')
   const [selected, setSelected] = useState<PendingDocumentation | null>(null)
-  const [mineOnly, setMineOnly] = useState(true)
-
+  const [filters, setFilters] = useState<Filters>(emptyFilters)
+  const [draft, setDraft] = useState<Filters>(emptyFilters)
+  const [showFilters, setShowFilters] = useState(false)
+  const [sort, setSort] = useState<{ field: SortField; descending: boolean }>({
+    field: 'entryAtUtc',
+    descending: false,
+  })
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
   const query = useQuery({
-    queryKey: ['pending-documentation', mineOnly],
-    queryFn: () => getPendingDocumentation(mineOnly),
-    enabled: auth.hasPermission('Visit_View'),
+    queryKey: ['pending-documentation', isSuperUser],
+    queryFn: () => getPendingDocumentation(!isSuperUser),
+    enabled: canView,
   })
 
-  if (!auth.hasPermission('Visit_View')) {
+  if (!canView) {
     return (
       <main className="page-shell">
-        <p className="state error">{t('forbidden')}</p>
+        <p className="state error" role="alert">
+          {t('forbidden')}
+        </p>
       </main>
     )
   }
 
+  const items = query.data ?? []
+  const counts = {
+    total: items.length,
+    draft: items.filter((item) => item.documentationStatus === 'Draft').length,
+    pending: items.filter((item) => item.documentationStatus === 'Pending').length,
+    exited: items.filter((item) => Boolean(item.exitAtUtc)).length,
+  }
+  const activeFilterCount =
+    Number(Boolean(filters.search.trim())) +
+    Number(Boolean(filters.doctorId)) +
+    Number(Boolean(filters.documentationStatus))
+  const doctors = [
+    { label: t('allDoctors'), value: '' },
+    ...Array.from(
+      new Map(items.map((item) => [item.doctorId, item.doctorName])).entries(),
+    )
+      .map(([value, label]) => ({ label, value }))
+      .sort((left, right) => left.label.localeCompare(right.label, i18n.language)),
+  ]
+  const search = filters.search.trim().toLocaleLowerCase()
+  const visible = items
+    .filter(
+      (item) =>
+        (!filters.doctorId || item.doctorId === filters.doctorId) &&
+        (!filters.documentationStatus ||
+          item.documentationStatus === filters.documentationStatus) &&
+        (!search ||
+          `${item.patientName} ${item.patientNumber} ${item.doctorName}`
+            .toLocaleLowerCase()
+            .includes(search)),
+    )
+    .sort((left, right) => {
+      const comparison = left[sort.field].localeCompare(right[sort.field], i18n.language)
+      return sort.descending ? -comparison : comparison
+    })
+  const totalPages = Math.max(1, Math.ceil(visible.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageItems = visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const firstRow = visible.length === 0 ? 0 : (currentPage - 1) * pageSize + 1
+  const lastRow = Math.min(currentPage * pageSize, visible.length)
+
+  function sortBy(field: SortField) {
+    setSort((current) => ({
+      field,
+      descending: current.field === field ? !current.descending : false,
+    }))
+    setPage(1)
+  }
+
+  function sortDirection(field: SortField): DataTableColumn['sortDirection'] {
+    return sort.field === field ? (sort.descending ? 'descending' : 'ascending') : 'none'
+  }
+
+  const columns: DataTableColumn[] = [
+    {
+      key: 'patient',
+      label: t('patient'),
+      sortDirection: sortDirection('patientName'),
+      onSort: () => sortBy('patientName'),
+    },
+    {
+      key: 'doctor',
+      label: t('doctor'),
+      sortDirection: sortDirection('doctorName'),
+      onSort: () => sortBy('doctorName'),
+    },
+    {
+      key: 'documentation',
+      label: t('documentation'),
+      sortDirection: sortDirection('documentationStatus'),
+      onSort: () => sortBy('documentationStatus'),
+    },
+    { key: 'visit', label: t('visit') },
+    {
+      key: 'started',
+      label: t('started'),
+      sortDirection: sortDirection('entryAtUtc'),
+      onSort: () => sortBy('entryAtUtc'),
+    },
+    { key: 'actions', label: t('actions') },
+  ]
+
+  function timeSinceVisit(entryAtUtc: string) {
+    const elapsedHours = Math.max(
+      0,
+      Math.floor((Date.now() - new Date(entryAtUtc).getTime()) / 3_600_000),
+    )
+
+    if (!Number.isFinite(elapsedHours) || elapsedHours < 1) {
+      return t('lessThanHour')
+    }
+
+    const relativeTime = new Intl.RelativeTimeFormat(i18n.language, {
+      numeric: 'always',
+    })
+    return elapsedHours < 24
+      ? relativeTime.format(-elapsedHours, 'hour')
+      : relativeTime.format(-Math.floor(elapsedHours / 24), 'day')
+  }
+
   return (
-    <main className="page-shell">
-      <section className="page-header">
-        <div>
-          <p className="eyebrow">{t('eyebrow')}</p>
+    <main className="page-shell pending-page">
+      <header className="pending-header">
+        <div className="pending-breadcrumb">
+          <span>{t('eyebrow')}</span>
+          <span aria-hidden="true">·</span>
+          <strong>{t('title')}</strong>
+        </div>
+        <div className="pending-heading-row">
           <h1>{t('title')}</h1>
-          <p className="muted">{t('subtitle')}</p>
+          <p>{t('subtitle')}</p>
         </div>
-        <div className="actions">
-          {auth.session?.user.isSuperUser && (
-            <label className="inline-toggle">
-              <input
-                type="checkbox"
-                checked={!mineOnly}
-                onChange={(event) => setMineOnly(!event.target.checked)}
-              />
-              <span>{t('allDoctors')}</span>
-            </label>
-          )}
-          {auth.hasPermission('FollowUp_View') && (
-            <Link className="button secondary nav-button" to="/follow-ups">
-              {t('followUps')}
-            </Link>
-          )}
-          <Link className="button secondary nav-button" to="/queue">
-            {t('liveQueue')}
-          </Link>
-          <Link className="button secondary nav-button" to="/patients">
-            {t('patients')}
-          </Link>
-        </div>
+      </header>
+
+      <section
+        className="pending-summary"
+        aria-label={t('summary')}
+        aria-busy={query.isLoading}
+      >
+        {[
+          {
+            label: t('totalOutstanding'),
+            value: counts.total,
+            icon: ClipboardPenLine,
+            tone: 'blue',
+          },
+          {
+            label: t('draftNotes'),
+            value: counts.draft,
+            icon: FilePenLine,
+            tone: 'amber',
+          },
+          {
+            label: t('pendingNotes'),
+            value: counts.pending,
+            icon: FileClock,
+            tone: 'violet',
+          },
+          {
+            label: t('exitedVisits'),
+            value: counts.exited,
+            icon: UsersRound,
+            tone: 'teal',
+          },
+        ].map(({ label, value, icon, tone }) => (
+          <KpiCard
+            key={label}
+            label={label}
+            value={query.data ? value : '—'}
+            icon={icon}
+            tone={tone as 'blue' | 'amber' | 'violet' | 'teal'}
+          />
+        ))}
       </section>
 
-      <section className="panel">
-        {query.isLoading && <p className="state">{t('loading')}</p>}
-        {query.isError && <p className="state error">{t('loadError')}</p>}
-        {query.data?.length === 0 && <p className="state">{t('empty')}</p>}
+      <section className="pending-list" aria-label={t('outstandingVisits')}>
+        <div className="pending-toolbar">
+          <div>
+            <h2>{t('outstandingVisits')}</h2>
+            <small>
+              {t('showingCount', { visible: visible.length, total: items.length })}
+            </small>
+          </div>
+          <div className="pending-filter-actions">
+            <button
+              type="button"
+              className="button secondary"
+              disabled={activeFilterCount === 0}
+              onClick={() => {
+                setFilters(emptyFilters)
+                setPage(1)
+              }}
+            >
+              {t('clearFilters')}
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
+                setDraft(filters)
+                setShowFilters(true)
+              }}
+            >
+              <ListFilter size={15} aria-hidden="true" />
+              {t('filters')}
+              {activeFilterCount > 0 && (
+                <span className="pending-filter-count">{activeFilterCount}</span>
+              )}
+            </button>
+          </div>
+        </div>
 
-        {query.data && query.data.length > 0 && (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>{t('patient')}</th>
-                  <th>{t('doctor')}</th>
-                  <th>{t('visit')}</th>
-                  <th>{t('documentation')}</th>
-                  <th>{t('started')}</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {query.data.map((item) => (
-                  <tr key={item.visitId}>
-                    <td>
-                      <Link className="patient-link" to={`/patients/${item.patientId}`}>
-                        <strong>{item.patientName}</strong>
-                      </Link>
-                      <div className="muted mono">{item.patientNumber}</div>
-                    </td>
-                    <td>{item.doctorName}</td>
-                    <td>{t(item.visitStatus, { defaultValue: item.visitStatus })}</td>
-                    <td>
+        {query.isLoading && (
+          <p className="pending-state" role="status">
+            {t('loading')}
+          </p>
+        )}
+        {query.isError && (
+          <div className="pending-state" role="alert">
+            <p>{t('loadError')}</p>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => query.refetch()}
+            >
+              {t('retry')}
+            </button>
+          </div>
+        )}
+        {query.data && items.length === 0 && (
+          <p className="pending-state">{t('empty')}</p>
+        )}
+        {query.data && items.length > 0 && visible.length === 0 && (
+          <p className="pending-state">{t('noMatches')}</p>
+        )}
+
+        {query.data && visible.length > 0 && (
+          <>
+            <DataTable
+              columns={columns}
+              className="pending-table"
+              wrapClassName="pending-table-wrap"
+            >
+              {pageItems.map((item) => (
+                <tr key={item.visitId}>
+                  <td>
+                    <div className="pending-patient-cell">
+                      <span className="pending-patient-icon" aria-hidden="true">
+                        <UserRound size={16} />
+                      </span>
+                      <span>
+                        <Link to={`/patients/${item.patientId}`}>{item.patientName}</Link>
+                        <small dir="ltr">{item.patientNumber}</small>
+                      </span>
+                    </div>
+                  </td>
+                  <td>{item.doctorName}</td>
+                  <td>
+                    <span
+                      className={`pending-status pending-status-${item.documentationStatus.toLowerCase()}`}
+                    >
                       {t(item.documentationStatus, {
                         defaultValue: item.documentationStatus,
                       })}
-                    </td>
-                    <td>{new Date(item.entryAtUtc).toLocaleString(i18n.language)}</td>
-                    <td>
-                      {auth.hasPermission('Visit_Edit') && (
-                        <button
-                          className="button secondary"
-                          onClick={() => setSelected(item)}
-                        >
-                          {t('finishNote')}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </span>
+                  </td>
+                  <td>{t(item.visitStatus, { defaultValue: item.visitStatus })}</td>
+                  <td>
+                    <time dateTime={item.entryAtUtc}>
+                      {new Date(item.entryAtUtc).toLocaleString(i18n.language)}
+                    </time>
+                    <small className="pending-visit-age">
+                      {timeSinceVisit(item.entryAtUtc)}
+                    </small>
+                  </td>
+                  <td>
+                    {auth.hasPermission('Visit_Edit') && (
+                      <button
+                        type="button"
+                        className="button secondary pending-finish-button"
+                        onClick={() => setSelected(item)}
+                      >
+                        <FilePenLine size={14} aria-hidden="true" />
+                        {t('finishNote')}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </DataTable>
+            <TablePagination
+              page={currentPage}
+              totalPages={totalPages}
+              totalItems={visible.length}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size)
+                setPage(1)
+              }}
+              labels={{
+                rowsPerPage: t('rowsPerPage'),
+                previous: t('previous'),
+                next: t('next'),
+                page: t('page', { current: currentPage, total: totalPages }),
+                showing: t('showingRange', {
+                  first: firstRow,
+                  last: lastRow,
+                  total: visible.length,
+                }),
+              }}
+            />
+          </>
         )}
       </section>
 
-      {selected && (
-        <section className="panel">
-          <PendingDocumentationEditor item={selected} onClose={() => setSelected(null)} />
-        </section>
-      )}
+      <Dialog
+        header={
+          selected ? `${t('finishNote')} · ${selected.patientName}` : t('finishNote')
+        }
+        visible={Boolean(selected)}
+        modal
+        draggable={false}
+        resizable={false}
+        className="pending-editor-dialog"
+        onHide={() => setSelected(null)}
+      >
+        {selected && (
+          <PendingDocumentationEditor
+            key={selected.visitId}
+            item={selected}
+            onClose={() => setSelected(null)}
+          />
+        )}
+      </Dialog>
+
+      <Dialog
+        header={t('filters')}
+        visible={showFilters}
+        modal
+        draggable={false}
+        resizable={false}
+        className="auran-filter-dialog"
+        onHide={() => setShowFilters(false)}
+        footer={
+          <div className="auran-filter-footer">
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => setDraft(emptyFilters)}
+            >
+              {t('clearFilters')}
+            </button>
+            <button
+              type="button"
+              className="button primary"
+              onClick={() => {
+                setFilters(draft)
+                setPage(1)
+                setShowFilters(false)
+              }}
+            >
+              {t('applyFilters')}
+            </button>
+          </div>
+        }
+      >
+        <div className="auran-filter-fields">
+          <label htmlFor="pending-filter-search">
+            {t('search')}
+            <InputText
+              id="pending-filter-search"
+              className="auran-prime-field"
+              value={draft.search}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, search: event.target.value }))
+              }
+            />
+          </label>
+          {isSuperUser && (
+            <label htmlFor="pending-filter-doctor">
+              {t('doctor')}
+              <Dropdown
+                inputId="pending-filter-doctor"
+                className="auran-prime-field"
+                panelClassName="auran-prime-panel"
+                value={draft.doctorId}
+                options={doctors}
+                optionLabel="label"
+                optionValue="value"
+                filter
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, doctorId: event.value as string }))
+                }
+              />
+            </label>
+          )}
+          <label htmlFor="pending-filter-status">
+            {t('documentation')}
+            <Dropdown
+              inputId="pending-filter-status"
+              className="auran-prime-field"
+              panelClassName="auran-prime-panel"
+              value={draft.documentationStatus}
+              options={[
+                { label: t('allStatuses'), value: '' },
+                { label: t('Draft'), value: 'Draft' },
+                { label: t('Pending'), value: 'Pending' },
+              ]}
+              optionLabel="label"
+              optionValue="value"
+              filter
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  documentationStatus: event.value as string,
+                }))
+              }
+            />
+          </label>
+        </div>
+      </Dialog>
     </main>
   )
 }

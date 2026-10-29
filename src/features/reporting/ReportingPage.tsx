@@ -3,6 +3,20 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  Activity,
+  CalendarDays,
+  CircleCheck,
+  Clock3,
+  FileClock,
+  ListFilter,
+  UsersRound,
+  UserRound,
+} from 'lucide-react'
+import { KpiCard } from '../../components/ui/KpiCard'
+import { Dialog } from 'primereact/dialog'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import {
@@ -28,6 +42,50 @@ export function ReportingPage() {
   const [doctorId, setDoctorId] = useState('')
   const [visitStatus, setVisitStatus] = useState('')
   const [documentationStatus, setDocumentationStatus] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [draftFilters, setDraftFilters] = useState({
+    fromDate: '',
+    toDate: '',
+    doctorId: '',
+    visitStatus: '',
+    documentationStatus: '',
+  })
+  const filterCount = [
+    fromDate,
+    toDate,
+    doctorId,
+    visitStatus,
+    documentationStatus,
+  ].filter(Boolean).length
+  const invalidDateRange = Boolean(
+    draftFilters.fromDate &&
+    draftFilters.toDate &&
+    draftFilters.fromDate > draftFilters.toDate,
+  )
+
+  function clearFilters() {
+    setFromDate('')
+    setToDate('')
+    setDoctorId('')
+    setVisitStatus('')
+    setDocumentationStatus('')
+    setDraftFilters({
+      fromDate: '',
+      toDate: '',
+      doctorId: '',
+      visitStatus: '',
+      documentationStatus: '',
+    })
+  }
+
+  function applyFilters() {
+    setFromDate(draftFilters.fromDate)
+    setToDate(draftFilters.toDate)
+    setDoctorId(draftFilters.doctorId)
+    setVisitStatus(draftFilters.visitStatus)
+    setDocumentationStatus(draftFilters.documentationStatus)
+    setFiltersOpen(false)
+  }
 
   const reportQueryParams = useMemo<VisitReportQuery>(
     () => ({
@@ -80,27 +138,6 @@ export function ReportingPage() {
           <h1>{t('title')}</h1>
           <p className="muted">{t('subtitle')}</p>
         </div>
-        <div className="actions">
-          {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">
-              {t('audit')}
-            </Link>
-          )}
-          {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">
-              {t('settings')}
-            </Link>
-          )}
-          <Link className="button secondary nav-button" to="/follow-ups">
-            {t('followUps')}
-          </Link>
-          <Link className="button secondary nav-button" to="/queue">
-            {t('liveQueue')}
-          </Link>
-          <Link className="button secondary nav-button" to="/patients">
-            {t('patients')}
-          </Link>
-        </div>
       </section>
 
       {dashboardQuery.isLoading && <p className="state">{t('loadingDashboard')}</p>}
@@ -111,35 +148,49 @@ export function ReportingPage() {
           <div className="dashboard-date">
             {t('localDate')} <strong>{dashboard.localDate}</strong>
           </div>
-          <section className="kpi-grid">
-            <article className="kpi-card">
-              <span>{t('totalPatients')}</span>
-              <strong>{dashboard.totalPatients}</strong>
-            </article>
-            <article className="kpi-card">
-              <span>{t('visitsToday')}</span>
-              <strong>{dashboard.visitsToday}</strong>
-            </article>
-            <article className="kpi-card">
-              <span>{t('activeQueue')}</span>
-              <strong>{dashboard.activeQueue}</strong>
-            </article>
-            <article className="kpi-card">
-              <span>{t('completedToday')}</span>
-              <strong>{dashboard.completedVisitsToday}</strong>
-            </article>
-            <article className="kpi-card">
-              <span>{t('pendingDocumentation')}</span>
-              <strong>{dashboard.pendingDocumentation}</strong>
-            </article>
-            <article className="kpi-card">
-              <span>{t('followUpsToday')}</span>
-              <strong>{dashboard.followUpsToday}</strong>
-            </article>
-            <article className="kpi-card kpi-attention">
-              <span>{t('overdueFollowUps')}</span>
-              <strong>{dashboard.overdueFollowUps}</strong>
-            </article>
+          <section className="reporting-kpis">
+            <KpiCard
+              label={t('totalPatients')}
+              value={dashboard.totalPatients}
+              icon={UsersRound}
+              tone="blue"
+            />
+            <KpiCard
+              label={t('visitsToday')}
+              value={dashboard.visitsToday}
+              icon={Activity}
+              tone="violet"
+            />
+            <KpiCard
+              label={t('activeQueue')}
+              value={dashboard.activeQueue}
+              icon={UserRound}
+              tone="teal"
+            />
+            <KpiCard
+              label={t('completedToday')}
+              value={dashboard.completedVisitsToday}
+              icon={CircleCheck}
+              tone="teal"
+            />
+            <KpiCard
+              label={t('pendingDocumentation')}
+              value={dashboard.pendingDocumentation}
+              icon={FileClock}
+              tone="amber"
+            />
+            <KpiCard
+              label={t('followUpsToday')}
+              value={dashboard.followUpsToday}
+              icon={CalendarDays}
+              tone="blue"
+            />
+            <KpiCard
+              label={t('overdueFollowUps')}
+              value={dashboard.overdueFollowUps}
+              icon={Clock3}
+              tone="amber"
+            />
           </section>
         </>
       )}
@@ -190,85 +241,157 @@ export function ReportingPage() {
             {reportErrorMessage(csvExport.error, t('csvError'))}
           </p>
         )}
-        <div className="report-filters">
-          <label>
-            <span>{t('fromDate')}</span>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(event) => setFromDate(event.target.value)}
-            />
-          </label>
-          <label>
-            <span>{t('toDate')}</span>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(event) => setToDate(event.target.value)}
-            />
-          </label>
-
-          {auth.hasPermission('Users_View') && (
-            <label>
-              <span>{t('doctor')}</span>
-              <select
-                value={doctorId}
-                onChange={(event) => setDoctorId(event.target.value)}
-              >
-                <option value="">{t('allDoctors')}</option>
-                {(employeesQuery.data ?? [])
-                  .filter((employee) => employee.roles.includes('DOCTOR'))
-                  .map((doctor) => (
-                    <option key={doctor.id} value={doctor.id}>
-                      {doctor.fullName}
-                    </option>
-                  ))}
-              </select>
-            </label>
-          )}
-
-          <label>
-            <span>{t('visitStatus')}</span>
-            <select
-              value={visitStatus}
-              onChange={(event) => setVisitStatus(event.target.value)}
-            >
-              <option value="">{t('allStatuses')}</option>
-              <option value="Open">{t('Open')}</option>
-              <option value="Completed">{t('Completed')}</option>
-              <option value="Cancelled">{t('Cancelled')}</option>
-            </select>
-          </label>
-
-          <label>
-            <span>{t('documentation')}</span>
-            <select
-              value={documentationStatus}
-              onChange={(event) => setDocumentationStatus(event.target.value)}
-            >
-              <option value="">{t('allStatuses')}</option>
-              <option value="NotStarted">{t('NotStarted')}</option>
-              <option value="Draft">{t('Draft')}</option>
-              <option value="Pending">{t('Pending')}</option>
-              <option value="Completed">{t('Completed')}</option>
-            </select>
-          </label>
-
-          <div className="actions report-filter-actions">
-            <button
-              className="button secondary"
-              onClick={() => {
-                setFromDate('')
-                setToDate('')
-                setDoctorId('')
-                setVisitStatus('')
-                setDocumentationStatus('')
-              }}
-            >
+        <div className="report-filter-toolbar">
+          {filterCount > 0 && (
+            <button className="button secondary" type="button" onClick={clearFilters}>
               {t('clearFilters')}
             </button>
-          </div>
+          )}
+          <button
+            className="button secondary"
+            type="button"
+            onClick={() => {
+              setDraftFilters({
+                fromDate,
+                toDate,
+                doctorId,
+                visitStatus,
+                documentationStatus,
+              })
+              setFiltersOpen(true)
+            }}
+          >
+            <ListFilter size={16} aria-hidden="true" />
+            {t('filters')}
+            {filterCount > 0 ? ` (${filterCount})` : ''}
+          </button>
         </div>
+        <Dialog
+          header={t('filters')}
+          visible={filtersOpen}
+          onHide={() => setFiltersOpen(false)}
+          className="report-filter-dialog"
+          modal
+          dismissableMask
+        >
+          <div className="report-filters">
+            <label>
+              <span>{t('fromDate')}</span>
+              <InputText
+                type="date"
+                className="auran-prime-field"
+                value={draftFilters.fromDate}
+                onChange={(event) =>
+                  setDraftFilters((current) => ({
+                    ...current,
+                    fromDate: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label>
+              <span>{t('toDate')}</span>
+              <InputText
+                type="date"
+                className="auran-prime-field"
+                value={draftFilters.toDate}
+                onChange={(event) =>
+                  setDraftFilters((current) => ({
+                    ...current,
+                    toDate: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            {auth.hasPermission('Users_View') && (
+              <label>
+                <span>{t('doctor')}</span>
+                <Dropdown
+                  className="auran-prime-field"
+                  panelClassName="auran-prime-panel"
+                  value={draftFilters.doctorId}
+                  options={[
+                    { label: t('allDoctors'), value: '' },
+                    ...(employeesQuery.data ?? [])
+                      .filter((employee) => employee.roles.includes('DOCTOR'))
+                      .map((doctor) => ({ label: doctor.fullName, value: doctor.id })),
+                  ]}
+                  optionLabel="label"
+                  optionValue="value"
+                  filter
+                  onChange={(event) =>
+                    setDraftFilters((current) => ({ ...current, doctorId: event.value }))
+                  }
+                />
+              </label>
+            )}
+
+            <label>
+              <span>{t('visitStatus')}</span>
+              <Dropdown
+                className="auran-prime-field"
+                panelClassName="auran-prime-panel"
+                value={draftFilters.visitStatus}
+                options={(['', 'Open', 'Completed', 'Cancelled'] as const).map(
+                  (value) => ({
+                    label: value ? t(value) : t('allStatuses'),
+                    value,
+                  }),
+                )}
+                optionLabel="label"
+                optionValue="value"
+                filter
+                onChange={(event) =>
+                  setDraftFilters((current) => ({ ...current, visitStatus: event.value }))
+                }
+              />
+            </label>
+
+            <label>
+              <span>{t('documentation')}</span>
+              <Dropdown
+                className="auran-prime-field"
+                panelClassName="auran-prime-panel"
+                value={draftFilters.documentationStatus}
+                options={(
+                  ['', 'NotStarted', 'Draft', 'Pending', 'Completed'] as const
+                ).map((value) => ({
+                  label: value ? t(value) : t('allStatuses'),
+                  value,
+                }))}
+                optionLabel="label"
+                optionValue="value"
+                filter
+                onChange={(event) =>
+                  setDraftFilters((current) => ({
+                    ...current,
+                    documentationStatus: event.value,
+                  }))
+                }
+              />
+            </label>
+
+            <div className="actions report-filter-actions">
+              {invalidDateRange && (
+                <p className="field-error" role="alert">
+                  {t('dateRangeError')}
+                </p>
+              )}
+              <button className="button secondary" type="button" onClick={clearFilters}>
+                {t('clearFilters')}
+              </button>
+              <button
+                className="button primary"
+                type="button"
+                onClick={applyFilters}
+                disabled={invalidDateRange}
+              >
+                {t('applyFilters')}
+              </button>
+            </div>
+          </div>
+        </Dialog>
 
         {reportQuery.isLoading && <p className="state">{t('loadingReport')}</p>}
         {reportQuery.isError && (

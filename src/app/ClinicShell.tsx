@@ -17,9 +17,11 @@ import {
   Moon,
   Search,
   Settings,
+  ShieldCheck,
   UserRoundPlus,
   UsersRound,
   UserRound,
+  Stethoscope,
   X,
 } from 'lucide-react'
 import { useAuth } from '../features/auth/AuthContext'
@@ -41,10 +43,12 @@ const navIcons = {
   dashboard: LayoutDashboard,
   patients: UsersRound,
   queue: ListTodo,
+  visits: Stethoscope,
   pending: FileText,
   followUps: Clock3,
   reports: ChartNoAxesColumn,
   employees: UserRoundPlus,
+  roles: ShieldCheck,
   settings: Settings,
   audit: ClipboardList,
 }
@@ -73,6 +77,7 @@ const sections: {
         icon: 'patients',
       },
       { to: '/queue', label: 'queue', permission: 'Queue_View', icon: 'queue' },
+      { to: '/visits', label: 'visits', permission: 'Visit_View', icon: 'visits' },
       {
         to: '/pending-documentation',
         label: 'pendingDocumentation',
@@ -96,6 +101,12 @@ const sections: {
         label: 'employees',
         permission: 'Users_View',
         icon: 'employees',
+      },
+      {
+        to: '/roles',
+        label: 'roles',
+        permission: 'RBAC_View',
+        icon: 'roles',
       },
     ],
   },

@@ -3,6 +3,8 @@ import '../auth/auth.css'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Building2, CircleCheck, CirclePause } from 'lucide-react'
+import { KpiCard } from '../../components/ui/KpiCard'
 import { useAuth } from '../auth/AuthContext'
 import {
   connectionRestoredEvent,
@@ -349,7 +351,7 @@ export function PlatformPage() {
   const activeCount = clinics.filter((clinic) => clinic.isActive).length
 
   return (
-    <main className="page-shell">
+    <main className="page-shell platform-page">
       <section className="page-header">
         <div>
           <p className="eyebrow">{t('eyebrow')}</p>
@@ -382,18 +384,19 @@ export function PlatformPage() {
         </p>
       )}
       <section className="platform-summary" aria-label={t('summary')}>
-        <article className="panel">
-          <small>{t('totalClinics')}</small>
-          <strong>{clinics.length}</strong>
-        </article>
-        <article className="panel">
-          <small>{t('active')}</small>
-          <strong>{activeCount}</strong>
-        </article>
-        <article className="panel">
-          <small>{t('suspended')}</small>
-          <strong>{clinics.length - activeCount}</strong>
-        </article>
+        <KpiCard
+          label={t('totalClinics')}
+          value={clinics.length}
+          icon={Building2}
+          tone="blue"
+        />
+        <KpiCard label={t('active')} value={activeCount} icon={CircleCheck} tone="teal" />
+        <KpiCard
+          label={t('suspended')}
+          value={clinics.length - activeCount}
+          icon={CirclePause}
+          tone="amber"
+        />
       </section>
       {showProvision && (
         <section className="panel">

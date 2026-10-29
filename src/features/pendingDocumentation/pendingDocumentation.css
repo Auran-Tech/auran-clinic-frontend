@@ -1,4 +1,214 @@
-.pending-editor {
+.page-shell.pending-page {
   display: grid;
-  gap: 20px;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--auran-border);
+  border-radius: 24px;
+}
+
+.pending-header,
+.pending-list {
+  min-width: 0;
+  border: 1px solid var(--auran-border);
+  border-radius: 19px;
+  background: var(--auran-surface);
+}
+
+.pending-header {
+  display: grid;
+  gap: 10px;
+  padding: 14px 18px;
+}
+
+.pending-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 5px 9px;
+  border: 1px solid var(--auran-border);
+  border-radius: 999px;
+  color: var(--auran-muted);
+  background: var(--auran-surface-soft);
+  font-size: 0.73rem;
+}
+
+.pending-breadcrumb::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--auran-blue);
+  content: '';
+}
+
+.pending-breadcrumb strong {
+  color: var(--auran-text);
+}
+
+.pending-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pending-heading-row {
+  display: grid;
+  gap: 4px;
+}
+
+.pending-heading-row h1 {
+  margin: 0 0 5px;
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
+}
+
+.pending-heading-row p {
+  margin: 0;
+  color: var(--auran-muted);
+  font-size: 0.81rem;
+}
+
+.pending-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pending-list {
+  padding: 12px;
+}
+
+.pending-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 16px;
+}
+
+.pending-toolbar h2 {
+  margin: 0 0 3px;
+  color: var(--auran-text);
+  font-size: 0.9rem;
+}
+
+.pending-toolbar small {
+  color: var(--auran-muted);
+  font-size: 0.72rem;
+}
+
+.pending-filter-actions .button,
+.pending-finish-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.pending-filter-count {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--auran-blue);
+  font-size: 0.7rem;
+}
+
+.pending-state {
+  padding: 28px 12px;
+  color: var(--auran-muted);
+  text-align: center;
+}
+
+.pending-table-wrap {
+  margin-top: 10px;
+}
+
+.pending-table {
+  min-width: 790px;
+}
+
+.pending-patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 175px;
+}
+
+.pending-patient-icon {
+  display: grid;
+  flex: 0 0 32px;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--auran-border);
+  border-radius: 10px;
+  color: var(--auran-blue);
+  background: var(--auran-surface-soft);
+}
+
+.pending-patient-cell a {
+  color: var(--auran-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pending-patient-cell a:hover {
+  color: var(--auran-blue);
+}
+
+.pending-patient-cell small {
+  display: block;
+  margin-top: 4px;
+  color: var(--auran-muted);
+  font-size: 0.68rem;
+  text-align: start;
+}
+
+.pending-visit-age {
+  display: block;
+  margin-top: 4px;
+  color: var(--auran-muted);
+  font-size: 0.68rem;
+}
+
+.pending-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border: 1px solid var(--auran-border);
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.pending-status-draft {
+  color: #f59e0b;
+}
+
+.pending-status-pending {
+  color: #a78bfa;
+}
+
+@media (max-width: 850px) {
+  .pending-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .pending-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .pending-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pending-filter-actions {
+    justify-content: flex-end;
+  }
 }

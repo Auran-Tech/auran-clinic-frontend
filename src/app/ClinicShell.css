@@ -659,8 +659,14 @@ html[data-theme='light'] .topbar-theme-row[aria-checked='true'] .topbar-theme-tr
   background: #3b82f6;
 }
 .clinic-content > .page-shell {
-  width: min(1200px, calc(100% - 64px));
-  padding-top: 34px;
+  width: min(1680px, calc(100% - 28px));
+  max-width: none;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--auran-border);
+  border-radius: 22px;
+  background: var(--auran-page-panel);
+  box-shadow: 0 12px 30px #03091718;
 }
 
 .clinic-content .page-header {
@@ -757,7 +763,7 @@ html[data-theme='light'] .topbar-theme-row[aria-checked='true'] .topbar-theme-tr
   }
 
   .clinic-content > .page-shell {
-    width: min(100% - 32px, 1200px);
+    width: min(100% - 16px, 1680px);
   }
 }
 

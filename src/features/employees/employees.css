@@ -130,3 +130,133 @@
   background: #243650;
   color: #e5edfa;
 }
+
+.employees-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 14px;
+}
+
+.employees-page > .panel {
+  min-width: 0;
+}
+
+.employees-page .page-header {
+  margin-bottom: 0;
+}
+
+.employees-page h1 {
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
+}
+
+.employees-view-tabs,
+.employees-list-actions,
+.employees-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.employees-list-actions {
+  margin-inline-start: auto;
+}
+
+.employees-count {
+  padding: 5px 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 999px;
+  color: var(--auran-muted);
+  font-size: 0.75rem;
+}
+
+.employees-dialog {
+  width: min(760px, calc(100vw - 24px));
+}
+
+.employees-dialog .panel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.employees-dialog .panel-heading h2 {
+  font-size: 1rem;
+}
+
+.employees-dialog .employee-form {
+  gap: 12px;
+}
+
+.employees-dialog .employee-form .auran-prime-field,
+.employees-dialog .employee-form .p-password {
+  width: 100%;
+}
+
+.employees-dialog .employee-form .p-password-input {
+  width: 100%;
+}
+
+.employees-page .role-badge {
+  margin-inline-start: 6px;
+  background: color-mix(in srgb, var(--auran-blue) 14%, var(--auran-surface));
+  color: var(--auran-blue);
+}
+
+.employees-status {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.employees-status.is-active {
+  color: #15926f;
+  background: #10b98120;
+}
+
+.employees-status.is-inactive {
+  color: #c24747;
+  background: #ef444420;
+}
+
+.employees-filter-dialog {
+  width: min(440px, calc(100vw - 24px));
+}
+
+.employees-filter-fields,
+.employees-filter-fields label {
+  display: grid;
+  gap: 8px;
+}
+
+.employees-filter-fields {
+  gap: 16px;
+}
+
+.employees-filter-fields label span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.employees-filter-fields .auran-prime-field {
+  width: 100%;
+}
+
+.employees-filter-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .employees-page .panel-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .employees-list-actions {
+    margin-inline-start: 0;
+  }
+}

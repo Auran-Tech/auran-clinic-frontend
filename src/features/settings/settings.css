@@ -48,3 +48,66 @@ html[data-theme='light'] .settings-save-bar {
   background: #fffffff2;
   box-shadow: 0 18px 40px #0f172a1c;
 }
+
+.settings-page {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.settings-page .page-header {
+  margin-bottom: 0;
+}
+
+.settings-page h1 {
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
+}
+
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid var(--auran-border);
+  border-radius: 15px;
+  background: var(--auran-surface);
+}
+
+.settings-tabs button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--auran-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.settings-tabs button:hover,
+.settings-tabs button.is-active {
+  color: var(--auran-blue);
+  background: color-mix(in srgb, var(--auran-blue) 12%, var(--auran-surface));
+}
+
+.settings-tabs button:focus-visible {
+  outline: 2px solid var(--auran-blue);
+  outline-offset: 2px;
+}
+
+.settings-page .settings-grid {
+  gap: 12px;
+}
+
+.settings-page .settings-grid .auran-prime-field,
+.settings-page .settings-grid .p-inputnumber {
+  width: 100%;
+}
+
+.settings-page .settings-grid .p-inputnumber-input {
+  width: 100%;
+}

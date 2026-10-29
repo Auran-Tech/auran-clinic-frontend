@@ -1,9 +1,6 @@
 .page-shell.patients-page {
   display: grid;
   gap: 14px;
-  max-width: 1500px;
-  width: min(1142px, calc(100% - 20px));
-  margin-top: 24px;
   padding: 14px;
   border: 1px solid var(--auran-border);
   border-radius: 24px;
@@ -57,7 +54,7 @@
 
 .patients-heading-row h1 {
   margin: 0 0 5px;
-  font-size: clamp(1.7rem, 2.3vw, 2.15rem);
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
 }
 
 .patients-heading-row p {
@@ -131,14 +128,11 @@
 }
 
 .patients-table-wrap {
-  overflow-x: auto;
-  margin: 15px 14px 0;
+  margin: 10px 12px 0;
 }
 
 .patients-table {
-  width: 100%;
   min-width: 720px;
-  border-collapse: collapse;
   table-layout: fixed;
 }
 
@@ -166,33 +160,12 @@
 .patients-table td {
   height: 49px;
   padding: 7px 12px;
-  border-bottom: 1px solid var(--auran-border);
-  text-align: start;
   white-space: nowrap;
 }
 
 .patients-table th {
   height: 36px;
-  color: var(--auran-muted);
   font-size: 0.77rem;
-  font-weight: 700;
-}
-
-.patients-sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  color: inherit;
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-}
-
-.patients-sort-button:hover,
-.patients-sort-button:focus-visible {
-  color: var(--auran-blue);
 }
 
 .patients-table td {
@@ -255,55 +228,6 @@
   color: var(--auran-blue);
 }
 
-.patients-pagination,
-.patients-pagination label,
-.patients-page-buttons {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.patients-pagination {
-  flex-wrap: wrap;
-  margin: 14px 14px 0;
-  color: var(--auran-muted);
-  font-size: 0.72rem;
-}
-
-.patients-pagination label {
-  white-space: nowrap;
-}
-
-.patients-pagination .patients-page-size.p-dropdown {
-  width: 92px;
-  min-height: 35px;
-}
-
-.patients-page-buttons {
-  margin-inline-start: auto;
-}
-
-.patients-page-buttons button {
-  display: grid;
-  place-items: center;
-  width: 29px;
-  height: 29px;
-  border: 1px solid var(--auran-border);
-  border-radius: 8px;
-  color: var(--auran-text);
-  background: var(--auran-surface-soft);
-  cursor: pointer;
-}
-
-.patients-page-buttons button:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-html[dir='ltr'] .patients-page-buttons svg {
-  transform: scaleX(-1);
-}
-
 @media (max-width: 640px) {
   .patients-heading-row,
   .patients-toolbar {
@@ -319,7 +243,7 @@ html[dir='ltr'] .patients-page-buttons svg {
     align-self: flex-start;
   }
 
-  .patients-pagination {
+  .auran-table-pagination {
     margin-inline: 0;
   }
 }

@@ -22,5 +22,17 @@
   "loading": "Loading audit events…",
   "loadError": "Unable to load audit events.",
   "empty": "No audit events match these filters.",
-  "metadata": "Metadata"
+  "metadata": "Metadata",
+  "summary": "Audit summary",
+  "totalEvents": "Returned events",
+  "uniqueActors": "Unique actors",
+  "events": "events",
+  "filters": "Filters",
+  "applyFilters": "Apply filters",
+  "time": "Time",
+  "rowsPerPage": "Rows per page",
+  "previousPage": "Previous page",
+  "nextPage": "Next page",
+  "pageNumber": "Page {{page}} of {{total}}",
+  "showingRows": "Showing {{first}}–{{last}} of {{total}}"
 }

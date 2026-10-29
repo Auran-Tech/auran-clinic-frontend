@@ -1,6 +1,7 @@
 :root {
+  --font-family: 'Inter Variable', system-ui, sans-serif;
   font-family:
-    Inter,
+    'Inter Variable',
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -20,6 +21,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 button,
 input,
@@ -29,7 +32,7 @@ textarea {
 }
 
 .page-shell {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1600px, calc(100% - 32px));
   margin: 0 auto;
   padding: 48px 0 80px;
 }
@@ -56,7 +59,7 @@ p {
 }
 h1 {
   margin-bottom: 8px;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.45rem, 1.8vw, 1.85rem);
 }
 h2 {
   margin-bottom: 6px;
@@ -187,7 +190,7 @@ th {
 }
 @media (max-width: 720px) {
   .page-shell {
-    width: min(100% - 20px, 1180px);
+    width: min(100% - 20px, 1600px);
     padding-top: 24px;
   }
   .page-header {
@@ -277,7 +280,11 @@ th {
 }
 
 html[dir='rtl'] body {
-  font-family: Tahoma, Arial, sans-serif;
+  font-family: 'Noto Sans Arabic Variable', 'Inter Variable', sans-serif;
+}
+
+html[dir='rtl'] {
+  --font-family: 'Noto Sans Arabic Variable', 'Inter Variable', sans-serif;
 }
 
 html[dir='rtl'] .page-header,

@@ -1,17 +1,13 @@
 .page-shell.dashboard-page {
   display: grid;
   gap: 16px;
-  max-width: 1500px;
-  width: min(1180px, calc(100% - 20px));
-  margin-top: 24px;
   padding: 14px;
   border: 1px solid var(--auran-border);
   border-radius: 22px;
 }
 
 .dashboard-header,
-.dashboard-card,
-.dashboard-metric-card {
+.dashboard-card {
   border: 1px solid var(--auran-border);
   border-radius: 19px;
   background: var(--auran-surface);
@@ -58,7 +54,7 @@
 
 .dashboard-title-row h1 {
   margin: 0 0 5px;
-  font-size: clamp(1.7rem, 2.3vw, 2.15rem);
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
 }
 
 .dashboard-title-row p {
@@ -78,67 +74,6 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
-}
-
-.dashboard-metric-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-  min-height: 112px;
-  padding: 16px;
-  color: var(--auran-text);
-  text-decoration: none;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease;
-}
-
-.dashboard-metric-card:hover {
-  border-color: var(--auran-blue);
-  transform: translateY(-2px);
-}
-
-.dashboard-metric-ring {
-  display: grid;
-  flex: 0 0 68px;
-  place-items: center;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--dashboard-ring-color) var(--dashboard-ring-fill),
-    var(--auran-border) 0
-  );
-}
-
-.dashboard-metric-ring span {
-  display: grid;
-  place-items: center;
-  width: 49px;
-  height: 49px;
-  border-radius: 50%;
-  color: var(--auran-text);
-  background: var(--auran-surface);
-  font-size: 0.86rem;
-  font-weight: 800;
-}
-
-.dashboard-metric-copy {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.dashboard-metric-copy small,
-.dashboard-metric-copy span {
-  color: var(--auran-muted);
-  font-size: 0.74rem;
-}
-
-.dashboard-metric-copy strong {
-  font-size: 1.55rem;
-  line-height: 1.1;
 }
 
 .dashboard-chart-grid,
@@ -548,11 +483,5 @@
 
   .dashboard-quick-actions {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-metric-card {
-    transition: none;
   }
 }

@@ -1,8 +1,11 @@
 import './settings.css'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { Dropdown } from 'primereact/dropdown'
+import { InputNumber } from 'primereact/inputnumber'
 import { useAuth } from '../auth/AuthContext'
 import { WorkflowConfigurationPanel } from '../workflow/WorkflowConfigurationPanel'
 import { PatientProfileConfigurationPanel } from '../patientProfileAdmin/PatientProfileConfigurationPanel'
@@ -35,6 +38,27 @@ const emptyForm: UpdateClinicSettingsInput = {
   prescriptionFooter: '',
 }
 
+type SettingsTab =
+  'general' | 'branding' | 'workflow' | 'medical' | 'orders' | 'documentation'
+
+const settingsTabs: {
+  key: SettingsTab
+  label:
+    | 'general'
+    | 'brandingTitle'
+    | 'workflowTab'
+    | 'medicalTab'
+    | 'ordersTab'
+    | 'documentationTab'
+}[] = [
+  { key: 'general', label: 'general' },
+  { key: 'branding', label: 'brandingTitle' },
+  { key: 'workflow', label: 'workflowTab' },
+  { key: 'medical', label: 'medicalTab' },
+  { key: 'orders', label: 'ordersTab' },
+  { key: 'documentation', label: 'documentationTab' },
+]
+
 export function SettingsPage() {
   const { t } = useTranslation('settings')
   const auth = useAuth()
@@ -42,6 +66,7 @@ export function SettingsPage() {
   const canView = auth.hasPermission('Settings_View')
   const canManage = auth.hasPermission('Settings_Manage')
   const [form, setForm] = useState<UpdateClinicSettingsInput>(emptyForm)
+  const [tab, setTab] = useState<SettingsTab>('general')
 
   const settingsQuery = useQuery({
     queryKey: ['clinic-settings'],
@@ -108,322 +133,340 @@ export function SettingsPage() {
   const disabled = !canManage
 
   return (
-    <main className="page-shell">
+    <main className="page-shell settings-page">
       <section className="page-header">
         <div>
           <p className="eyebrow">{t('eyebrow')}</p>
           <h1>{t('title')}</h1>
           <p className="muted">{t('subtitle')}</p>
         </div>
-        <div className="actions">
-          {auth.hasPermission('Audit_View') && (
-            <Link className="button secondary nav-button" to="/audit">
-              {t('audit')}
-            </Link>
-          )}
-          {auth.hasPermission('Reports_View') && (
-            <Link className="button secondary nav-button" to="/reports">
-              {t('dashboard')}
-            </Link>
-          )}
-          {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">
-              {t('employees')}
-            </Link>
-          )}
-          <Link className="button secondary nav-button" to="/patients">
-            {t('patients')}
-          </Link>
-        </div>
       </section>
+
+      <nav className="settings-tabs" aria-label={t('title')}>
+        {settingsTabs.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={tab === item.key ? 'is-active' : ''}
+            aria-current={tab === item.key ? 'page' : undefined}
+            onClick={() => setTab(item.key)}
+          >
+            {t(item.label)}
+          </button>
+        ))}
+      </nav>
 
       {settingsQuery.isLoading && <p className="state">{t('loading')}</p>}
       {settingsQuery.isError && <p className="state error">{t('loadError')}</p>}
 
       {settingsQuery.data && (
         <>
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>{t('general')}</h2>
-                <p className="muted">
-                  Clinic code:{' '}
-                  <span className="mono">{settingsQuery.data.clinicCode}</span>
-                </p>
+          {tab === 'general' && (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h2>{t('general')}</h2>
+                  <p className="muted">
+                    Clinic code:{' '}
+                    <span className="mono">{settingsQuery.data.clinicCode}</span>
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div className="settings-grid">
-              <label>
-                <span>{t('clinicName')}</span>
-                <input
-                  value={form.clinicName}
-                  disabled={disabled}
-                  onChange={(event) => updateField('clinicName', event.target.value)}
-                />
-              </label>
+              <div className="settings-grid">
+                <label>
+                  <span>{t('clinicName')}</span>
+                  <InputText
+                    value={form.clinicName}
+                    disabled={disabled}
+                    onChange={(event) => updateField('clinicName', event.target.value)}
+                  />
+                </label>
 
-              <label>
-                <span>{t('patientNumberPrefix')}</span>
-                <input
-                  value={form.patientNumberPrefix ?? ''}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateField('patientNumberPrefix', event.target.value)
-                  }
-                  placeholder="PAT"
-                />
-              </label>
+                <label>
+                  <span>{t('patientNumberPrefix')}</span>
+                  <InputText
+                    value={form.patientNumberPrefix ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('patientNumberPrefix', event.target.value)
+                    }
+                    placeholder="PAT"
+                  />
+                </label>
 
-              <label>
-                <span>{t('reminderHours')}</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="720"
-                  value={form.documentationReminderHours}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateField('documentationReminderHours', Number(event.target.value))
-                  }
-                />
-              </label>
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>{t('brandingTitle')}</h2>
-                <p className="muted">{t('brandingSubtitle')}</p>
+                <label>
+                  <span>{t('reminderHours')}</span>
+                  <InputNumber
+                    className="auran-prime-field"
+                    min={1}
+                    max={720}
+                    useGrouping={false}
+                    value={form.documentationReminderHours}
+                    disabled={disabled}
+                    onValueChange={(event) =>
+                      updateField('documentationReminderHours', event.value ?? 1)
+                    }
+                  />
+                </label>
               </div>
-            </div>
-
-            <div className="settings-grid">
-              <label className="full-width">
-                <span>{t('logoUrl')}</span>
-                <input
-                  value={form.logoUrl ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('logoUrl', event.target.value)}
-                />
-              </label>
-
-              <label>
-                <span>{t('primaryColor')}</span>
-                <input
-                  value={form.primaryColor ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('primaryColor', event.target.value)}
-                  placeholder="#1f2937"
-                />
-              </label>
-
-              <label>
-                <span>{t('secondaryColor')}</span>
-                <input
-                  value={form.secondaryColor ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('secondaryColor', event.target.value)}
-                  placeholder="#e5e7eb"
-                />
-              </label>
-
-              <label>
-                <span>{t('fontFamily')}</span>
-                <input
-                  value={form.fontFamily ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('fontFamily', event.target.value)}
-                />
-              </label>
-
-              <label>
-                <span>{t('welcomeButton')}</span>
-                <input
-                  value={form.welcomeButtonText ?? ''}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateField('welcomeButtonText', event.target.value)
-                  }
-                />
-              </label>
-
-              <label className="full-width">
-                <span>{t('welcomeTitle')}</span>
-                <input
-                  value={form.welcomeTitle ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('welcomeTitle', event.target.value)}
-                />
-              </label>
-
-              <label className="full-width">
-                <span>{t('welcomeMessage')}</span>
-                <textarea
-                  rows={4}
-                  value={form.welcomeMessage ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('welcomeMessage', event.target.value)}
-                />
-              </label>
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>{t('localizationTitle')}</h2>
-                <p className="muted">{t('localizationSubtitle')}</p>
+            </section>
+          )}
+          {tab === 'branding' && (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h2>{t('brandingTitle')}</h2>
+                  <p className="muted">{t('brandingSubtitle')}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="settings-grid">
-              <label>
-                <span>{t('timeZone')}</span>
-                <select
-                  value={form.timeZoneId ?? ''}
-                  disabled={disabled || lookupsQuery.isLoading}
-                  onChange={(event) => updateField('timeZoneId', event.target.value)}
-                >
-                  <option value="">{t('notConfigured')}</option>
-                  {(lookupsQuery.data?.timeZones ?? []).map((timeZone) => (
-                    <option key={timeZone.id} value={timeZone.id}>
-                      {timeZone.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="settings-grid">
+                <label className="full-width">
+                  <span>{t('logoUrl')}</span>
+                  <InputText
+                    value={form.logoUrl ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('logoUrl', event.target.value)}
+                  />
+                </label>
 
-              <label>
-                <span>{t('locale')}</span>
-                <select
-                  value={form.locale ?? ''}
-                  disabled={disabled || lookupsQuery.isLoading}
-                  onChange={(event) => updateField('locale', event.target.value)}
-                >
-                  <option value="">{t('notConfigured')}</option>
-                  {(lookupsQuery.data?.locales ?? []).map((locale) => (
-                    <option key={locale.code} value={locale.code}>
-                      {locale.displayName} — {locale.nativeName}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                <label>
+                  <span>{t('primaryColor')}</span>
+                  <InputText
+                    value={form.primaryColor ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('primaryColor', event.target.value)}
+                    placeholder="#1f2937"
+                  />
+                </label>
 
-              <label>
-                <span>{t('dateFormat')}</span>
-                <input
-                  value={form.dateFormat ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('dateFormat', event.target.value)}
-                  placeholder="dd/MM/yyyy"
-                />
-              </label>
+                <label>
+                  <span>{t('secondaryColor')}</span>
+                  <InputText
+                    value={form.secondaryColor ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('secondaryColor', event.target.value)
+                    }
+                    placeholder="#e5e7eb"
+                  />
+                </label>
 
-              <label>
-                <span>{t('timeFormat')}</span>
-                <input
-                  value={form.timeFormat ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('timeFormat', event.target.value)}
-                  placeholder="HH:mm"
-                />
-              </label>
-            </div>
-          </section>
+                <label>
+                  <span>{t('fontFamily')}</span>
+                  <InputText
+                    value={form.fontFamily ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('fontFamily', event.target.value)}
+                  />
+                </label>
 
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>{t('contactTitle')}</h2>
-                <p className="muted">{t('contactSubtitle')}</p>
+                <label>
+                  <span>{t('welcomeButton')}</span>
+                  <InputText
+                    value={form.welcomeButtonText ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('welcomeButtonText', event.target.value)
+                    }
+                  />
+                </label>
+
+                <label className="full-width">
+                  <span>{t('welcomeTitle')}</span>
+                  <InputText
+                    value={form.welcomeTitle ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('welcomeTitle', event.target.value)}
+                  />
+                </label>
+
+                <label className="full-width">
+                  <span>{t('welcomeMessage')}</span>
+                  <InputTextarea
+                    rows={4}
+                    value={form.welcomeMessage ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('welcomeMessage', event.target.value)
+                    }
+                  />
+                </label>
               </div>
-            </div>
-
-            <div className="settings-grid">
-              <label>
-                <span>{t('phone')}</span>
-                <input
-                  value={form.phone ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('phone', event.target.value)}
-                />
-              </label>
-
-              <label>
-                <span>{t('email')}</span>
-                <input
-                  type="email"
-                  value={form.email ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('email', event.target.value)}
-                />
-              </label>
-
-              <label className="full-width">
-                <span>{t('address')}</span>
-                <textarea
-                  rows={3}
-                  value={form.address ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('address', event.target.value)}
-                />
-              </label>
-
-              <label className="full-width">
-                <span>{t('website')}</span>
-                <input
-                  value={form.website ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => updateField('website', event.target.value)}
-                />
-              </label>
-            </div>
-          </section>
-
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>{t('prescriptionTitle')}</h2>
-                <p className="muted">{t('prescriptionSubtitle')}</p>
+            </section>
+          )}
+          {tab === 'general' && (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h2>{t('localizationTitle')}</h2>
+                  <p className="muted">{t('localizationSubtitle')}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="settings-grid">
-              <label className="full-width">
-                <span>{t('prescriptionHeader')}</span>
-                <textarea
-                  rows={4}
-                  value={form.prescriptionHeader ?? ''}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateField('prescriptionHeader', event.target.value)
-                  }
-                />
-              </label>
+              <div className="settings-grid">
+                <label>
+                  <span>{t('timeZone')}</span>
+                  <Dropdown
+                    className="auran-prime-field"
+                    value={form.timeZoneId ?? ''}
+                    disabled={disabled || lookupsQuery.isLoading}
+                    options={[
+                      { label: t('notConfigured'), value: '' },
+                      ...(lookupsQuery.data?.timeZones ?? []).map((timeZone) => ({
+                        label: timeZone.displayName,
+                        value: timeZone.id,
+                      })),
+                    ]}
+                    optionLabel="label"
+                    optionValue="value"
+                    filter
+                    panelClassName="auran-prime-panel"
+                    onChange={(event) => updateField('timeZoneId', event.value as string)}
+                  />
+                </label>
 
-              <label className="full-width">
-                <span>{t('prescriptionFooter')}</span>
-                <textarea
-                  rows={4}
-                  value={form.prescriptionFooter ?? ''}
-                  disabled={disabled}
-                  onChange={(event) =>
-                    updateField('prescriptionFooter', event.target.value)
-                  }
-                />
-              </label>
-            </div>
-          </section>
+                <label>
+                  <span>{t('locale')}</span>
+                  <Dropdown
+                    className="auran-prime-field"
+                    value={form.locale ?? ''}
+                    disabled={disabled || lookupsQuery.isLoading}
+                    options={[
+                      { label: t('notConfigured'), value: '' },
+                      ...(lookupsQuery.data?.locales ?? []).map((locale) => ({
+                        label: `${locale.displayName} — ${locale.nativeName}`,
+                        value: locale.code,
+                      })),
+                    ]}
+                    optionLabel="label"
+                    optionValue="value"
+                    filter
+                    panelClassName="auran-prime-panel"
+                    onChange={(event) => updateField('locale', event.value as string)}
+                  />
+                </label>
 
-          <WorkflowConfigurationPanel />
-          <PatientProfileConfigurationPanel />
-          <ClinicalFieldConfigurationPanel />
-          <ClinicalOrderSectionConfigurationPanel />
-          <DocumentationPolicyPanel />
+                <label>
+                  <span>{t('dateFormat')}</span>
+                  <InputText
+                    value={form.dateFormat ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('dateFormat', event.target.value)}
+                    placeholder="dd/MM/yyyy"
+                  />
+                </label>
 
-          {canManage && (
+                <label>
+                  <span>{t('timeFormat')}</span>
+                  <InputText
+                    value={form.timeFormat ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('timeFormat', event.target.value)}
+                    placeholder="HH:mm"
+                  />
+                </label>
+              </div>
+            </section>
+          )}
+          {tab === 'general' && (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h2>{t('contactTitle')}</h2>
+                  <p className="muted">{t('contactSubtitle')}</p>
+                </div>
+              </div>
+
+              <div className="settings-grid">
+                <label>
+                  <span>{t('phone')}</span>
+                  <InputText
+                    value={form.phone ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('phone', event.target.value)}
+                  />
+                </label>
+
+                <label>
+                  <span>{t('email')}</span>
+                  <InputText
+                    type="email"
+                    value={form.email ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('email', event.target.value)}
+                  />
+                </label>
+
+                <label className="full-width">
+                  <span>{t('address')}</span>
+                  <InputTextarea
+                    rows={3}
+                    value={form.address ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('address', event.target.value)}
+                  />
+                </label>
+
+                <label className="full-width">
+                  <span>{t('website')}</span>
+                  <InputText
+                    value={form.website ?? ''}
+                    disabled={disabled}
+                    onChange={(event) => updateField('website', event.target.value)}
+                  />
+                </label>
+              </div>
+            </section>
+          )}
+          {tab === 'orders' && (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h2>{t('prescriptionTitle')}</h2>
+                  <p className="muted">{t('prescriptionSubtitle')}</p>
+                </div>
+              </div>
+
+              <div className="settings-grid">
+                <label className="full-width">
+                  <span>{t('prescriptionHeader')}</span>
+                  <InputTextarea
+                    rows={4}
+                    value={form.prescriptionHeader ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('prescriptionHeader', event.target.value)
+                    }
+                  />
+                </label>
+
+                <label className="full-width">
+                  <span>{t('prescriptionFooter')}</span>
+                  <InputTextarea
+                    rows={4}
+                    value={form.prescriptionFooter ?? ''}
+                    disabled={disabled}
+                    onChange={(event) =>
+                      updateField('prescriptionFooter', event.target.value)
+                    }
+                  />
+                </label>
+              </div>
+            </section>
+          )}
+          {tab === 'workflow' && <WorkflowConfigurationPanel />}
+          {tab === 'medical' && (
+            <>
+              <PatientProfileConfigurationPanel />
+              <ClinicalFieldConfigurationPanel />
+            </>
+          )}
+          {tab === 'orders' && <ClinicalOrderSectionConfigurationPanel />}
+          {tab === 'documentation' && <DocumentationPolicyPanel />}
+
+          {canManage && ['general', 'branding', 'orders'].includes(tab) && (
             <section className="settings-save-bar">
               <div>
                 <strong>{t('saveTitle')}</strong>

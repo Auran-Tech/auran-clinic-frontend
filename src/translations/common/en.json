@@ -2,9 +2,11 @@
   "dashboard": "Dashboard",
   "patients": "Patients",
   "queue": "Live queue",
+  "visits": "Visits",
   "followUps": "Follow-ups",
   "pendingDocumentation": "Pending documentation",
   "employees": "Employees",
+  "roles": "Roles & permissions",
   "settings": "Settings",
   "audit": "Audit",
   "reports": "Reports"

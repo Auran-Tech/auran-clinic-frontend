@@ -2,9 +2,11 @@
   "dashboard": "لوحة المتابعة",
   "patients": "المرضى",
   "queue": "قائمة الانتظار",
+  "visits": "الزيارات",
   "followUps": "المتابعات",
   "pendingDocumentation": "التوثيق المعلق",
   "employees": "الموظفون",
+  "roles": "الأدوار والصلاحيات",
   "settings": "الإعدادات",
   "audit": "سجل التدقيق",
   "reports": "التقارير"

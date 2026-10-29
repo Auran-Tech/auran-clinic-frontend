@@ -14,6 +14,40 @@
   margin-top: 8px;
 }
 
+.patient-profile-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid var(--auran-border);
+}
+
+.patient-profile-tabs button {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--auran-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.patient-profile-tabs button:hover,
+.patient-profile-tabs button.is-active {
+  background: var(--auran-surface-soft);
+  color: var(--auran-blue);
+}
+
+.patient-profile-tabs button:focus-visible {
+  outline: 2px solid var(--auran-blue);
+  outline-offset: 2px;
+}
+
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

@@ -1,47 +1,121 @@
 import './audit.css'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Activity, ListFilter, UsersRound } from 'lucide-react'
+import { Dialog } from 'primereact/dialog'
+import { Dropdown } from 'primereact/dropdown'
+import { InputText } from 'primereact/inputtext'
+import {
+  DataTable,
+  TablePagination,
+  type DataTableColumn,
+} from '../../components/ui/DataTable'
+import { KpiCard } from '../../components/ui/KpiCard'
 import { useAuth } from '../auth/AuthContext'
 import { getEmployees } from '../employees/api'
 import { searchAuditLogs } from './api'
-import type { AuditLogQuery } from './types'
+import type { AuditLogItem, AuditLogQuery } from './types'
+
+interface AuditFilters {
+  action: string
+  entityType: string
+  actorUserId: string
+  fromLocal: string
+  toLocal: string
+  take: number
+}
+
+const emptyFilters: AuditFilters = {
+  action: '',
+  entityType: '',
+  actorUserId: '',
+  fromLocal: '',
+  toLocal: '',
+  take: 100,
+}
+
+type SortKey = 'occurredAtUtc' | 'action' | 'entityType' | 'actorName'
+
+function formatMetadata(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2)
+  } catch {
+    return value
+  }
+}
 
 export function AuditPage() {
   const { t, i18n } = useTranslation('audit')
   const auth = useAuth()
   const canView = auth.hasPermission('Audit_View')
-  const [action, setAction] = useState('')
-  const [entityType, setEntityType] = useState('')
-  const [actorUserId, setActorUserId] = useState('')
-  const [fromLocal, setFromLocal] = useState('')
-  const [toLocal, setToLocal] = useState('')
-  const [take, setTake] = useState(100)
+  const [filters, setFilters] = useState<AuditFilters>(emptyFilters)
+  const [draft, setDraft] = useState<AuditFilters>(emptyFilters)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+  const [sortKey, setSortKey] = useState<SortKey>('occurredAtUtc')
+  const [descending, setDescending] = useState(true)
 
-  const query = useMemo<AuditLogQuery>(
-    () => ({
-      take,
-      action: action.trim() || undefined,
-      entityType: entityType.trim() || undefined,
-      actorUserId: actorUserId || undefined,
-      fromUtc: fromLocal ? new Date(fromLocal).toISOString() : undefined,
-      toUtc: toLocal ? new Date(toLocal).toISOString() : undefined,
-    }),
-    [take, action, entityType, actorUserId, fromLocal, toLocal],
-  )
-
+  const query: AuditLogQuery = {
+    take: filters.take,
+    action: filters.action.trim() || undefined,
+    entityType: filters.entityType.trim() || undefined,
+    actorUserId: filters.actorUserId || undefined,
+    fromUtc: filters.fromLocal ? new Date(filters.fromLocal).toISOString() : undefined,
+    toUtc: filters.toLocal ? new Date(filters.toLocal).toISOString() : undefined,
+  }
   const logsQuery = useQuery({
     queryKey: ['audit-search', query],
     queryFn: () => searchAuditLogs(query),
     enabled: canView,
   })
-
   const employeesQuery = useQuery({
     queryKey: ['employees', 'audit-filter'],
     queryFn: getEmployees,
     enabled: canView && auth.hasPermission('Users_View'),
   })
+
+  const logs = logsQuery.data ?? []
+  const sorted = [...logs].sort((a, b) => {
+    const comparison = a[sortKey].localeCompare(b[sortKey], i18n.language)
+    return descending ? -comparison : comparison
+  })
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const visible = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const activeFilterCount =
+    Number(Boolean(filters.action.trim())) +
+    Number(Boolean(filters.entityType.trim())) +
+    Number(Boolean(filters.actorUserId)) +
+    Number(Boolean(filters.fromLocal)) +
+    Number(Boolean(filters.toLocal))
+  const columns: DataTableColumn[] = [
+    { key: 'occurredAtUtc', label: t('time') },
+    { key: 'action', label: t('action') },
+    { key: 'entityType', label: t('entityType') },
+    { key: 'actorName', label: t('actor') },
+    { key: 'ipAddress', label: 'IP' },
+  ].map((column) => {
+    if (column.key === 'ipAddress') return column
+    const key = column.key as SortKey
+    return {
+      ...column,
+      sortDirection: sortKey === key ? (descending ? 'descending' : 'ascending') : 'none',
+      onSort: () => {
+        setDescending(sortKey === key ? !descending : key === 'occurredAtUtc')
+        setSortKey(key)
+        setPage(1)
+      },
+    }
+  })
+
+  function applyFilters(next: AuditFilters) {
+    setFilters(next)
+    setDraft(next)
+    setPage(1)
+    setFiltersOpen(false)
+  }
 
   if (!canView) {
     return (
@@ -52,178 +126,230 @@ export function AuditPage() {
   }
 
   return (
-    <main className="page-shell">
+    <main className="page-shell audit-page">
       <section className="page-header">
         <div>
           <p className="eyebrow">{t('eyebrow')}</p>
           <h1>{t('title')}</h1>
           <p className="muted">{t('subtitle')}</p>
         </div>
-        <div className="actions">
-          {auth.hasPermission('Reports_View') && (
-            <Link className="button secondary nav-button" to="/reports">
-              {t('dashboard')}
-            </Link>
-          )}
-          {auth.hasPermission('Settings_View') && (
-            <Link className="button secondary nav-button" to="/settings">
-              {t('settings')}
-            </Link>
-          )}
-          {(auth.hasPermission('Users_View') || auth.hasPermission('RBAC_View')) && (
-            <Link className="button secondary nav-button" to="/employees">
-              {t('employees')}
-            </Link>
-          )}
-          <Link className="button secondary nav-button" to="/patients">
-            {t('patients')}
-          </Link>
-        </div>
       </section>
 
-      <section className="panel">
-        <div className="panel-heading">
+      <section className="audit-kpis" aria-label={t('summary')}>
+        <KpiCard
+          label={t('totalEvents')}
+          value={logs.length}
+          icon={Activity}
+          tone="blue"
+        />
+        <KpiCard
+          label={t('uniqueActors')}
+          value={new Set(logs.map((log) => log.actorUserId)).size}
+          icon={UsersRound}
+          tone="teal"
+        />
+      </section>
+
+      <section className="panel audit-panel">
+        <div className="audit-toolbar">
           <div>
             <h2>{t('searchTitle')}</h2>
             <p className="muted">{t('searchSubtitle')}</p>
           </div>
-        </div>
-
-        <div className="audit-filters">
-          <label>
-            <span>{t('action')}</span>
-            <input
-              value={action}
-              onChange={(event) => setAction(event.target.value)}
-              placeholder={t('actionExample')}
-            />
-          </label>
-
-          <label>
-            <span>{t('entityType')}</span>
-            <input
-              value={entityType}
-              onChange={(event) => setEntityType(event.target.value)}
-              placeholder={t('entityExample')}
-            />
-          </label>
-
-          {auth.hasPermission('Users_View') && (
-            <label>
-              <span>{t('actor')}</span>
-              <select
-                value={actorUserId}
-                onChange={(event) => setActorUserId(event.target.value)}
+          <div className="audit-toolbar-actions">
+            <span className="audit-count">
+              {logs.length} {t('events')}
+            </span>
+            {activeFilterCount > 0 && (
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => applyFilters(emptyFilters)}
               >
-                <option value="">{t('allActors')}</option>
-                {(employeesQuery.data ?? []).map((employee) => (
-                  <option key={employee.id} value={employee.id}>
-                    {employee.fullName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          <label>
-            <span>{t('from')}</span>
-            <input
-              type="datetime-local"
-              value={fromLocal}
-              onChange={(event) => setFromLocal(event.target.value)}
-            />
-          </label>
-
-          <label>
-            <span>{t('to')}</span>
-            <input
-              type="datetime-local"
-              value={toLocal}
-              onChange={(event) => setToLocal(event.target.value)}
-            />
-          </label>
-
-          <label>
-            <span>{t('rows')}</span>
-            <select
-              value={take}
-              onChange={(event) => setTake(Number(event.target.value))}
-            >
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-              <option value={200}>200</option>
-            </select>
-          </label>
-
-          <div className="actions audit-filter-actions">
+                {t('clearFilters')}
+              </button>
+            )}
             <button
               className="button secondary"
+              type="button"
               onClick={() => {
-                setAction('')
-                setEntityType('')
-                setActorUserId('')
-                setFromLocal('')
-                setToLocal('')
-                setTake(100)
+                setDraft(filters)
+                setFiltersOpen(true)
               }}
             >
-              {t('clearFilters')}
+              <ListFilter size={16} aria-hidden="true" />
+              {t('filters')}
+              {activeFilterCount ? ` (${activeFilterCount})` : ''}
             </button>
           </div>
         </div>
 
         {logsQuery.isLoading && <p className="state">{t('loading')}</p>}
         {logsQuery.isError && <p className="state error">{t('loadError')}</p>}
-
-        {logsQuery.data?.length === 0 && <p className="state">{t('empty')}</p>}
-
-        {logsQuery.data && logsQuery.data.length > 0 && (
-          <div className="audit-list">
-            {logsQuery.data.map((log) => (
-              <article className="audit-card" key={log.id}>
-                <div className="audit-card-heading">
-                  <div>
-                    <strong>{log.action}</strong>
-                    <p className="muted">
-                      {log.entityType}
-                      {log.entityId ? ` · ${log.entityId}` : ''}
-                    </p>
-                  </div>
+        {logsQuery.isSuccess && logs.length === 0 && (
+          <p className="state">{t('empty')}</p>
+        )}
+        {visible.length > 0 && (
+          <DataTable columns={columns} className="audit-table">
+            {visible.map((log: AuditLogItem) => (
+              <tr key={log.id}>
+                <td>
                   <time dateTime={log.occurredAtUtc}>
                     {new Date(log.occurredAtUtc).toLocaleString(i18n.language)}
                   </time>
-                </div>
-
-                <dl className="audit-meta">
-                  <div>
-                    <dt>{t('actor')}</dt>
-                    <dd>{log.actorName}</dd>
-                  </div>
-                  <div>
-                    <dt>IP</dt>
-                    <dd className="mono">{log.ipAddress ?? '—'}</dd>
-                  </div>
-                </dl>
-
-                {log.metadataJson && (
-                  <details>
-                    <summary>{t('metadata')}</summary>
-                    <pre className="audit-json">{formatMetadata(log.metadataJson)}</pre>
-                  </details>
-                )}
-              </article>
+                </td>
+                <td>
+                  <strong className="audit-event-label">
+                    <span aria-hidden="true" />
+                    {log.action}
+                  </strong>
+                  {log.metadataJson && (
+                    <details className="audit-details">
+                      <summary>{t('metadata')}</summary>
+                      <pre className="audit-json">{formatMetadata(log.metadataJson)}</pre>
+                    </details>
+                  )}
+                </td>
+                <td>
+                  <strong>{log.entityType}</strong>
+                  {log.entityId && (
+                    <small className="mono" dir="ltr">
+                      {log.entityId}
+                    </small>
+                  )}
+                </td>
+                <td>{log.actorName}</td>
+                <td className="mono" dir="ltr">
+                  {log.ipAddress ?? '—'}
+                </td>
+              </tr>
             ))}
-          </div>
+          </DataTable>
+        )}
+        {logsQuery.isSuccess && logs.length > 0 && (
+          <TablePagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={logs.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+            labels={{
+              rowsPerPage: t('rowsPerPage'),
+              previous: t('previousPage'),
+              next: t('nextPage'),
+              page: t('pageNumber', { page: currentPage, total: totalPages }),
+              showing: t('showingRows', {
+                first: (currentPage - 1) * pageSize + 1,
+                last: Math.min(currentPage * pageSize, logs.length),
+                total: logs.length,
+              }),
+            }}
+          />
         )}
       </section>
+
+      <Dialog
+        header={t('filters')}
+        visible={filtersOpen}
+        modal
+        className="audit-filter-dialog"
+        onHide={() => setFiltersOpen(false)}
+      >
+        <div className="audit-filter-fields">
+          <label>
+            <span>{t('action')}</span>
+            <InputText
+              className="auran-prime-field"
+              value={draft.action}
+              placeholder={t('actionExample')}
+              onChange={(event) => setDraft({ ...draft, action: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>{t('entityType')}</span>
+            <InputText
+              className="auran-prime-field"
+              value={draft.entityType}
+              placeholder={t('entityExample')}
+              onChange={(event) => setDraft({ ...draft, entityType: event.target.value })}
+            />
+          </label>
+          {auth.hasPermission('Users_View') && (
+            <label>
+              <span>{t('actor')}</span>
+              <Dropdown
+                className="auran-prime-field"
+                value={draft.actorUserId}
+                options={[
+                  { label: t('allActors'), value: '' },
+                  ...(employeesQuery.data ?? []).map((employee) => ({
+                    label: employee.fullName,
+                    value: employee.id,
+                  })),
+                ]}
+                optionLabel="label"
+                optionValue="value"
+                filter
+                panelClassName="auran-prime-panel"
+                onChange={(event) =>
+                  setDraft({ ...draft, actorUserId: event.value as string })
+                }
+              />
+            </label>
+          )}
+          <label>
+            <span>{t('from')}</span>
+            <InputText
+              className="auran-prime-field"
+              type="datetime-local"
+              value={draft.fromLocal}
+              onChange={(event) => setDraft({ ...draft, fromLocal: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>{t('to')}</span>
+            <InputText
+              className="auran-prime-field"
+              type="datetime-local"
+              value={draft.toLocal}
+              onChange={(event) => setDraft({ ...draft, toLocal: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>{t('rows')}</span>
+            <Dropdown
+              className="auran-prime-field"
+              value={draft.take}
+              options={[50, 100, 200].map((value) => ({ label: String(value), value }))}
+              optionLabel="label"
+              optionValue="value"
+              filter
+              panelClassName="auran-prime-panel"
+              onChange={(event) => setDraft({ ...draft, take: Number(event.value) })}
+            />
+          </label>
+          <div className="audit-filter-buttons">
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => applyFilters(emptyFilters)}
+            >
+              {t('clearFilters')}
+            </button>
+            <button
+              className="button primary"
+              type="button"
+              onClick={() => applyFilters(draft)}
+            >
+              {t('applyFilters')}
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </main>
   )
-}
-
-function formatMetadata(value: string) {
-  try {
-    return JSON.stringify(JSON.parse(value), null, 2)
-  } catch {
-    return value
-  }
 }

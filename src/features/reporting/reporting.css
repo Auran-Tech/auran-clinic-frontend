@@ -1,12 +1,31 @@
 .report-filters {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
-  margin-bottom: 20px;
+}
+
+.report-filter-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.report-filter-dialog {
+  width: min(460px, calc(100vw - 24px));
+}
+
+.report-filter-dialog .report-filters label {
+  display: grid;
+  gap: 6px;
+}
+
+.report-filter-dialog .auran-prime-field {
+  width: 100%;
 }
 
 .report-filter-actions {
-  align-items: end;
+  justify-content: flex-end;
 }
 
 .report-count {
@@ -17,18 +36,6 @@
   min-width: 220px;
   max-width: 360px;
   white-space: normal;
-}
-
-@media (max-width: 1000px) {
-  .report-filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 620px) {
-  .report-filters {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Report printing is an explicit, Reports_Export-gated user action.
@@ -52,6 +59,7 @@
   }
   .print-report .print-actions,
   .print-report .print-actions *,
+  .print-report .report-filter-toolbar,
   .print-report .report-filters,
   .print-report .report-filters * {
     display: none !important;
@@ -80,4 +88,10 @@
   .print-report thead {
     display: table-header-group;
   }
+}
+.reporting-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
 }

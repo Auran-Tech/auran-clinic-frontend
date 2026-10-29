@@ -1,5 +1,5 @@
 import './dashboard.css'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity,
@@ -9,10 +9,10 @@ import {
   FileText,
   RefreshCw,
   Users,
-  type LucideIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { KpiCard } from '../../components/ui/KpiCard'
 import { useAuth } from '../auth/AuthContext'
 import { getActiveQueue } from '../queue/api'
 import { getDashboardSummary } from '../reporting/api'
@@ -24,50 +24,6 @@ import {
   parseUtcTimestamp,
   queueDonutGradient,
 } from './dashboardData'
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  caption: string
-  accent: string
-  icon: LucideIcon
-  percent?: number | null
-  to: string
-}
-
-function MetricCard({
-  title,
-  value,
-  caption,
-  accent,
-  icon: Icon,
-  percent,
-  to,
-}: MetricCardProps) {
-  const style = {
-    '--dashboard-ring-color': accent,
-    '--dashboard-ring-fill': `${percent ?? 100}%`,
-  } as CSSProperties
-
-  return (
-    <Link className="dashboard-metric-card" style={style} to={to}>
-      <div className="dashboard-metric-ring" aria-hidden="true">
-        <span>
-          {percent === null || percent === undefined ? (
-            <Icon size={22} strokeWidth={1.8} />
-          ) : (
-            `${percent}%`
-          )}
-        </span>
-      </div>
-      <div className="dashboard-metric-copy">
-        <small>{title}</small>
-        <strong>{value}</strong>
-        <span>{caption}</span>
-      </div>
-    </Link>
-  )
-}
 
 function DashboardPanelHeading({
   title,
@@ -220,26 +176,25 @@ export function DashboardPage() {
         <>
           <section className="dashboard-metrics" aria-label={t('metrics')}>
             {canViewVisits && (
-              <MetricCard
-                accent="#38bdf8"
-                caption={
-                  data.visitsToday > 0
-                    ? t('visitsStartedToday', { value: data.visitsToday })
-                    : t('noVisitsToday')
+              <KpiCard
+                detail={
+                  completionPercent === null
+                    ? t('noVisitsToday')
+                    : `${completionPercent}% · ${t('visitsStartedToday', { value: data.visitsToday })}`
                 }
                 icon={Activity}
-                percent={completionPercent}
-                title={t('visitCompletion')}
+                label={t('visitCompletion')}
+                tone="blue"
                 to="/pending-documentation"
                 value={data.completedVisitsStartedToday}
               />
             )}
             {canViewQueue && (
-              <MetricCard
-                accent="#6366f1"
-                caption={t('averageTimeInFlow')}
+              <KpiCard
+                detail={t('averageTimeInFlow')}
                 icon={Clock3}
-                title={t('timeInFlow')}
+                label={t('timeInFlow')}
+                tone="violet"
                 to="/queue"
                 value={
                   queue.isLoading || timeInFlow === null ? '—' : flowDuration(timeInFlow)
@@ -247,21 +202,21 @@ export function DashboardPage() {
               />
             )}
             {canViewVisits && (
-              <MetricCard
-                accent="#10b981"
-                caption={t('visitsStillPending')}
+              <KpiCard
+                detail={t('visitsStillPending')}
                 icon={FileText}
-                title={t('pendingDocumentation')}
+                label={t('pendingDocumentation')}
+                tone="amber"
                 to="/pending-documentation"
                 value={data.pendingDocumentation}
               />
             )}
             {canViewFollowUps && (
-              <MetricCard
-                accent="#3b82f6"
-                caption={t('followUpsDueToday')}
+              <KpiCard
+                detail={t('followUpsDueToday')}
                 icon={CalendarDays}
-                title={t('followUpsToday')}
+                label={t('followUpsToday')}
+                tone="teal"
                 to="/follow-ups"
                 value={data.followUpsToday}
               />

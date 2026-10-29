@@ -1,23 +1,16 @@
+.page-shell.platform-page {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--auran-border);
+  border-radius: 22px;
+  background: var(--auran-page-panel);
+}
+
 .platform-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 20px;
-}
-.platform-summary .panel {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding: 17px 20px;
-  border-radius: 13px;
-}
-.platform-summary small {
-  color: var(--auran-muted);
-  font-size: 0.78rem;
-}
-.platform-summary strong {
-  color: white;
-  font-size: 1.65rem;
 }
 .platform-list-filters {
   display: flex;
@@ -76,10 +69,6 @@
   .platform-summary {
     grid-template-columns: 1fr;
   }
-}
-
-html[data-theme='light'] .platform-summary strong {
-  color: var(--auran-text);
 }
 
 html[data-theme='light'] .platform-status.active {

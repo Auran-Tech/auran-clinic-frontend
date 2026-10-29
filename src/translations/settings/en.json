@@ -44,5 +44,9 @@
   "saving": "Saving…",
   "save": "Save settings",
   "saved": "Clinic settings saved.",
-  "saveError": "Unable to save clinic settings."
+  "saveError": "Unable to save clinic settings.",
+  "workflowTab": "Workflow",
+  "medicalTab": "Medical fields",
+  "ordersTab": "Clinical orders",
+  "documentationTab": "Documentation"
 }

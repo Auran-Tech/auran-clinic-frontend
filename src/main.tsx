@@ -1,3 +1,5 @@
+import '@fontsource-variable/inter/wght.css'
+import '@fontsource-variable/noto-sans-arabic/wght.css'
 import './base.css'
 import './theme.css'
 import 'primereact/resources/primereact.min.css'

@@ -1,0 +1,152 @@
+.visits-page {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.visits-page .page-header {
+  margin-bottom: 0;
+}
+
+.visits-page h1 {
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
+}
+
+.visits-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.visits-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.visits-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--auran-border);
+}
+
+.visits-toolbar h2 {
+  margin: 0 0 3px;
+  font-size: 1rem;
+}
+
+.visits-toolbar p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.visits-toolbar-actions,
+.visits-filter-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.visits-count {
+  padding: 5px 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 999px;
+  color: var(--auran-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.visits-table td small {
+  display: block;
+  margin-top: 3px;
+  color: var(--auran-muted);
+  font-size: 0.72rem;
+}
+
+.visits-table time {
+  white-space: nowrap;
+}
+
+.visits-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--auran-muted);
+  background: var(--auran-surface-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.visits-badge-open,
+.visits-badge-draft {
+  color: #2d73d7;
+  background: #3b82f620;
+}
+
+.visits-badge-pending,
+.visits-badge-notstarted {
+  color: #ad6900;
+  background: #f59e0b20;
+}
+
+.visits-badge-completed {
+  color: #139471;
+  background: #10b98120;
+}
+
+.visits-badge-cancelled {
+  color: #c24747;
+  background: #ef444420;
+}
+
+.visits-filter-dialog {
+  width: min(650px, calc(100vw - 24px));
+}
+
+.visits-filter-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.visits-filter-fields label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.visits-filter-fields label span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.visits-filter-fields .auran-prime-field {
+  width: 100%;
+}
+
+.visits-filter-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .visits-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .visits-toolbar-actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 520px) {
+  .visits-kpis,
+  .visits-filter-fields {
+    grid-template-columns: 1fr;
+  }
+}

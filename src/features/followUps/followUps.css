@@ -4,15 +4,253 @@
   gap: 18px;
 }
 
-.bucket-tabs {
+.follow-ups-page {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.follow-ups-page .page-header {
+  margin-bottom: 0;
+}
+
+.follow-ups-page h1 {
+  font-size: clamp(1.4rem, 1.6vw, 1.75rem);
+}
+
+.follow-ups-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.follow-ups-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.follow-ups-toolbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--auran-border);
+}
+
+.follow-ups-toolbar h2 {
+  margin: 0 0 3px;
+  font-size: 1rem;
+}
+
+.follow-ups-toolbar p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.follow-ups-toolbar-actions,
+.follow-ups-row-actions {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+}
+
+.follow-ups-count {
+  padding: 5px 10px;
+  border: 1px solid var(--auran-border);
+  border-radius: 999px;
+  color: var(--auran-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.follow-ups-list {
+  display: grid;
+}
+
+.follow-ups-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(
+      170px,
+      auto
+    );
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--auran-border);
+}
+
+.follow-ups-row:hover {
+  background: color-mix(in srgb, var(--auran-blue) 5%, var(--auran-surface));
+}
+
+.follow-ups-main,
+.follow-ups-meta {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.follow-ups-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.follow-ups-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.follow-ups-title .mono,
+.follow-ups-main small,
+.follow-ups-meta small {
+  color: var(--auran-muted);
+  font-size: 0.75rem;
+}
+
+.follow-ups-main .patient-link {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: fit-content;
+}
+
+.follow-ups-meta strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.follow-ups-status-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.follow-ups-status {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: var(--auran-muted);
+  background: color-mix(in srgb, var(--auran-muted) 10%, transparent);
+  font-size: 0.73rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.follow-ups-status-today {
+  color: #ad6900;
+  background: #f59e0b20;
+}
+
+.follow-ups-status-upcoming {
+  color: #2d73d7;
+  background: #3b82f620;
+}
+
+.follow-ups-status-overdue {
+  color: #c24747;
+  background: #ef444420;
+}
+
+.follow-ups-status-completed {
+  color: #139471;
+  background: #10b98120;
+}
+
+.follow-ups-row-actions .button {
+  padding: 6px 9px;
+  font-size: 0.75rem;
+}
+
+.follow-ups-filter-dialog {
+  width: min(440px, calc(100vw - 24px));
+}
+
+.follow-ups-filter-fields,
+.follow-ups-filter-fields label {
+  display: grid;
+  gap: 8px;
+}
+
+.follow-ups-filter-fields {
+  gap: 16px;
+}
+
+.follow-ups-filter-fields label span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.follow-ups-filter-fields .auran-prime-field {
+  width: 100%;
+}
+
+.follow-ups-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 1050px) {
+  .follow-ups-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .follow-ups-row {
+    grid-template-columns: minmax(0, 2fr) minmax(100px, 1fr) minmax(130px, auto);
+  }
+
+  .follow-ups-row .follow-ups-meta:nth-of-type(3) {
+    display: none;
+  }
 }
 
 @media (max-width: 720px) {
   .follow-up-create {
     grid-template-columns: 1fr;
+  }
+
+  .follow-ups-toolbar,
+  .follow-ups-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .follow-ups-toolbar {
+    display: flex;
+  }
+
+  .follow-ups-toolbar-actions {
+    justify-content: flex-end;
+  }
+
+  .follow-ups-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .follow-ups-row .follow-ups-meta {
+    display: none;
+  }
+
+  .follow-ups-status-actions {
+    align-self: start;
+  }
+}
+
+@media (max-width: 520px) {
+  .follow-ups-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .follow-ups-row {
+    grid-template-columns: 1fr;
+  }
+
+  .follow-ups-status-actions {
+    justify-items: start;
   }
 }

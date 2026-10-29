@@ -3,20 +3,15 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  ListFilter,
-  Pencil,
-  Plus,
-  UserRound,
-} from 'lucide-react'
+import { ListFilter, Pencil, Plus, UserRound } from 'lucide-react'
 import { Dialog } from 'primereact/dialog'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
+import {
+  DataTable,
+  TablePagination,
+  type DataTableColumn,
+} from '../../components/ui/DataTable'
 import { useAuth } from '../auth/AuthContext'
 import { getPatients } from './api'
 import { PatientRegistrationDialog } from './PatientRegistrationDialog'
@@ -90,11 +85,60 @@ export function PatientsPage() {
     setPage(1)
   }
 
-  function sortIcon(ascending: PatientSortChoice, descending: PatientSortChoice) {
-    if (filters.sort === ascending) return <ArrowUp size={13} aria-hidden="true" />
-    if (filters.sort === descending) return <ArrowDown size={13} aria-hidden="true" />
-    return <ArrowUpDown size={13} aria-hidden="true" />
+  function sortDirection(
+    ascending: PatientSortChoice,
+    descending: PatientSortChoice,
+  ): DataTableColumn['sortDirection'] {
+    return filters.sort === ascending
+      ? 'ascending'
+      : filters.sort === descending
+        ? 'descending'
+        : 'none'
   }
+
+  const columns: DataTableColumn[] = [
+    {
+      key: 'number',
+      label: t('patientNumber'),
+      sortDirection: sortDirection(
+        PATIENT_SORT_CHOICE.numberAsc,
+        PATIENT_SORT_CHOICE.numberDesc,
+      ),
+      onSort: () =>
+        sortByHeader(PATIENT_SORT_CHOICE.numberAsc, PATIENT_SORT_CHOICE.numberDesc),
+    },
+    {
+      key: 'name',
+      label: t('name'),
+      sortDirection: sortDirection(
+        PATIENT_SORT_CHOICE.nameAsc,
+        PATIENT_SORT_CHOICE.nameDesc,
+      ),
+      onSort: () =>
+        sortByHeader(PATIENT_SORT_CHOICE.nameAsc, PATIENT_SORT_CHOICE.nameDesc),
+    },
+    {
+      key: 'phone',
+      label: t('phone'),
+      sortDirection: sortDirection(
+        PATIENT_SORT_CHOICE.phoneAsc,
+        PATIENT_SORT_CHOICE.phoneDesc,
+      ),
+      onSort: () =>
+        sortByHeader(PATIENT_SORT_CHOICE.phoneAsc, PATIENT_SORT_CHOICE.phoneDesc),
+    },
+    {
+      key: 'gender',
+      label: t('gender'),
+      sortDirection: sortDirection(
+        PATIENT_SORT_CHOICE.genderAsc,
+        PATIENT_SORT_CHOICE.genderDesc,
+      ),
+      onSort: () =>
+        sortByHeader(PATIENT_SORT_CHOICE.genderAsc, PATIENT_SORT_CHOICE.genderDesc),
+    },
+    { key: 'actions', label: t('actions') },
+  ]
 
   return (
     <main className="page-shell patients-page">
@@ -173,206 +217,75 @@ export function PatientsPage() {
         )}
 
         {result && result.data.length > 0 && (
-          <div className="patients-table-wrap">
-            <table className="patients-table">
-              <thead>
-                <tr>
-                  <th
-                    aria-sort={
-                      filters.sort === PATIENT_SORT_CHOICE.numberAsc
-                        ? 'ascending'
-                        : filters.sort === PATIENT_SORT_CHOICE.numberDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="patients-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          PATIENT_SORT_CHOICE.numberAsc,
-                          PATIENT_SORT_CHOICE.numberDesc,
-                        )
-                      }
-                    >
-                      {t('patientNumber')}
-                      {sortIcon(
-                        PATIENT_SORT_CHOICE.numberAsc,
-                        PATIENT_SORT_CHOICE.numberDesc,
-                      )}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === PATIENT_SORT_CHOICE.nameAsc
-                        ? 'ascending'
-                        : filters.sort === PATIENT_SORT_CHOICE.nameDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="patients-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          PATIENT_SORT_CHOICE.nameAsc,
-                          PATIENT_SORT_CHOICE.nameDesc,
-                        )
-                      }
-                    >
-                      {t('name')}
-                      {sortIcon(
-                        PATIENT_SORT_CHOICE.nameAsc,
-                        PATIENT_SORT_CHOICE.nameDesc,
-                      )}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === PATIENT_SORT_CHOICE.phoneAsc
-                        ? 'ascending'
-                        : filters.sort === PATIENT_SORT_CHOICE.phoneDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="patients-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          PATIENT_SORT_CHOICE.phoneAsc,
-                          PATIENT_SORT_CHOICE.phoneDesc,
-                        )
-                      }
-                    >
-                      {t('phone')}
-                      {sortIcon(
-                        PATIENT_SORT_CHOICE.phoneAsc,
-                        PATIENT_SORT_CHOICE.phoneDesc,
-                      )}
-                    </button>
-                  </th>
-                  <th
-                    aria-sort={
-                      filters.sort === PATIENT_SORT_CHOICE.genderAsc
-                        ? 'ascending'
-                        : filters.sort === PATIENT_SORT_CHOICE.genderDesc
-                          ? 'descending'
-                          : 'none'
-                    }
-                  >
-                    <button
-                      type="button"
-                      className="patients-sort-button"
-                      onClick={() =>
-                        sortByHeader(
-                          PATIENT_SORT_CHOICE.genderAsc,
-                          PATIENT_SORT_CHOICE.genderDesc,
-                        )
-                      }
-                    >
-                      {t('gender')}
-                      {sortIcon(
-                        PATIENT_SORT_CHOICE.genderAsc,
-                        PATIENT_SORT_CHOICE.genderDesc,
-                      )}
-                    </button>
-                  </th>
-                  <th>{t('actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.data.map((patient) => (
-                  <tr key={patient.id}>
-                    <td className="patients-number" dir="ltr">
-                      {patient.patientNumber}
-                    </td>
-                    <td>
-                      <Link className="patients-name" to={`/patients/${patient.id}`}>
-                        {patient.fullName}
+          <DataTable
+            columns={columns}
+            className="patients-table"
+            wrapClassName="patients-table-wrap"
+          >
+            {result.data.map((patient) => (
+              <tr key={patient.id}>
+                <td className="patients-number" dir="ltr">
+                  {patient.patientNumber}
+                </td>
+                <td>
+                  <Link className="patients-name" to={`/patients/${patient.id}`}>
+                    {patient.fullName}
+                  </Link>
+                </td>
+                <td className="patients-phone" dir="ltr">
+                  {patient.phone}
+                </td>
+                <td>
+                  <span className="patients-gender">
+                    {patient.gender === 'Female'
+                      ? t('female')
+                      : patient.gender === 'Male'
+                        ? t('male')
+                        : t('notSpecified')}
+                  </span>
+                </td>
+                <td>
+                  <div className="patients-row-actions">
+                    <Link to={`/patients/${patient.id}`}>
+                      <UserRound size={13} aria-hidden="true" />
+                      {t('open')}
+                    </Link>
+                    {auth.hasPermission('Patient_Edit_Basic') && (
+                      <Link to={`/patients/${patient.id}?edit=1`}>
+                        <Pencil size={13} aria-hidden="true" />
+                        {t('edit')}
                       </Link>
-                    </td>
-                    <td className="patients-phone" dir="ltr">
-                      {patient.phone}
-                    </td>
-                    <td>
-                      <span className="patients-gender">
-                        {patient.gender === 'Female'
-                          ? t('female')
-                          : patient.gender === 'Male'
-                            ? t('male')
-                            : t('notSpecified')}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="patients-row-actions">
-                        <Link to={`/patients/${patient.id}`}>
-                          <UserRound size={13} aria-hidden="true" />
-                          {t('open')}
-                        </Link>
-                        {auth.hasPermission('Patient_Edit_Basic') && (
-                          <Link to={`/patients/${patient.id}?edit=1`}>
-                            <Pencil size={13} aria-hidden="true" />
-                            {t('edit')}
-                          </Link>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
         )}
 
         {result && (
-          <footer className="patients-pagination">
-            <label>
-              {t('rowsPerPage')}
-              <Dropdown
-                className="auran-prime-field patients-page-size"
-                value={pageSize}
-                options={[5, 10, 20, 50].map((size) => ({
-                  label: String(size),
-                  value: size,
-                }))}
-                optionLabel="label"
-                optionValue="value"
-                filter
-                panelClassName="auran-prime-panel"
-                aria-label={t('rowsPerPage')}
-                onChange={(event) => {
-                  setPageSize(Number(event.value))
-                  setPage(1)
-                }}
-              />
-            </label>
-            <span>
-              {t('showing', { first: firstRow, last: lastRow, total: totalCount })}
-            </span>
-            <div className="patients-page-buttons">
-              <button
-                type="button"
-                aria-label={t('previous')}
-                disabled={page <= 1}
-                onClick={() => setPage((value) => value - 1)}
-              >
-                <ChevronRight size={16} aria-hidden="true" />
-              </button>
-              <span>{t('page', { current: page, total: totalPages })}</span>
-              <button
-                type="button"
-                aria-label={t('next')}
-                disabled={page >= totalPages}
-                onClick={() => setPage((value) => value + 1)}
-              >
-                <ChevronLeft size={16} aria-hidden="true" />
-              </button>
-            </div>
-          </footer>
+          <TablePagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+            labels={{
+              rowsPerPage: t('rowsPerPage'),
+              previous: t('previous'),
+              next: t('next'),
+              page: t('page', { current: page, total: totalPages }),
+              showing: t('showing', {
+                first: firstRow,
+                last: lastRow,
+                total: totalCount,
+              }),
+            }}
+          />
         )}
       </section>
 

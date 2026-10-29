@@ -2,7 +2,13 @@ import { requireData } from '../../lib/requireData'
 import axios from 'axios'
 import { api } from '../../lib/api'
 import type { BaseResponse } from '../../types/api'
-import type { PatientVisitHistory, StartVisitInput, Visit } from './types'
+import type {
+  ClinicVisitList,
+  ClinicVisitListQuery,
+  PatientVisitHistory,
+  StartVisitInput,
+  Visit,
+} from './types'
 
 export interface VisitDoctorOption {
   id: string
@@ -12,6 +18,19 @@ export interface VisitDoctorOption {
 export async function getVisitDoctors() {
   const response = await api.get<BaseResponse<VisitDoctorOption[]>>('/visits/doctors')
   return requireData(response.data, 'Unable to load available doctors.')
+}
+
+export async function getClinicVisits(query: ClinicVisitListQuery) {
+  const response = await api.get<BaseResponse<ClinicVisitList>>('/visits', {
+    params: query,
+  })
+  return requireData(response.data, 'Unable to load clinic visits.')
+}
+
+export async function getClinicVisitDoctors() {
+  const response =
+    await api.get<BaseResponse<VisitDoctorOption[]>>('/visits/list-doctors')
+  return requireData(response.data, 'Unable to load visit doctors.')
 }
 
 export async function getActiveVisit(patientId: string) {
