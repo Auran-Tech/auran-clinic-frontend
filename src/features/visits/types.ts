@@ -51,8 +51,8 @@ export interface ClinicVisitListQuery {
   doctorId?: string
   status?: 'Open' | 'Completed' | 'Cancelled'
   documentationStatus?: 'NotStarted' | 'Draft' | 'Pending' | 'Completed'
-  fromUtc?: string
-  toUtc?: string
+  fromDate?: string
+  toDate?: string
   sortBy: 'entryAtUtc' | 'patientName' | 'doctorName' | 'status'
   descending: boolean
 }

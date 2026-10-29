@@ -46,12 +46,6 @@ export function VisitsPage() {
   const [descending, setDescending] = useState(true)
   const canView = auth.hasPermission('Visit_View')
 
-  const fromUtc = filters.fromDate
-    ? new Date(`${filters.fromDate}T00:00:00`).toISOString()
-    : undefined
-  const toUtc = filters.toDate
-    ? new Date(`${filters.toDate}T23:59:59.999`).toISOString()
-    : undefined
   const query: ClinicVisitListQuery = {
     page,
     pageSize,
@@ -59,8 +53,8 @@ export function VisitsPage() {
     doctorId: filters.doctorId || undefined,
     status: filters.status,
     documentationStatus: filters.documentationStatus,
-    fromUtc,
-    toUtc,
+    fromDate: filters.fromDate || undefined,
+    toDate: filters.toDate || undefined,
     sortBy,
     descending,
   }
@@ -86,6 +80,9 @@ export function VisitsPage() {
     Number(Boolean(filters.documentationStatus)) +
     Number(Boolean(filters.fromDate)) +
     Number(Boolean(filters.toDate))
+  const invalidDateRange = Boolean(
+    draft.fromDate && draft.toDate && draft.fromDate > draft.toDate,
+  )
   const columns: DataTableColumn[] = [
     { key: 'visitId', label: t('visitId') },
     { key: 'patientName', label: t('patient') },
@@ -367,6 +364,11 @@ export function VisitsPage() {
             />
           </label>
           <div className="visits-filter-actions">
+            {invalidDateRange && (
+              <p className="field-error" role="alert">
+                {t('dateRangeError')}
+              </p>
+            )}
             <button
               className="button secondary"
               type="button"
@@ -378,6 +380,7 @@ export function VisitsPage() {
               className="button primary"
               type="button"
               onClick={() => applyFilters(draft)}
+              disabled={invalidDateRange}
             >
               {t('applyFilters')}
             </button>

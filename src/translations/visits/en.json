@@ -50,6 +50,7 @@
   "allStatuses": "All statuses",
   "fromDate": "From date",
   "toDate": "To date",
+  "dateRangeError": "From date must be on or before To date.",
   "rowsPerPage": "Rows per page",
   "previousPage": "Previous page",
   "nextPage": "Next page",
