@@ -36,6 +36,9 @@ export function ReportingPage() {
   const auth = useAuth()
   const canView = auth.hasPermission('Reports_View')
   const canExport = auth.hasPermission('Reports_Export')
+  const [activeReport, setActiveReport] = useState<
+    'visits' | 'patients' | 'queue' | 'doctors'
+  >('visits')
 
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
@@ -117,7 +120,7 @@ export function ReportingPage() {
   const reportQuery = useQuery({
     queryKey: ['visit-report', reportQueryParams],
     queryFn: () => getVisitReport(reportQueryParams),
-    enabled: canView,
+    enabled: canView && activeReport === 'visits',
   })
 
   if (!canView) {
@@ -195,279 +198,311 @@ export function ReportingPage() {
         </>
       )}
 
-      <section className="panel print-report">
-        <div className="panel-heading">
-          <div>
-            <h2>{t('visitReport')}</h2>
-            <p className="muted">{t('visitReportSubtitle')}</p>
-          </div>
-          {canExport && (
-            <div className="actions print-actions">
-              <button
-                className="button secondary"
-                type="button"
-                onClick={() => window.print()}
-                disabled={!reportQuery.data || reportQuery.isFetching}
-              >
-                {t('printPdf')}
-              </button>
-              <button
-                className="button secondary"
-                type="button"
-                disabled={csvExport.isPending}
-                onClick={() => csvExport.mutate(reportQueryParams)}
-              >
-                {csvExport.isPending ? t('preparingCsv') : t('exportCsv')}
-              </button>
-              <button
-                className="button secondary"
-                type="button"
-                disabled={xlsxExport.isPending}
-                onClick={() => xlsxExport.mutate(reportQueryParams)}
-              >
-                {xlsxExport.isPending ? t('preparingExcel') : t('exportExcel')}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {xlsxExport.isError && (
-          <p role="alert" className="field-error">
-            {reportErrorMessage(xlsxExport.error, t('excelError'))}
-          </p>
-        )}
-        {csvExport.isError && (
-          <p role="alert" className="field-error">
-            {reportErrorMessage(csvExport.error, t('csvError'))}
-          </p>
-        )}
-        <div className="report-filter-toolbar">
-          {filterCount > 0 && (
-            <button className="button secondary" type="button" onClick={clearFilters}>
-              {t('clearFilters')}
-            </button>
-          )}
+      <nav className="report-selector" aria-label={t('selectReport')}>
+        {(
+          [
+            { id: 'visits', label: t('visitReport'), icon: Activity },
+            { id: 'patients', label: t('patientsReport'), icon: UsersRound },
+            { id: 'queue', label: t('queueReport'), icon: Clock3 },
+            { id: 'doctors', label: t('doctorActivity'), icon: UserRound },
+          ] as const
+        ).map(({ id, label, icon: Icon }) => (
           <button
-            className="button secondary"
+            key={id}
             type="button"
-            onClick={() => {
-              setDraftFilters({
-                fromDate,
-                toDate,
-                doctorId,
-                visitStatus,
-                documentationStatus,
-              })
-              setFiltersOpen(true)
-            }}
+            className={activeReport === id ? 'is-active' : ''}
+            aria-current={activeReport === id ? 'page' : undefined}
+            onClick={() => setActiveReport(id)}
           >
-            <ListFilter size={16} aria-hidden="true" />
-            {t('filters')}
-            {filterCount > 0 ? ` (${filterCount})` : ''}
+            <Icon size={18} aria-hidden="true" />
+            <span>{label}</span>
           </button>
-        </div>
-        <Dialog
-          header={t('filters')}
-          visible={filtersOpen}
-          onHide={() => setFiltersOpen(false)}
-          className="report-filter-dialog"
-          modal
-          dismissableMask
-        >
-          <div className="report-filters">
-            <label>
-              <span>{t('fromDate')}</span>
-              <InputText
-                type="date"
-                className="auran-prime-field"
-                value={draftFilters.fromDate}
-                onChange={(event) =>
-                  setDraftFilters((current) => ({
-                    ...current,
-                    fromDate: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label>
-              <span>{t('toDate')}</span>
-              <InputText
-                type="date"
-                className="auran-prime-field"
-                value={draftFilters.toDate}
-                onChange={(event) =>
-                  setDraftFilters((current) => ({
-                    ...current,
-                    toDate: event.target.value,
-                  }))
-                }
-              />
-            </label>
+        ))}
+      </nav>
 
-            {auth.hasPermission('Users_View') && (
+      {activeReport === 'visits' && (
+        <section className="panel print-report">
+          <div className="panel-heading">
+            <div>
+              <h2>{t('visitReport')}</h2>
+              <p className="muted">{t('visitReportSubtitle')}</p>
+            </div>
+            {canExport && (
+              <div className="actions print-actions">
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => window.print()}
+                  disabled={!reportQuery.data || reportQuery.isFetching}
+                >
+                  {t('printPdf')}
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  disabled={csvExport.isPending}
+                  onClick={() => csvExport.mutate(reportQueryParams)}
+                >
+                  {csvExport.isPending ? t('preparingCsv') : t('exportCsv')}
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  disabled={xlsxExport.isPending}
+                  onClick={() => xlsxExport.mutate(reportQueryParams)}
+                >
+                  {xlsxExport.isPending ? t('preparingExcel') : t('exportExcel')}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {xlsxExport.isError && (
+            <p role="alert" className="field-error">
+              {reportErrorMessage(xlsxExport.error, t('excelError'))}
+            </p>
+          )}
+          {csvExport.isError && (
+            <p role="alert" className="field-error">
+              {reportErrorMessage(csvExport.error, t('csvError'))}
+            </p>
+          )}
+          <div className="report-filter-toolbar">
+            {filterCount > 0 && (
+              <button className="button secondary" type="button" onClick={clearFilters}>
+                {t('clearFilters')}
+              </button>
+            )}
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => {
+                setDraftFilters({
+                  fromDate,
+                  toDate,
+                  doctorId,
+                  visitStatus,
+                  documentationStatus,
+                })
+                setFiltersOpen(true)
+              }}
+            >
+              <ListFilter size={16} aria-hidden="true" />
+              {t('filters')}
+              {filterCount > 0 ? ` (${filterCount})` : ''}
+            </button>
+          </div>
+          <Dialog
+            header={t('filters')}
+            visible={filtersOpen}
+            onHide={() => setFiltersOpen(false)}
+            className="report-filter-dialog"
+            modal
+            dismissableMask
+          >
+            <div className="report-filters">
               <label>
-                <span>{t('doctor')}</span>
+                <span>{t('fromDate')}</span>
+                <InputText
+                  type="date"
+                  className="auran-prime-field"
+                  value={draftFilters.fromDate}
+                  onChange={(event) =>
+                    setDraftFilters((current) => ({
+                      ...current,
+                      fromDate: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                <span>{t('toDate')}</span>
+                <InputText
+                  type="date"
+                  className="auran-prime-field"
+                  value={draftFilters.toDate}
+                  onChange={(event) =>
+                    setDraftFilters((current) => ({
+                      ...current,
+                      toDate: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+
+              {auth.hasPermission('Users_View') && (
+                <label>
+                  <span>{t('doctor')}</span>
+                  <Dropdown
+                    className="auran-prime-field"
+                    panelClassName="auran-prime-panel"
+                    value={draftFilters.doctorId}
+                    options={[
+                      { label: t('allDoctors'), value: '' },
+                      ...(employeesQuery.data ?? [])
+                        .filter((employee) => employee.roles.includes('DOCTOR'))
+                        .map((doctor) => ({ label: doctor.fullName, value: doctor.id })),
+                    ]}
+                    optionLabel="label"
+                    optionValue="value"
+                    filter
+                    onChange={(event) =>
+                      setDraftFilters((current) => ({
+                        ...current,
+                        doctorId: event.value,
+                      }))
+                    }
+                  />
+                </label>
+              )}
+
+              <label>
+                <span>{t('visitStatus')}</span>
                 <Dropdown
                   className="auran-prime-field"
                   panelClassName="auran-prime-panel"
-                  value={draftFilters.doctorId}
-                  options={[
-                    { label: t('allDoctors'), value: '' },
-                    ...(employeesQuery.data ?? [])
-                      .filter((employee) => employee.roles.includes('DOCTOR'))
-                      .map((doctor) => ({ label: doctor.fullName, value: doctor.id })),
-                  ]}
+                  value={draftFilters.visitStatus}
+                  options={(['', 'Open', 'Completed', 'Cancelled'] as const).map(
+                    (value) => ({
+                      label: value ? t(value) : t('allStatuses'),
+                      value,
+                    }),
+                  )}
                   optionLabel="label"
                   optionValue="value"
                   filter
                   onChange={(event) =>
-                    setDraftFilters((current) => ({ ...current, doctorId: event.value }))
+                    setDraftFilters((current) => ({
+                      ...current,
+                      visitStatus: event.value,
+                    }))
                   }
                 />
               </label>
-            )}
 
-            <label>
-              <span>{t('visitStatus')}</span>
-              <Dropdown
-                className="auran-prime-field"
-                panelClassName="auran-prime-panel"
-                value={draftFilters.visitStatus}
-                options={(['', 'Open', 'Completed', 'Cancelled'] as const).map(
-                  (value) => ({
+              <label>
+                <span>{t('documentation')}</span>
+                <Dropdown
+                  className="auran-prime-field"
+                  panelClassName="auran-prime-panel"
+                  value={draftFilters.documentationStatus}
+                  options={(
+                    ['', 'NotStarted', 'Draft', 'Pending', 'Completed'] as const
+                  ).map((value) => ({
                     label: value ? t(value) : t('allStatuses'),
                     value,
-                  }),
+                  }))}
+                  optionLabel="label"
+                  optionValue="value"
+                  filter
+                  onChange={(event) =>
+                    setDraftFilters((current) => ({
+                      ...current,
+                      documentationStatus: event.value,
+                    }))
+                  }
+                />
+              </label>
+
+              <div className="actions report-filter-actions">
+                {invalidDateRange && (
+                  <p className="field-error" role="alert">
+                    {t('dateRangeError')}
+                  </p>
                 )}
-                optionLabel="label"
-                optionValue="value"
-                filter
-                onChange={(event) =>
-                  setDraftFilters((current) => ({ ...current, visitStatus: event.value }))
-                }
-              />
-            </label>
-
-            <label>
-              <span>{t('documentation')}</span>
-              <Dropdown
-                className="auran-prime-field"
-                panelClassName="auran-prime-panel"
-                value={draftFilters.documentationStatus}
-                options={(
-                  ['', 'NotStarted', 'Draft', 'Pending', 'Completed'] as const
-                ).map((value) => ({
-                  label: value ? t(value) : t('allStatuses'),
-                  value,
-                }))}
-                optionLabel="label"
-                optionValue="value"
-                filter
-                onChange={(event) =>
-                  setDraftFilters((current) => ({
-                    ...current,
-                    documentationStatus: event.value,
-                  }))
-                }
-              />
-            </label>
-
-            <div className="actions report-filter-actions">
-              {invalidDateRange && (
-                <p className="field-error" role="alert">
-                  {t('dateRangeError')}
-                </p>
-              )}
-              <button className="button secondary" type="button" onClick={clearFilters}>
-                {t('clearFilters')}
-              </button>
-              <button
-                className="button primary"
-                type="button"
-                onClick={applyFilters}
-                disabled={invalidDateRange}
-              >
-                {t('applyFilters')}
-              </button>
-            </div>
-          </div>
-        </Dialog>
-
-        {reportQuery.isLoading && <p className="state">{t('loadingReport')}</p>}
-        {reportQuery.isError && (
-          <p className="state error">
-            {reportErrorMessage(reportQuery.error, t('reportError'))}
-          </p>
-        )}
-
-        {reportQuery.data && (
-          <>
-            <p className="report-print-context">
-              {t('filterContext', {
-                from: fromDate || t('any'),
-                to: toDate || t('any'),
-                visitStatus: visitStatus
-                  ? t(visitStatus, { defaultValue: visitStatus })
-                  : t('any'),
-                documentation: documentationStatus
-                  ? t(documentationStatus, { defaultValue: documentationStatus })
-                  : t('any'),
-              })}
-            </p>
-            <p className="muted report-count">
-              {t('visitCount', { count: reportQuery.data.totalCount })}
-            </p>
-
-            {reportQuery.data.rows.length === 0 ? (
-              <p className="state">{t('noVisits')}</p>
-            ) : (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>{t('patient')}</th>
-                      <th>{t('doctor')}</th>
-                      <th>{t('visit')}</th>
-                      <th>{t('documentation')}</th>
-                      <th>{t('entry')}</th>
-                      <th>{t('diagnosis')}</th>
-                      <th>{t('treatmentPlan')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportQuery.data.rows.map((row) => (
-                      <tr key={row.visitId}>
-                        <td>
-                          <Link
-                            className="patient-link"
-                            to={`/patients/${row.patientId}`}
-                          >
-                            <strong>{row.patientName}</strong>
-                          </Link>
-                          <div className="muted mono">{row.patientNumber}</div>
-                        </td>
-                        <td>{row.doctorName}</td>
-                        <td>{t(row.visitStatus, { defaultValue: row.visitStatus })}</td>
-                        <td>
-                          {t(row.documentationStatus, {
-                            defaultValue: row.documentationStatus,
-                          })}
-                        </td>
-                        <td>{new Date(row.entryAtUtc).toLocaleString(i18n.language)}</td>
-                        <td className="report-text-cell">{row.diagnosis ?? '—'}</td>
-                        <td className="report-text-cell">{row.treatmentPlan ?? '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <button className="button secondary" type="button" onClick={clearFilters}>
+                  {t('clearFilters')}
+                </button>
+                <button
+                  className="button primary"
+                  type="button"
+                  onClick={applyFilters}
+                  disabled={invalidDateRange}
+                >
+                  {t('applyFilters')}
+                </button>
               </div>
-            )}
-          </>
-        )}
-      </section>
-      <PatientReportPanel />
-      <QueueReportPanel />
-      <DoctorActivityPanel />
+            </div>
+          </Dialog>
+
+          {reportQuery.isLoading && <p className="state">{t('loadingReport')}</p>}
+          {reportQuery.isError && (
+            <p className="state error">
+              {reportErrorMessage(reportQuery.error, t('reportError'))}
+            </p>
+          )}
+
+          {reportQuery.data && (
+            <>
+              <p className="report-print-context">
+                {t('filterContext', {
+                  from: fromDate || t('any'),
+                  to: toDate || t('any'),
+                  visitStatus: visitStatus
+                    ? t(visitStatus, { defaultValue: visitStatus })
+                    : t('any'),
+                  documentation: documentationStatus
+                    ? t(documentationStatus, { defaultValue: documentationStatus })
+                    : t('any'),
+                })}
+              </p>
+              <p className="muted report-count">
+                {t('visitCount', { count: reportQuery.data.totalCount })}
+              </p>
+
+              {reportQuery.data.rows.length === 0 ? (
+                <p className="state">{t('noVisits')}</p>
+              ) : (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>{t('patient')}</th>
+                        <th>{t('doctor')}</th>
+                        <th>{t('visit')}</th>
+                        <th>{t('documentation')}</th>
+                        <th>{t('entry')}</th>
+                        <th>{t('diagnosis')}</th>
+                        <th>{t('treatmentPlan')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportQuery.data.rows.map((row) => (
+                        <tr key={row.visitId}>
+                          <td>
+                            <Link
+                              className="patient-link"
+                              to={`/patients/${row.patientId}`}
+                            >
+                              <strong>{row.patientName}</strong>
+                            </Link>
+                            <div className="muted mono">{row.patientNumber}</div>
+                          </td>
+                          <td>{row.doctorName}</td>
+                          <td>{t(row.visitStatus, { defaultValue: row.visitStatus })}</td>
+                          <td>
+                            {t(row.documentationStatus, {
+                              defaultValue: row.documentationStatus,
+                            })}
+                          </td>
+                          <td>
+                            {new Date(row.entryAtUtc).toLocaleString(i18n.language)}
+                          </td>
+                          <td className="report-text-cell">{row.diagnosis ?? '—'}</td>
+                          <td className="report-text-cell">{row.treatmentPlan ?? '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      )}
+      {activeReport === 'patients' && <PatientReportPanel />}
+      {activeReport === 'queue' && <QueueReportPanel />}
+      {activeReport === 'doctors' && <DoctorActivityPanel />}
     </main>
   )
 }

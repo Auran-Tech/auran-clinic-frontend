@@ -49,6 +49,21 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('visit Excel export permissions', () => {
+  it('shows only the selected report workspace', () => {
+    mocks.permissions.add('Reports_View')
+    render(
+      <MemoryRouter>
+        <ReportingPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Visit report' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Patients report' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Patients report' }))
+    expect(screen.getByRole('heading', { name: 'Patients report' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Visit report' })).toBeNull()
+  })
+
   it('does not allow export for a reports read-only actor', () => {
     mocks.permissions.add('Reports_View')
     render(

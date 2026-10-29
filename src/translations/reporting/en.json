@@ -1,8 +1,9 @@
 {
   "forbidden": "You do not have permission to view reports.",
   "eyebrow": "Operations & intelligence",
-  "title": "Dashboard & reports",
-  "subtitle": "Live clinic KPIs and filterable visit-level reporting.",
+  "title": "Reports",
+  "subtitle": "Explore clinic activity and export the report you need.",
+  "selectReport": "Select a report",
   "audit": "Audit",
   "settings": "Settings",
   "followUps": "Follow-ups",
